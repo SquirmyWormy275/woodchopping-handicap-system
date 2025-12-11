@@ -1,13 +1,32 @@
-#Import Pandas, numpy, 
+#Import Pandas, numpy,
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from math import ceil
 from openpyxl import load_workbook
+import time
 
-#Import Functions from project_functions.py 
+#Import Functions from project_functions.py
 import FunctionsLibrary as pf
+
+# STRATHEX Banner
+print("""
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║    ██████╗████████╗██████╗  █████╗ ████████╗██╗  ██╗███████╗██╗  ██╗ ║
+║   ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██║  ██║██╔════╝╚██╗██╔╝ ║
+║   ╚█████╗    ██║   ██████╔╝███████║   ██║   ███████║█████╗   ╚███╔╝  ║
+║    ╚═══██╗   ██║   ██╔══██╗██╔══██║   ██║   ██╔══██║██╔══╝   ██╔██╗  ║
+║   ██████╔╝   ██║   ██║  ██║██║  ██║   ██║   ██║  ██║███████╗██╔╝╚██╗ ║
+║   ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
+║                                                                      ║
+║              WOODCHOPPING HANDICAP CALCULATOR v3.0                   ║
+║                    Professional Competition System                   ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+""")
+time.sleep(0.8)
 
 #Load Competitor Data from Excel  full roster)
 '''Read the xlsx file containing data. 
@@ -27,9 +46,23 @@ wood_selection = {
     "event": None
 }
 
-# Heat assignment state (competitors selected for current heat)
+# Heat assignment state (competitors selected for current heat) - LEGACY for backward compatibility
 heat_assignment_df = pd.DataFrame()
 heat_assignment_names = []
+
+# Tournament State - NEW multi-round tournament system
+tournament_state = {
+    'event_name': None,                    # e.g., "SB Championship 2025"
+    'num_stands': None,                    # e.g., 8 (number of available chopping stands)
+    'tentative_competitors': None,         # User's estimate for planning
+    'format': None,                        # "heats_to_finals" or "heats_to_semis_to_finals"
+    'all_competitors': [],                 # List of competitor names in event
+    'all_competitors_df': pd.DataFrame(),  # DataFrame of all competitors
+    'rounds': [],                          # List of Round objects (heats, semis, finals)
+    'current_round_index': 0,              # Active round index
+    'capacity_info': {},                   # From calculate_tournament_scenarios()
+    'handicap_results_all': []             # Handicap results for all competitors
+}
 
 ## Competitor Selection Menu
 ''' Official will be presented with a list of competitors
@@ -64,61 +97,474 @@ heat_assignment_names = []
 '''
 
 
-## Main Menu
-''' Official will enter the menu and be presented with two options
-1. Competitor Selection Menu
-2. Wood Characteristics Menu
-3. View Handicap Marks
-create a loop that will allow the official to return to the main menu after completing tasks in sub-menus
-run menu as a function to allow for easy return to main menu
+## Main Menu - Multi-Round Tournament System
+''' NEW TOURNAMENT-FOCUSED MENU STRUCTURE
+Workflow:
+1. Configure Wood + Tournament (stands, format)
+2. Personnel Management (add/edit competitors)
+3. Select all competitors for event
+4. Calculate handicaps for all
+5. View handicaps + fairness
+6. Generate heats with balanced distribution
+7. Record results + select advancers
+8. Generate next round (semis/finals)
+9. View tournament status
 '''
 while True:
-    print("\nWelcome to the Wood Chopping Handicap Management System")
-    print("Please select an option from the Main Menu:")
-    print("1. Competitor Selection Menu")
-    print("2. Wood Characteristics Menu")
-    print("3. Select Event (SB/UH)")
-    print("4. View AI Enhanced Handicap Marks")
-    print("5. Update Results tab with Heat Results")
-    print("6. Reload roster from Excel")
-    print("7. Exit")
-    menu_choice = input("Enter your choice (1-7): ").strip()
+    print("\n" + "╔" + "═" * 68 + "╗")
+    print("║" + " " * 19 + "⚒ STRATHEX MAIN MENU ⚒" + " " * 27 + "║")
+    print("╚" + "═" * 68 + "╝")
+    print("\nTOURNAMENT SETUP:")
+    print("  1. Configure Wood Characteristics")
+    print("  2. Configure Tournament (Stands + Format)")
+    print("  3. Select Competitors for Event")
+    print("\nHANDICAP ANALYSIS:")
+    print("  4. Calculate Handicaps for All Competitors")
+    print("  5. View Handicaps & Fairness Analysis")
+    print("\nHEAT MANAGEMENT:")
+    print("  6. Generate Initial Heats")
+    print("  7. Record Heat Results & Select Advancers")
+    print("  8. Generate Next Round (Semi/Final)")
+    print("  9. View Tournament Status")
+    print("\nPERSONNEL MANAGEMENT:")
+    print(" 10. Add/Edit/Remove Competitors from Master Roster")
+    print("\nSYSTEM:")
+    print(" 11. Save Tournament State")
+    print(" 12. Load Previous Tournament")
+    print(" 13. Reload Roster from Excel")
+    print(" 14. Exit")
+    print("=" * 70)
+
+    menu_choice = input("\nEnter your choice (1-14): ").strip()
 
     if menu_choice == '1':
-        # enters competitor selection menu
-        comp_df, heat_assignment_df, heat_assignment_names = pf.competitor_menu(
-            comp_df, heat_assignment_df, heat_assignment_names
-        )
-
-    elif menu_choice == '2':
-        # returns updated wood selection
+        # Configure wood characteristics (same as before)
         wood_selection = pf.wood_menu(wood_selection)
 
+    elif menu_choice == '2':
+        # Configure Tournament: stands + format
+        print("\n" + "=" * 70)
+        print("  CONFIGURE TOURNAMENT")
+        print("=" * 70)
+
+        try:
+            num_stands = int(input("\nNumber of available stands: ").strip())
+            tentative = int(input("Approximate number of competitors: ").strip())
+
+            # Get event code first
+            if not wood_selection.get('event'):
+                wood_selection = pf.select_event_code(wood_selection)
+
+            # Calculate scenarios
+            scenarios = pf.calculate_tournament_scenarios(num_stands, tentative)
+
+            # Display all three scenarios
+            print("\n" + "=" * 70)
+            print("  SCENARIO 1: Single Heat (Training/Testing)")
+            print("=" * 70)
+            print(scenarios['single_heat']['description'])
+            print(f"\nTotal blocks needed: {scenarios['single_heat']['total_blocks']}")
+
+            print("\n" + "=" * 70)
+            print("  SCENARIO 2: Heats → Finals")
+            print("=" * 70)
+            print(scenarios['heats_to_finals']['description'])
+            print(f"\nTotal blocks needed: {scenarios['heats_to_finals']['total_blocks']}")
+
+            print("\n" + "=" * 70)
+            print("  SCENARIO 3: Heats → Semis → Finals")
+            print("=" * 70)
+            print(scenarios['heats_to_semis_to_finals']['description'])
+            print(f"\nTotal blocks needed: {scenarios['heats_to_semis_to_finals']['total_blocks']}")
+
+            # User selects format
+            print("\n" + "=" * 70)
+            format_choice = input("Select format (1, 2, or 3): ").strip()
+
+            if format_choice == '1':
+                tournament_state['format'] = 'single_heat'
+                tournament_state['capacity_info'] = scenarios['single_heat']
+            elif format_choice == '2':
+                tournament_state['format'] = 'heats_to_finals'
+                tournament_state['capacity_info'] = scenarios['heats_to_finals']
+            elif format_choice == '3':
+                tournament_state['format'] = 'heats_to_semis_to_finals'
+                tournament_state['capacity_info'] = scenarios['heats_to_semis_to_finals']
+            else:
+                print("Invalid choice. Tournament not configured.")
+                continue
+
+            tournament_state['num_stands'] = num_stands
+            tournament_state['tentative_competitors'] = tentative
+
+            # Prompt for event name
+            event_name = input("\nEvent name (e.g., 'SB Championship 2025'): ").strip()
+            tournament_state['event_name'] = event_name if event_name else "Unnamed Event"
+
+            print(f"\n✓ Tournament configured: {tournament_state['format']}")
+            print(f"✓ Max competitors: {tournament_state['capacity_info']['max_competitors']}")
+
+        except ValueError:
+            print("Invalid input. Please enter numbers.")
+
     elif menu_choice == '3':
-        # event selection (SB/UH)
-        wood_selection = pf.select_event_code(wood_selection)
+        # Select ALL competitors for event
+        if not tournament_state.get('num_stands'):
+            print("\nERROR: Configure tournament first (Option 2)")
+            continue
+
+        max_comp = tournament_state['capacity_info'].get('max_competitors')
+        print(f"\nMaximum competitors for this format: {max_comp}")
+
+        selected_df = pf.select_all_event_competitors(comp_df, max_comp)
+
+        if not selected_df.empty:
+            tournament_state['all_competitors_df'] = selected_df
+            tournament_state['all_competitors'] = selected_df['competitor_name'].tolist()
+            print(f"\n✓ {len(tournament_state['all_competitors'])} competitors selected for event")
 
     elif menu_choice == '4':
-        # displays handicaps for heat assignment
-        pf.view_handicaps_menu(heat_assignment_df, wood_selection)
+        # Calculate handicaps for ALL competitors
+        # Comprehensive validation with helpful error messages
+        missing = []
+
+        # Check tournament configuration
+        if not tournament_state.get('num_stands'):
+            missing.append("  ✗ Tournament not configured (use Option 2)")
+
+        # Check competitors
+        if not tournament_state.get('all_competitors'):
+            missing.append("  ✗ No competitors selected (use Option 3)")
+
+        # Check wood characteristics
+        if not wood_selection.get('species'):
+            missing.append("  ✗ Wood species not selected (use Option 1)")
+
+        if not wood_selection.get('size_mm'):
+            missing.append("  ✗ Wood size (diameter) not set (use Option 1)")
+
+        if wood_selection.get('quality') is None:
+            missing.append("  ✗ Wood quality not set (use Option 1)")
+
+        # Check event code
+        if not wood_selection.get('event'):
+            missing.append("  ✗ Event type not selected (SB/UH - use Option 1 or 3)")
+
+        # If anything is missing, show comprehensive error
+        if missing:
+            box_width = 68
+            print("\n╔" + "═" * box_width + "╗")
+
+            # Center the title
+            title = "⚠ CANNOT CALCULATE HANDICAPS ⚠"
+            title_line = title.center(box_width)
+            print("║" + title_line + "║")
+
+            print("╠" + "═" * box_width + "╣")
+
+            # Header line
+            header = "Missing required information:".ljust(box_width)
+            print("║" + header + "║")
+
+            # Missing items
+            for item in missing:
+                print("║" + item.ljust(box_width) + "║")
+
+            print("╚" + "═" * box_width + "╝")
+            print("\nPlease complete the missing items above, then try again.\n")
+            continue
+
+        # Live progress animation
+        print("\n╔═══════════════════════════════════════════════════════════╗")
+        print("║   ⏱  HANDICAP CALCULATION IN PROGRESS                    ║")
+        print("╚═══════════════════════════════════════════════════════════╝")
+
+        def show_progress(current, total, comp_name):
+            """Display live progress bar"""
+            percent = int((current / total) * 100)
+            bar_length = 40
+            filled = int((bar_length * current) / total)
+            bar = '█' * filled + '░' * (bar_length - filled)
+
+            # Truncate and pad competitor name to exactly 35 chars
+            display_name = comp_name[:35].ljust(35)
+
+            # Format progress info
+            progress_info = f"{current}/{total} competitors".ljust(20)
+
+            # Clear line and print progress (all on one update)
+            sys.stdout.write('\r')
+            sys.stdout.write(f"║  [{bar}] {percent:3d}%  ║\n")
+            sys.stdout.write(f"║  ⚒ Analyzing: {display_name}      ║\n")
+            sys.stdout.write(f"║  Progress: {progress_info}                   ║")
+            sys.stdout.write('\033[2A')  # Move cursor up 2 lines
+            sys.stdout.flush()
+
+        # Use existing calculate_ai_enhanced_handicaps function with progress
+        results_df = pf.load_results_df()
+        handicap_results = pf.calculate_ai_enhanced_handicaps(
+            tournament_state['all_competitors_df'],
+            wood_selection['species'],
+            wood_selection['size_mm'],
+            wood_selection['quality'],
+            wood_selection['event'],
+            results_df,
+            progress_callback=show_progress
+        )
+
+        # Clear progress lines and show completion
+        sys.stdout.write('\r' + ' ' * 70 + '\n')
+        sys.stdout.write(' ' * 70 + '\n')
+        sys.stdout.write(' ' * 70 + '\r')
+        sys.stdout.write('\033[2A')  # Move cursor up 2 lines
+        print("║  [████████████████████████████████████████] 100%  ║")
+        print("║  ✓ All competitors analyzed successfully!          ║")
+        print("║                                                           ║")
+        print("╚═══════════════════════════════════════════════════════════╝")
+
+        tournament_state['handicap_results_all'] = handicap_results
+
+        # Success message with axe icon
+        print("\n" + "=" * 70)
+        print("    ⚒  HANDICAP CALCULATION COMPLETE! ⚒")
+        print(f"    ✓  {len(handicap_results)} competitors analyzed")
+        print("=" * 70)
 
     elif menu_choice == '5':
-        # append heat results to Results tab
-        pf.append_results_to_excel(heat_assignment_df, wood_selection)
+        # View handicaps + fairness analysis with DUAL PREDICTION DISPLAY
+        if not tournament_state.get('handicap_results_all'):
+            print("\nERROR: Calculate handicaps first (Option 4)")
+            continue
+
+        # Display handicaps with all prediction methods (Baseline + ML + LLM)
+        pf.display_dual_predictions(
+            tournament_state['handicap_results_all'],
+            wood_selection
+        )
+
+        # Offer Monte Carlo simulation
+        run_mc = input("\nRun Monte Carlo fairness simulation? (y/n): ").strip().lower()
+        if run_mc == 'y':
+            pf.simulate_and_assess_handicaps(tournament_state['handicap_results_all'])
 
     elif menu_choice == '6':
+        # Generate initial heats
+        if not tournament_state.get('handicap_results_all'):
+            print("\nERROR: Calculate handicaps first (Option 4)")
+            continue
+
+        num_competitors = len(tournament_state['all_competitors'])
+        num_stands = tournament_state['num_stands']
+
+        # Check if single heat mode
+        if tournament_state.get('format') == 'single_heat':
+            print(f"\nGenerating single heat for training/testing...")
+
+            # Create single heat with all competitors
+            heats = [{
+                'round_name': 'Heat 1',
+                'round_type': 'heat',
+                'competitors': tournament_state['all_competitors'],
+                'handicap_results': tournament_state['handicap_results_all'],
+                'num_to_advance': 0,  # No advancement in single heat mode
+                'status': 'pending',
+                'actual_results': {},
+                'advancers': []
+            }]
+
+            tournament_state['rounds'] = heats
+
+            # Display heat assignment
+            print(f"\n{'='*70}")
+            print(f"  SINGLE HEAT - TRAINING/TESTING MODE")
+            print(f"{'='*70}")
+            print(f"\nHeat 1 ({len(heats[0]['competitors'])} competitors - No advancement):")
+            for i, name in enumerate(heats[0]['competitors'], 1):
+                mark = next((c['mark'] for c in heats[0]['handicap_results'] if c['name'] == name), '?')
+                print(f"  {i}) {name:35s} (Mark {mark})")
+            print(f"{'='*70}")
+            print("\n✓ Results can be recorded and saved to build historical data")
+        else:
+            # Multi-round tournament mode
+            num_heats = ceil(num_competitors / num_stands)
+            print(f"\nGenerating {num_heats} heats with balanced skill distribution...")
+
+            heats = pf.distribute_competitors_into_heats(
+                tournament_state['all_competitors_df'],
+                tournament_state['handicap_results_all'],
+                num_stands,
+                num_heats
+            )
+
+            tournament_state['rounds'] = heats
+
+            # Display heat assignments
+            print(f"\n{'='*70}")
+            print(f"  HEAT ASSIGNMENTS")
+            print(f"{'='*70}")
+            for heat in heats:
+                print(f"\n{heat['round_name']} ({len(heat['competitors'])} competitors, top {heat['num_to_advance']} advance):")
+                for i, name in enumerate(heat['competitors'], 1):
+                    # Find mark for this competitor
+                    mark = next((c['mark'] for c in heat['handicap_results'] if c['name'] == name), '?')
+                    print(f"  {i}) {name:35s} (Mark {mark})")
+            print(f"{'='*70}")
+
+        # Auto-save
+        pf.auto_save_state(tournament_state)
+        print("\n✓ Tournament state auto-saved")
+
+    elif menu_choice == '7':
+        # Record heat results + select advancers
+        if not tournament_state.get('rounds'):
+            print("\nERROR: Generate heats first (Option 6)")
+            continue
+
+        pending = [r for r in tournament_state['rounds'] if r['status'] == 'pending']
+        in_progress = [r for r in tournament_state['rounds'] if r['status'] == 'in_progress']
+
+        available = pending + in_progress
+
+        if not available:
+            print("\nAll heats in current round completed!")
+            print("Use Option 8 to generate next round.")
+            continue
+
+        # Select heat to record
+        print(f"\n{'='*70}")
+        print(f"  SELECT HEAT TO RECORD")
+        print(f"{'='*70}")
+        for i, heat in enumerate(available, 1):
+            status = "⚠ In Progress" if heat['status'] == 'in_progress' else "○ Pending"
+            print(f"{i}) {heat['round_name']:15s} - {len(heat['competitors'])} competitors ({status})")
+
+        try:
+            heat_choice = int(input("\nSelect heat to record (number): ").strip()) - 1
+            selected_heat = available[heat_choice]
+
+            # Record times
+            print(f"\n{'='*70}")
+            print(f"  RECORDING RESULTS FOR {selected_heat['round_name']}")
+            print(f"{'='*70}")
+            pf.append_results_to_excel(
+                heat_assignment_df,  # Legacy param (not used)
+                wood_selection,
+                round_object=selected_heat,
+                tournament_state=tournament_state
+            )
+
+            # Select advancers (skip for single heat mode)
+            if tournament_state.get('format') == 'single_heat':
+                # Single heat mode - no advancement
+                selected_heat['status'] = 'completed'
+                selected_heat['advancers'] = []
+                print(f"\n✓ {selected_heat['round_name']} completed")
+                print("✓ Results saved to historical data for future handicap calculations")
+            else:
+                # Multi-round tournament - select advancers
+                advancers = pf.select_heat_advancers(selected_heat)
+                print(f"\n✓ {selected_heat['round_name']} completed")
+                print(f"✓ Advancers: {', '.join(advancers)}")
+
+            # Auto-save
+            pf.auto_save_state(tournament_state)
+
+        except (ValueError, IndexError):
+            print("Invalid selection.")
+
+    elif menu_choice == '8':
+        # Generate next round (semi/final)
+        if not tournament_state.get('rounds'):
+            print("\nERROR: No tournament rounds exist yet")
+            continue
+
+        # Check if all current round heats completed
+        current_rounds = tournament_state['rounds']
+        incomplete = [r for r in current_rounds if r['status'] != 'completed']
+
+        if incomplete:
+            print(f"\nERROR: {len(incomplete)} heat(s) not yet completed:")
+            for heat in incomplete:
+                print(f"  - {heat['round_name']}")
+            print("\nComplete all heats before generating next round.")
+            continue
+
+        # Collect all advancers
+        all_advancers = []
+        for heat in current_rounds:
+            all_advancers.extend(heat.get('advancers', []))
+
+        print(f"\n{len(all_advancers)} competitors advancing to next round:")
+        for name in all_advancers:
+            print(f"  - {name}")
+
+        # Determine next round type
+        current_type = current_rounds[0]['round_type']
+        tournament_format = tournament_state.get('format')
+
+        if current_type == 'heat':
+            if tournament_format == 'heats_to_finals':
+                next_type = 'final'
+            else:  # heats_to_semis_to_finals
+                next_type = 'semi'
+        elif current_type == 'semi':
+            next_type = 'final'
+        else:
+            print("\nTournament already has finals generated!")
+            continue
+
+        print(f"\nGenerating {next_type} round...")
+
+        # Generate next round
+        next_rounds = pf.generate_next_round(tournament_state, all_advancers, next_type)
+
+        # Append to tournament state
+        tournament_state['rounds'].extend(next_rounds)
+
+        print(f"\n✓ {len(next_rounds)} {next_type} heat(s) generated")
+
+        # Display
+        for round_obj in next_rounds:
+            print(f"\n{round_obj['round_name']} ({len(round_obj['competitors'])} competitors):")
+            for name in round_obj['competitors']:
+                print(f"  - {name}")
+
+        # Auto-save
+        pf.auto_save_state(tournament_state)
+
+    elif menu_choice == '9':
+        # View tournament status
+        pf.view_tournament_status(tournament_state)
+
+    elif menu_choice == '10':
+        # Personnel management menu
+        comp_df = pf.personnel_management_menu(comp_df)
+
+    elif menu_choice == '11':
+        # Save tournament state
+        pf.save_tournament_state(tournament_state, "tournament_state.json")
+
+    elif menu_choice == '12':
+        # Load previous tournament
+        loaded_state = pf.load_tournament_state("tournament_state.json")
+        if loaded_state:
+            tournament_state.update(loaded_state)
+            print("✓ Tournament state loaded successfully")
+
+    elif menu_choice == '13':
+        # Reload roster from Excel
         try:
             comp_df = pf.load_competitors_df()
-            print("Roster reloaded from Excel.")
-            # Reset heat assignment when reloading roster
-            heat_assignment_df = pd.DataFrame()
-            heat_assignment_names = []
-            print("Note: Heat assignment has been cleared.")
+            print("✓ Roster reloaded from Excel")
         except Exception as e:
             print(f"Failed to reload roster: {e}")
 
-    elif menu_choice == '7' or menu_choice == '':
-        print("Goodbye.")
+    elif menu_choice == '14' or menu_choice == '':
+        # Exit
+        save_prompt = input("\nSave tournament state before exiting? (y/n): ").strip().lower()
+        if save_prompt == 'y':
+            pf.auto_save_state(tournament_state)
+        print("\nGoodbye!")
         break
 
     else:
