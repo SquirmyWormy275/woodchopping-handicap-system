@@ -1,0 +1,774 @@
+{
+  "event_name": "SB Test 1",
+  "num_stands": 5,
+  "tentative_competitors": 10,
+  "format": "heats_to_finals",
+  "all_competitors": [
+    "Eric Hoberg",
+    "David Moses Jr.",
+    "Angus Nicholson",
+    "Erin LaVoie",
+    "Erin Cramsey",
+    "Gillian Shannon",
+    "Cody Labahn",
+    "Cole Schlenker",
+    "Alex Kaper",
+    "Ian Wilson"
+  ],
+  "all_competitors_df": [
+    {
+      "competitor_id": "C001",
+      "competitor_name": "Eric Hoberg",
+      "competitor_country": "USA",
+      "state_province": "MT",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C002",
+      "competitor_name": "David Moses Jr.",
+      "competitor_country": "USA",
+      "state_province": "WA",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C003",
+      "competitor_name": "Angus Nicholson",
+      "competitor_country": "USA",
+      "state_province": "OR",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C004",
+      "competitor_name": "Erin LaVoie",
+      "competitor_country": "USA",
+      "state_province": "WA",
+      "gender": "F"
+    },
+    {
+      "competitor_id": "C005",
+      "competitor_name": "Erin Cramsey",
+      "competitor_country": "USA",
+      "state_province": "OR",
+      "gender": "F"
+    },
+    {
+      "competitor_id": "C006",
+      "competitor_name": "Gillian Shannon",
+      "competitor_country": "USA",
+      "state_province": "MT",
+      "gender": "F"
+    },
+    {
+      "competitor_id": "C007",
+      "competitor_name": "Cody Labahn",
+      "competitor_country": "USA",
+      "state_province": "OR",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C008",
+      "competitor_name": "Cole Schlenker",
+      "competitor_country": "USA",
+      "state_province": "MT",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C009",
+      "competitor_name": "Alex Kaper",
+      "competitor_country": "USA",
+      "state_province": "MT",
+      "gender": "M"
+    },
+    {
+      "competitor_id": "C010",
+      "competitor_name": "Ian Wilson",
+      "competitor_country": "USA",
+      "state_province": "CA",
+      "gender": "M"
+    }
+  ],
+  "rounds": [
+    {
+      "round_type": "heat",
+      "round_number": 1,
+      "round_name": "Heat 1",
+      "competitors": [
+        "Cody Labahn",
+        "Angus Nicholson",
+        "Ian Wilson",
+        "Erin LaVoie",
+        "Erin Cramsey"
+      ],
+      "competitors_df": [
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "handicap_results": [
+        {
+          "name": "Cody Labahn",
+          "predicted_time": "22.878942",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 27.09090909090909,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "22.878942",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 27.1,
+              "confidence": "HIGH",
+              "explanation": "Predicted 27.1s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 166
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": "27.470661",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 28.282051282051277,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "27.470661",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 28.3,
+              "confidence": "HIGH",
+              "explanation": "Predicted 28.3s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 161
+        },
+        {
+          "name": "Ian Wilson",
+          "predicted_time": "29.246712",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 29.974358974358974,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "29.246712",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 30.0,
+              "confidence": "HIGH",
+              "explanation": "Predicted 30.0s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 159
+        },
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": "62.73855",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 40.060606060606055,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "62.73855",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 40.1,
+              "confidence": "HIGH",
+              "explanation": "Predicted 40.1s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 126
+        },
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": "93.94981",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 61.36206896551725,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "93.94981",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 61.4,
+              "confidence": "HIGH",
+              "explanation": "Predicted 61.4s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 95
+        }
+      ],
+      "actual_results": {},
+      "advancers": [],
+      "num_to_advance": 2,
+      "status": "pending"
+    },
+    {
+      "round_type": "heat",
+      "round_number": 2,
+      "round_name": "Heat 2",
+      "competitors": [
+        "David Moses Jr.",
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Eric Hoberg",
+        "Gillian Shannon"
+      ],
+      "competitors_df": [
+        {
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C006",
+          "competitor_name": "Gillian Shannon",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C008",
+          "competitor_name": "Cole Schlenker",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C009",
+          "competitor_name": "Alex Kaper",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        }
+      ],
+      "handicap_results": [
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": "22.441956",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 24.909090909090907,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "22.441956",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 24.9,
+              "confidence": "HIGH",
+              "explanation": "Predicted 24.9s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 166
+        },
+        {
+          "name": "Cole Schlenker",
+          "predicted_time": "23.22637",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 27.307692307692307,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "23.22637",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 27.3,
+              "confidence": "HIGH",
+              "explanation": "Predicted 27.3s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 165
+        },
+        {
+          "name": "Alex Kaper",
+          "predicted_time": "36.122776",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 32.293103448275865,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "36.122776",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 32.3,
+              "confidence": "HIGH",
+              "explanation": "Predicted 32.3s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 152
+        },
+        {
+          "name": "Eric Hoberg",
+          "predicted_time": "41.16356",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 34.22727272727273,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "41.16356",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 34.2,
+              "confidence": "HIGH",
+              "explanation": "Predicted 34.2s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 147
+        },
+        {
+          "name": "Gillian Shannon",
+          "predicted_time": "185.08069",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 120.18181818181817,
+              "confidence": "HIGH",
+              "explanation": "Statistical baseline (on various wood types)",
+              "error": null
+            },
+            "ml": {
+              "time": "185.08069",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (100 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 120.2,
+              "confidence": "HIGH",
+              "explanation": "Predicted 120.2s (competitor history on various wood types, AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 3
+        }
+      ],
+      "actual_results": {},
+      "advancers": [],
+      "num_to_advance": 2,
+      "status": "pending"
+    }
+  ],
+  "current_round_index": 0,
+  "capacity_info": {
+    "max_competitors": 10,
+    "num_heats": 2,
+    "num_semis": 0,
+    "num_finals": 1,
+    "advancers_per_heat": 3,
+    "total_blocks": 15,
+    "description": "2 heats of 5 (max 10 competitors)\n  \u2192 Top 3 from each heat advance\n  \u2192 5-person Final"
+  },
+  "handicap_results_all": [
+    {
+      "name": "Gillian Shannon",
+      "predicted_time": "185.08069",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 120.18181818181817,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "185.08069",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 120.2,
+          "confidence": "HIGH",
+          "explanation": "Predicted 120.2s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 3
+    },
+    {
+      "name": "Erin Cramsey",
+      "predicted_time": "93.94981",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 61.36206896551725,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "93.94981",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 61.4,
+          "confidence": "HIGH",
+          "explanation": "Predicted 61.4s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 95
+    },
+    {
+      "name": "Erin LaVoie",
+      "predicted_time": "62.73855",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 40.060606060606055,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "62.73855",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 40.1,
+          "confidence": "HIGH",
+          "explanation": "Predicted 40.1s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 126
+    },
+    {
+      "name": "Eric Hoberg",
+      "predicted_time": "41.16356",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 34.22727272727273,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "41.16356",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 34.2,
+          "confidence": "HIGH",
+          "explanation": "Predicted 34.2s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 147
+    },
+    {
+      "name": "Alex Kaper",
+      "predicted_time": "36.122776",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 32.293103448275865,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "36.122776",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 32.3,
+          "confidence": "HIGH",
+          "explanation": "Predicted 32.3s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 152
+    },
+    {
+      "name": "Ian Wilson",
+      "predicted_time": "29.246712",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 29.974358974358974,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "29.246712",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 30.0,
+          "confidence": "HIGH",
+          "explanation": "Predicted 30.0s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 159
+    },
+    {
+      "name": "Angus Nicholson",
+      "predicted_time": "27.470661",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 28.282051282051277,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "27.470661",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 28.3,
+          "confidence": "HIGH",
+          "explanation": "Predicted 28.3s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 161
+    },
+    {
+      "name": "Cole Schlenker",
+      "predicted_time": "23.22637",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 27.307692307692307,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "23.22637",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 27.3,
+          "confidence": "HIGH",
+          "explanation": "Predicted 27.3s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 165
+    },
+    {
+      "name": "Cody Labahn",
+      "predicted_time": "22.878942",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 27.09090909090909,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "22.878942",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 27.1,
+          "confidence": "HIGH",
+          "explanation": "Predicted 27.1s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 166
+    },
+    {
+      "name": "David Moses Jr.",
+      "predicted_time": "22.441956",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (100 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 24.909090909090907,
+          "confidence": "HIGH",
+          "explanation": "Statistical baseline (on various wood types)",
+          "error": null
+        },
+        "ml": {
+          "time": "22.441956",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (100 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 24.9,
+          "confidence": "HIGH",
+          "explanation": "Predicted 24.9s (competitor history on various wood types, AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 166
+    }
+  ]
+}

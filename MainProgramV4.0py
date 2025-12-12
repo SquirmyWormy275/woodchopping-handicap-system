@@ -8,7 +8,8 @@ from openpyxl import load_workbook
 import time
 
 #Import Functions from project_functions.py
-import FunctionsLibrary as pf
+import FunctionsLibrary  as pf
+import explanation_system_functions as explain
 
 # STRATHEX Banner
 print("""
@@ -21,13 +22,12 @@ print("""
 ║   ██████╔╝   ██║   ██║  ██║██║  ██║   ██║   ██║  ██║███████╗██╔╝╚██╗ ║
 ║   ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
 ║                                                                      ║
-║              WOODCHOPPING HANDICAP CALCULATOR v3.0                   ║
+║              WOODCHOPPING HANDICAP CALCULATOR v4.0                   ║
 ║                    Professional Competition System                   ║
 ║                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """)
 time.sleep(0.8)
-
 #Load Competitor Data from Excel  full roster)
 '''Read the xlsx file containing data. 
 Sheet "competitors" contains competitor data
@@ -132,10 +132,11 @@ while True:
     print(" 11. Save Tournament State")
     print(" 12. Load Previous Tournament")
     print(" 13. Reload Roster from Excel")
-    print(" 14. Exit")
+    print(" 14. How Does This System Work? (Explanation System)")
+    print(" 15. Exit")
     print("=" * 70)
 
-    menu_choice = input("\nEnter your choice (1-14): ").strip()
+    menu_choice = input("\nEnter your choice (1-15): ").strip()
 
     if menu_choice == '1':
         # Configure wood characteristics (same as before)
@@ -275,29 +276,42 @@ while True:
             continue
 
         # Live progress animation
-        print("\n╔═══════════════════════════════════════════════════════════╗")
-        print("║   ⏱  HANDICAP CALCULATION IN PROGRESS                    ║")
-        print("╚═══════════════════════════════════════════════════════════╝")
+        print("\n╔" + "═" * 70 + "╗")
+        print("║" + "   ⏱  HANDICAP CALCULATION IN PROGRESS".ljust(70) + "║")
+        print("╠" + "═" * 70 + "╣")
+        print("║" + " " * 70 + "║")  # Progress bar line
+        print("║" + " " * 70 + "║")  # Competitor name line
+        print("║" + " " * 70 + "║")  # Progress info line
+        print("╚" + "═" * 70 + "╝")
 
         def show_progress(current, total, comp_name):
-            """Display live progress bar"""
+            """Display live progress bar with proper alignment"""
             percent = int((current / total) * 100)
             bar_length = 40
             filled = int((bar_length * current) / total)
             bar = '█' * filled + '░' * (bar_length - filled)
 
-            # Truncate and pad competitor name to exactly 35 chars
-            display_name = comp_name[:35].ljust(35)
+            # Truncate competitor name to fit and ensure it's visible
+            max_name_length = 45
+            if len(comp_name) > max_name_length:
+                display_name = comp_name[:max_name_length-3] + "..."
+            else:
+                display_name = comp_name
 
             # Format progress info
-            progress_info = f"{current}/{total} competitors".ljust(20)
+            progress_info = f"{current}/{total} competitors"
 
-            # Clear line and print progress (all on one update)
-            sys.stdout.write('\r')
-            sys.stdout.write(f"║  [{bar}] {percent:3d}%  ║\n")
-            sys.stdout.write(f"║  ⚒ Analyzing: {display_name}      ║\n")
-            sys.stdout.write(f"║  Progress: {progress_info}                   ║")
-            sys.stdout.write('\033[2A')  # Move cursor up 2 lines
+            # Build properly padded lines (70 chars inside the box)
+            line1 = f"  [{bar}] {percent:3d}%".ljust(70)
+            line2 = f"  ⚒ Analyzing: {display_name}".ljust(70)
+            line3 = f"  Progress: {progress_info}".ljust(70)
+
+            # Move cursor up 4 lines (to just after the top border)
+            sys.stdout.write('\033[4A')
+            # Overwrite the 3 content lines
+            sys.stdout.write(f"║{line1}║\n")
+            sys.stdout.write(f"║{line2}║\n")
+            sys.stdout.write(f"║{line3}║\n")
             sys.stdout.flush()
 
         # Use existing calculate_ai_enhanced_handicaps function with progress
@@ -313,14 +327,16 @@ while True:
         )
 
         # Clear progress lines and show completion
-        sys.stdout.write('\r' + ' ' * 70 + '\n')
-        sys.stdout.write(' ' * 70 + '\n')
-        sys.stdout.write(' ' * 70 + '\r')
-        sys.stdout.write('\033[2A')  # Move cursor up 2 lines
-        print("║  [████████████████████████████████████████] 100%  ║")
-        print("║  ✓ All competitors analyzed successfully!          ║")
-        print("║                                                           ║")
-        print("╚═══════════════════════════════════════════════════════════╝")
+        sys.stdout.write('\033[4A')  # Move cursor up 4 lines to content area
+        complete_bar = '█' * 40
+        line1 = f"  [{complete_bar}] 100%".ljust(70)
+        line2 = f"  ✓ All competitors analyzed successfully!".ljust(70)
+        line3 = " " * 70
+        sys.stdout.write(f"║{line1}║\n")
+        sys.stdout.write(f"║{line2}║\n")
+        sys.stdout.write(f"║{line3}║\n")
+        sys.stdout.write(f"╚{'═' * 70}╝\n")
+        sys.stdout.flush()
 
         tournament_state['handicap_results_all'] = handicap_results
 
@@ -559,7 +575,11 @@ while True:
         except Exception as e:
             print(f"Failed to reload roster: {e}")
 
-    elif menu_choice == '14' or menu_choice == '':
+    elif menu_choice == '14':
+        # Launch explanation system
+        explain.explanation_menu()
+
+    elif menu_choice == '15' or menu_choice == '':
         # Exit
         save_prompt = input("\nSave tournament state before exiting? (y/n): ").strip().lower()
         if save_prompt == 'y':
