@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+STRATHEX - Woodchopping Handicap Calculator v4.2
+Professional Competition System
+"""
+
 #Import Pandas, numpy,
 import pandas as pd
 import numpy as np
@@ -6,13 +12,26 @@ import sys
 from math import ceil
 from openpyxl import load_workbook
 import time
+import os
+
+# Fix Windows console encoding for Unicode characters
+if sys.platform == 'win32':
+    try:
+        # Try to set UTF-8 encoding for Windows console
+        os.system('chcp 65001 >nul 2>&1')
+        # Also set stdout encoding
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass  # If it fails, we'll fallback to ASCII banner
 
 #Import Functions from project_functions.py
-import FunctionsLibrary  as pf
+import FunctionsLibrary as pf
 import explanation_system_functions as explain
 
 # STRATHEX Banner
-print("""
+try:
+    print("""
 ╔══════════════════════════════════════════════════════════════════════╗
 ║                                                                      ║
 ║    ██████╗████████╗██████╗  █████╗ ████████╗██╗  ██╗███████╗██╗  ██╗ ║
@@ -22,10 +41,20 @@ print("""
 ║   ██████╔╝   ██║   ██║  ██║██║  ██║   ██║   ██║  ██║███████╗██╔╝╚██╗ ║
 ║   ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
 ║                                                                      ║
-║              WOODCHOPPING HANDICAP CALCULATOR v4.0                   ║
+║              WOODCHOPPING HANDICAP CALCULATOR v4.2                   ║
 ║                    Professional Competition System                   ║
 ║                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
+""")
+except UnicodeEncodeError:
+    # Fallback to ASCII banner if Unicode fails
+    print("""
+======================================================================
+
+    STRATHEX - WOODCHOPPING HANDICAP CALCULATOR v4.2
+                Professional Competition System
+
+======================================================================
 """)
 time.sleep(0.8)
 #Load Competitor Data from Excel  full roster)
@@ -193,6 +222,7 @@ while True:
                 tournament_state['capacity_info'] = scenarios['heats_to_semis_to_finals']
             else:
                 print("Invalid choice. Tournament not configured.")
+                input("\nPress Enter to return to menu...")
                 continue
 
             tournament_state['num_stands'] = num_stands
@@ -212,6 +242,7 @@ while True:
         # Select ALL competitors for event
         if not tournament_state.get('num_stands'):
             print("\nERROR: Configure tournament first (Option 2)")
+            input("\nPress Enter to return to menu...")
             continue
 
         max_comp = tournament_state['capacity_info'].get('max_competitors')
@@ -272,7 +303,8 @@ while True:
                 print("║" + item.ljust(box_width) + "║")
 
             print("╚" + "═" * box_width + "╝")
-            print("\nPlease complete the missing items above, then try again.\n")
+            print("\nPlease complete the missing items above, then try again.")
+            input("\nPress Enter to return to menu...")
             continue
 
         # Live progress animation
@@ -350,6 +382,7 @@ while True:
         # View handicaps + fairness analysis with DUAL PREDICTION DISPLAY
         if not tournament_state.get('handicap_results_all'):
             print("\nERROR: Calculate handicaps first (Option 4)")
+            input("\nPress Enter to return to menu...")
             continue
 
         # Display handicaps with all prediction methods (Baseline + ML + LLM)
@@ -357,6 +390,47 @@ while True:
             tournament_state['handicap_results_all'],
             wood_selection
         )
+
+        # HANDICAP APPROVAL WORKFLOW
+        print("\n" + "="*70)
+        print("  HANDICAP APPROVAL")
+        print("="*70)
+        print("\n1. Accept handicaps as calculated")
+        print("2. Manually adjust individual handicaps")
+
+        approval_choice = input("\nYour choice (1 or 2): ").strip()
+
+        if approval_choice == '2':
+            # Manual adjustment workflow
+            adjusted_results, initials, timestamp = pf.manual_adjust_handicaps(
+                tournament_state['handicap_results_all'],
+                wood_selection
+            )
+
+            if initials:  # Adjustment approved
+                # Update with adjusted marks
+                tournament_state['handicap_results_all'] = adjusted_results
+                # Store approval metadata
+                for result in adjusted_results:
+                    result['approved_by'] = initials
+                    result['approved_at'] = timestamp
+                print(f"\n✓ Handicaps approved by {initials} at {timestamp}")
+            else:
+                print("\n⚠ Adjustment cancelled - handicaps NOT approved")
+
+        elif approval_choice == '1':
+            # Accept as calculated - still requires approval
+            initials, timestamp = pf.judge_approval()
+
+            if initials:  # Accepted and approved
+                for result in tournament_state['handicap_results_all']:
+                    result['approved_by'] = initials
+                    result['approved_at'] = timestamp
+                print(f"\n✓ Handicaps approved by {initials} at {timestamp}")
+            else:
+                print("\n⚠ Approval cancelled - handicaps NOT approved")
+        else:
+            print("\n⚠ Invalid choice - handicaps NOT approved")
 
         # Offer Monte Carlo simulation
         run_mc = input("\nRun Monte Carlo fairness simulation? (y/n): ").strip().lower()
@@ -367,6 +441,7 @@ while True:
         # Generate initial heats
         if not tournament_state.get('handicap_results_all'):
             print("\nERROR: Calculate handicaps first (Option 4)")
+            input("\nPress Enter to return to menu...")
             continue
 
         num_competitors = len(tournament_state['all_competitors'])
@@ -434,6 +509,7 @@ while True:
         # Record heat results + select advancers
         if not tournament_state.get('rounds'):
             print("\nERROR: Generate heats first (Option 6)")
+            input("\nPress Enter to return to menu...")
             continue
 
         pending = [r for r in tournament_state['rounds'] if r['status'] == 'pending']
@@ -444,6 +520,7 @@ while True:
         if not available:
             print("\nAll heats in current round completed!")
             print("Use Option 8 to generate next round.")
+            input("\nPress Enter to return to menu...")
             continue
 
         # Select heat to record
@@ -492,6 +569,7 @@ while True:
         # Generate next round (semi/final)
         if not tournament_state.get('rounds'):
             print("\nERROR: No tournament rounds exist yet")
+            input("\nPress Enter to return to menu...")
             continue
 
         # Check if all current round heats completed
@@ -503,6 +581,7 @@ while True:
             for heat in incomplete:
                 print(f"  - {heat['round_name']}")
             print("\nComplete all heats before generating next round.")
+            input("\nPress Enter to return to menu...")
             continue
 
         # Collect all advancers
@@ -527,6 +606,7 @@ while True:
             next_type = 'final'
         else:
             print("\nTournament already has finals generated!")
+            input("\nPress Enter to return to menu...")
             continue
 
         print(f"\nGenerating {next_type} round...")

@@ -37,6 +37,7 @@ except ImportError:
 # Prediction functions
 from woodchopping.predictions.llm import call_ollama
 from woodchopping.predictions.baseline import (
+    calculate_performance_weight,
     get_competitor_historical_times_flexible,
     get_event_baseline_flexible
 )
@@ -88,6 +89,10 @@ from woodchopping.ui.competitor_ui import (
     remove_from_heat
 )
 from woodchopping.ui.personnel_ui import personnel_management_menu
+from woodchopping.ui.handicap_ui import (
+    judge_approval,
+    manual_adjust_handicaps
+)
 from woodchopping.ui.tournament_ui import (
     calculate_tournament_scenarios,
     distribute_competitors_into_heats,

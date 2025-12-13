@@ -63,23 +63,34 @@ def predict_competitor_time_with_ai(
         >>> print(f"Predicted {time:.1f}s (confidence: {conf})")
         >>> print(f"Based on: {exp}")
     """
-    # Step 1: Get historical data
-    historical_times, data_source = get_competitor_historical_times_flexible(
-        competitor_name, species, event_code, results_df
+    # Step 1: Get historical data WITH TIME-DECAY WEIGHTING
+    # Critical for aging competitors: recent performances weighted much higher than peak from years ago
+    historical_data, data_source = get_competitor_historical_times_flexible(
+        competitor_name, species, event_code, results_df, return_weights=True
     )
 
-    # Step 2: Calculate baseline
-    if len(historical_times) >= 3:
-        weights = [1.5, 1.3, 1.1, 1.0, 0.9, 0.8]
-        weighted_times = [t * w for t, w in zip(historical_times[:6], weights[:len(historical_times)])]
-        baseline = sum(weighted_times) / sum(weights[:len(historical_times)])
-        confidence = "HIGH"
-        explanation_source = f"competitor history {data_source}"
+    # Step 2: Calculate time-weighted baseline
+    if len(historical_data) >= 3:
+        # Each item is (time, date, weight) where weight = 0.5^(days_old/730)
+        # Recent results (this season) have weight ~1.0
+        # Results from 10 years ago have weight ~0.03 (essentially zero)
+        weighted_sum = sum(time * weight for time, date, weight in historical_data)
+        weight_sum = sum(weight for time, date, weight in historical_data)
+        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
 
-    elif len(historical_times) > 0:
-        baseline = statistics.mean(historical_times)
+        confidence = "HIGH"
+        avg_weight = weight_sum / len(historical_data)
+        explanation_source = f"time-weighted history {data_source} ({len(historical_data)} results, avg weight {avg_weight:.2f})"
+
+    elif len(historical_data) > 0:
+        # Limited history - still apply time-decay
+        weighted_sum = sum(time * weight for time, date, weight in historical_data)
+        weight_sum = sum(weight for time, date, weight in historical_data)
+        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
+
         confidence = "MEDIUM"
-        explanation_source = f"limited competitor history {data_source}"
+        avg_weight = weight_sum / len(historical_data)
+        explanation_source = f"limited time-weighted history {data_source} ({len(historical_data)} results, avg weight {avg_weight:.2f})"
 
     else:
         baseline, baseline_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
@@ -149,71 +160,82 @@ Event Type: {event_code}
 WOOD CHARACTERISTICS DATABASE
 {wood_data_text}
 
-QUALITY RATING SYSTEM
+QUALITY RATING SYSTEM - CRITICAL UNDERSTANDING
 
-Quality measures wood condition on a 0-10 scale:
+Quality measures wood SOFTNESS on a 0-10 scale:
+- HIGHER number = SOFTER wood = FASTER cutting = LOWER time
+- LOWER number = HARDER wood = SLOWER cutting = HIGHER time
 
 10 = Extremely soft/rotten
-   - Wood breaks apart easily
-   - Minimal resistance to axe
+   - Wood breaks apart easily, minimal resistance
    - FASTEST possible cutting time
-   - Reduces baseline time by approximately 10-15%
+   - MULTIPLY baseline by 0.85-0.90 (reduce by 10-15%)
+   - Example: 40s baseline → 34-36s predicted
 
 9 = Very soft (ideal competition wood)
-   - Excellent cutting conditions
-   - Clean grain, well-seasoned
-   - Reduces baseline time by approximately 7-10%
+   - Excellent cutting conditions, clean grain
+   - MULTIPLY baseline by 0.90-0.93 (reduce by 7-10%)
+   - Example: 40s baseline → 36-37s predicted
 
 8 = Soft
-   - Good cutting conditions
-   - Easy to work with
-   - Reduces baseline time by approximately 5-7%
+   - Good cutting conditions, easy to work with
+   - MULTIPLY baseline by 0.93-0.95 (reduce by 5-7%)
+   - Example: 40s baseline → 37-38s predicted
 
 7 = Moderately soft
-   - Better than average
-   - Noticeable improvement over baseline
-   - Reduces baseline time by approximately 3-5%
+   - Better than average, noticeable improvement
+   - MULTIPLY baseline by 0.95-0.97 (reduce by 3-5%)
+   - Example: 40s baseline → 38-39s predicted
 
 6 = Slightly soft
    - Marginally better than average
-   - Minor improvement
-   - Reduces baseline time by approximately 1-3%
+   - MULTIPLY baseline by 0.97-0.99 (reduce by 1-3%)
+   - Example: 40s baseline → 39-40s predicted
 
 5 = AVERAGE HARDNESS (BASELINE REFERENCE POINT)
    - This is what the baseline time assumes
-   - NO ADJUSTMENT needed at quality 5
-   - Standard competition wood
+   - MULTIPLY baseline by 1.00 (NO ADJUSTMENT)
+   - Example: 40s baseline → 40s predicted
 
 4 = Slightly hard
    - Marginally tougher than average
-   - Minor slowdown
-   - Increases baseline time by approximately 1-3%
+   - MULTIPLY baseline by 1.01-1.03 (increase by 1-3%)
+   - Example: 40s baseline → 40-41s predicted
 
 3 = Moderately hard
-   - Noticeably tougher
-   - More resistance
-   - Increases baseline time by approximately 3-5%
+   - Noticeably tougher, more resistance
+   - MULTIPLY baseline by 1.03-1.05 (increase by 3-5%)
+   - Example: 40s baseline → 41-42s predicted
 
 2 = Hard (difficult cutting)
-   - Significant resistance
-   - Green wood, tough grain
-   - Increases baseline time by approximately 5-8%
+   - Significant resistance, green wood, tough grain
+   - MULTIPLY baseline by 1.05-1.08 (increase by 5-8%)
+   - Example: 40s baseline → 42-43s predicted
 
 1 = Very hard
-   - Major difficulty
-   - Knots, irregular grain
-   - Increases baseline time by approximately 8-12%
+   - Major difficulty, knots, irregular grain
+   - MULTIPLY baseline by 1.08-1.12 (increase by 8-12%)
+   - Example: 40s baseline → 43-45s predicted
 
 0 = Extremely hard/barely suitable
    - Maximum difficulty
    - SLOWEST possible cutting time
-   - Increases baseline time by approximately 12-15%
+   - MULTIPLY baseline by 1.12-1.15 (increase by 12-15%)
+   - Example: 40s baseline → 45-46s predicted
 
 CURRENT SITUATION ANALYSIS
 
-Your wood is quality {quality}, which is {abs(quality - 5)} point(s) {"ABOVE" if quality > 5 else "BELOW" if quality < 5 else "AT"} the baseline reference.
+Baseline time: {baseline:.1f}s (assumes quality 5 wood)
+Your wood quality: {quality}/10
 
-{"This wood is SOFTER than baseline - expect FASTER cutting time." if quality > 5 else "This wood is HARDER than baseline - expect SLOWER cutting time." if quality < 5 else "This wood is AVERAGE hardness - baseline time should be accurate."}
+Quality deviation: {quality - 5:+d} points from baseline reference
+
+CRITICAL CALCULATION DIRECTION:
+{"⚠️ Quality " + str(quality) + " > 5 means SOFTER wood → FASTER cutting → LOWER time than baseline" if quality > 5 else "⚠️ Quality " + str(quality) + " < 5 means HARDER wood → SLOWER cutting → HIGHER time than baseline" if quality < 5 else "✓ Quality 5 = baseline assumption → NO ADJUSTMENT needed"}
+
+{"Expected multiplier: 0.95-0.97 (reduce baseline by 3-5%)" if quality == 6 else "Expected multiplier: 0.93-0.95 (reduce baseline by 5-7%)" if quality == 7 else "Expected multiplier: 0.90-0.93 (reduce baseline by 7-10%)" if quality == 8 else "Expected multiplier: 0.85-0.90 (reduce baseline by 10-15%)" if quality >= 9 else "Expected multiplier: 1.01-1.03 (increase baseline by 1-3%)" if quality == 4 else "Expected multiplier: 1.03-1.05 (increase baseline by 3-5%)" if quality == 3 else "Expected multiplier: 1.05-1.08 (increase baseline by 5-8%)" if quality == 2 else "Expected multiplier: 1.08-1.12 (increase baseline by 8-12%)" if quality == 1 else "Expected multiplier: 1.12-1.15 (increase baseline by 12-15%)" if quality == 0 else "Expected multiplier: 1.00 (no change)"}
+
+{"Target range: " + str(round(baseline * 0.95, 1)) + "s - " + str(round(baseline * 0.97, 1)) + "s" if quality == 6 else "Target range: " + str(round(baseline * 0.93, 1)) + "s - " + str(round(baseline * 0.95, 1)) + "s" if quality == 7 else "Target range: " + str(round(baseline * 0.90, 1)) + "s - " + str(round(baseline * 0.93, 1)) + "s" if quality == 8 else "Target range: " + str(round(baseline * 0.85, 1)) + "s - " + str(round(baseline * 0.90, 1)) + "s" if quality >= 9 else "Target range: " + str(round(baseline * 1.01, 1)) + "s - " + str(round(baseline * 1.03, 1)) + "s" if quality == 4 else "Target range: " + str(round(baseline * 1.03, 1)) + "s - " + str(round(baseline * 1.05, 1)) + "s" if quality == 3 else "Target range: " + str(round(baseline * 1.05, 1)) + "s - " + str(round(baseline * 1.08, 1)) + "s" if quality == 2 else "Target range: " + str(round(baseline * 1.08, 1)) + "s - " + str(round(baseline * 1.12, 1)) + "s" if quality == 1 else "Target range: " + str(round(baseline * 1.12, 1)) + "s - " + str(round(baseline * 1.15, 1)) + "s" if quality == 0 else "Target: " + str(round(baseline, 1)) + "s (baseline)"}
 
 CALCULATION METHODOLOGY
 

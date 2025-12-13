@@ -139,6 +139,12 @@ def load_results_df() -> pd.DataFrame:
                 lambda x: id_to_name.get(str(x).strip(), f"Unknown_{x}")
             )
 
+        # Parse dates to datetime objects (critical for time-decay weighting)
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
+            # Note: errors='coerce' converts invalid/missing dates to NaT (Not a Time)
+            # This maintains backward compatibility with results that have no dates
+
         return df
 
     except FileNotFoundError:

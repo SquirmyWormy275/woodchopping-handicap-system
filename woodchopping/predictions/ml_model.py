@@ -25,6 +25,9 @@ from woodchopping.data import (
     engineer_features_for_ml
 )
 
+# Import time-decay weighting function
+from woodchopping.predictions.baseline import calculate_performance_weight
+
 # ML Libraries
 try:
     import xgboost as xgb
@@ -238,14 +241,27 @@ def train_ml_model(
         X = event_df[feature_cols]
         y = event_df['raw_time']
 
+        # Calculate TIME-DECAY WEIGHTS for each training sample
+        # Recent performances get higher weight during training
+        # Critical for aging competitors: their 10-year-old peak performances shouldn't dominate the model
+        sample_weights = event_df['date'].apply(
+            lambda d: calculate_performance_weight(d, half_life_days=730)
+        )
+
         # Remove any rows with NaN values
         mask = ~(X.isna().any(axis=1) | y.isna())
         X = X[mask]
         y = y[mask]
+        sample_weights = sample_weights[mask]
 
         if len(X) < data_req.MIN_ML_TRAINING_RECORDS_PER_EVENT:
             print(f"Insufficient valid {event} data after cleaning: {len(X)} records")
             continue
+
+        # Report on time-decay weighting effectiveness
+        avg_weight = sample_weights.mean()
+        recent_fraction = (sample_weights > 0.5).sum() / len(sample_weights)
+        print(f"  Time-decay: avg weight {avg_weight:.2f}, {recent_fraction*100:.0f}% of data from last 2 years")
 
         # Model parameters
         model_params = {
@@ -257,7 +273,8 @@ def train_ml_model(
             'tree_method': 'hist'
         }
 
-        # Perform cross-validation
+        # Perform cross-validation (without weights for simplicity)
+        # Note: Could add weighted CV in future if needed
         print(f"Cross-validating {event} model (5-fold)...")
         cv_results = perform_cross_validation(X, y, model_params, cv_folds=5)
 
@@ -265,9 +282,10 @@ def train_ml_model(
             print(f"  CV MAE: {cv_results['mae_mean']:.2f}s +/- {cv_results['mae_std']:.2f}s")
             print(f"  CV R2:  {cv_results['r2_mean']:.3f} +/- {cv_results['r2_std']:.3f}")
 
-        # Train final model on all data
+        # Train final model on all data WITH TIME-DECAY SAMPLE WEIGHTS
+        # Recent training examples influence the model more than old examples
         model = xgb.XGBRegressor(**model_params)
-        model.fit(X, y)
+        model.fit(X, y, sample_weight=sample_weights)
 
         # Calculate training metrics
         y_pred = model.predict(X)

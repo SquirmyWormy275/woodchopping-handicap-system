@@ -1,13 +1,14 @@
 """Handicap display and results recording UI functions.
 
-This module handles handicap viewing and heat results operations including:
+This module handles handicap viewing and results operations including:
 - Viewing handicap marks with Monte Carlo validation
+- Manual handicap adjustment with judge approval
 - Validating heat data completeness
 - Recording and saving heat results to Excel
 """
 
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 import pandas as pd
 from openpyxl import load_workbook, Workbook
 
@@ -18,7 +19,7 @@ from woodchopping.data import (
 )
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 from woodchopping.simulation import simulate_and_assess_handicaps
-from config import paths
+from config import paths, rules
 
 
 # File/sheet names from config
@@ -342,3 +343,214 @@ def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
 
     except Exception as e:
         print(f"Error appending results: {e}")
+
+
+def judge_approval() -> Tuple[str, str]:
+    """
+    Prompt judge for approval initials and capture timestamp.
+
+    Returns:
+        Tuple of (judge_initials, timestamp_str)
+        Returns ('', '') if judge declines approval
+
+    Example:
+        >>> initials, timestamp = judge_approval()
+        >>> if initials:
+        ...     print(f"Approved by {initials} at {timestamp}")
+    """
+    print("\n" + "="*70)
+    print("  JUDGE APPROVAL REQUIRED")
+    print("="*70)
+    print("\nBy entering your initials, you certify that:")
+    print("  - These handicap marks are fair and appropriate")
+    print("  - All calculations have been reviewed")
+    print("  - Marks comply with AAA competition rules")
+    print()
+
+    while True:
+        initials = input("Enter your initials to approve (or 'cancel' to abort): ").strip().upper()
+
+        if initials.lower() == 'cancel':
+            print("\nApproval cancelled. Handicaps NOT saved.")
+            return '', ''
+
+        if len(initials) < 2 or len(initials) > 5:
+            print("ERROR: Initials must be 2-5 characters")
+            continue
+
+        if not initials.replace('.', '').isalpha():
+            print("ERROR: Initials must contain only letters (and optional periods)")
+            continue
+
+        # Confirm
+        confirm = input(f"\nConfirm approval by {initials}? (y/n): ").strip().lower()
+        if confirm == 'y':
+            timestamp = datetime.now().isoformat(timespec="seconds")
+            print(f"\n✓ Approved by {initials} at {timestamp}")
+            return initials, timestamp
+        else:
+            print("Approval cancelled. Please re-enter initials.")
+
+
+def manual_adjust_handicaps(
+    handicap_results: List[Dict],
+    wood_selection: Dict
+) -> Tuple[List[Dict], str, str]:
+    """
+    Allow judge to manually adjust individual handicap marks with validation.
+
+    This function:
+    1. Displays current handicap list
+    2. Allows selection of competitor to adjust
+    3. Validates new mark (3 ≤ mark ≤ 180 per AAA rules)
+    4. Shows updated handicap sheet after each change
+    5. Repeats until judge is satisfied
+
+    Args:
+        handicap_results: List of handicap dicts with 'name', 'mark', 'predicted_time', etc.
+        wood_selection: Wood characteristics for display context
+
+    Returns:
+        Tuple of (adjusted_handicaps, judge_initials, timestamp)
+        Returns (original_handicaps, '', '') if no changes made or approval cancelled
+
+    AAA Rules Enforced:
+        - Minimum mark: 3 seconds
+        - Maximum mark: 180 seconds
+        - Marks must be whole seconds (integers)
+
+    Example:
+        >>> adjusted, initials, timestamp = manual_adjust_handicaps(results, wood_sel)
+        >>> if initials:
+        ...     print(f"Handicaps adjusted and approved by {initials}")
+    """
+    # Work with a copy to avoid modifying original
+    adjusted_results = [result.copy() for result in handicap_results]
+
+    print("\n" + "="*70)
+    print("  MANUAL HANDICAP ADJUSTMENT")
+    print("="*70)
+    print("\nYou can manually override calculated handicap marks.")
+    print("This is useful when:")
+    print("  - Competitor has recent injury or condition affecting performance")
+    print("  - Historical data doesn't reflect current ability")
+    print("  - Judge has specific knowledge about competitor")
+    print()
+
+    while True:
+        # Display current handicaps
+        _display_handicap_summary(adjusted_results, wood_selection)
+
+        print("\n" + "="*70)
+        print("OPTIONS:")
+        print("  1-{}  Select competitor number to adjust".format(len(adjusted_results)))
+        print("  'done' Accept current handicaps and proceed to approval")
+        print("  'cancel' Abandon changes and return to original handicaps")
+        print("="*70)
+
+        choice = input("\nYour choice: ").strip().lower()
+
+        if choice == 'done':
+            # Proceed to approval
+            print("\n" + "="*70)
+            print("FINAL HANDICAP MARKS:")
+            _display_handicap_summary(adjusted_results, wood_selection)
+
+            initials, timestamp = judge_approval()
+            if initials:
+                return adjusted_results, initials, timestamp
+            else:
+                # Approval cancelled - ask if they want to continue adjusting
+                retry = input("\nContinue adjusting? (y/n): ").strip().lower()
+                if retry != 'y':
+                    return handicap_results, '', ''  # Return original unchanged
+                continue
+
+        elif choice == 'cancel':
+            confirm = input("\nAre you sure you want to abandon all changes? (y/n): ").strip().lower()
+            if confirm == 'y':
+                print("Changes abandoned. Returning to original handicaps.")
+                return handicap_results, '', ''
+            continue
+
+        else:
+            # Try to parse as competitor number
+            try:
+                comp_num = int(choice)
+                if comp_num < 1 or comp_num > len(adjusted_results):
+                    print(f"ERROR: Invalid number. Choose 1-{len(adjusted_results)}")
+                    continue
+
+                # Get the competitor
+                comp_idx = comp_num - 1
+                competitor = adjusted_results[comp_idx]
+
+                # Show current mark
+                print(f"\n{competitor['name']}")
+                print(f"  Current mark: {competitor['mark']} seconds")
+                print(f"  Predicted time: {competitor['predicted_time']:.1f}s")
+                print(f"  Confidence: {competitor['confidence']}")
+
+                # Get new mark
+                while True:
+                    new_mark_str = input(f"\nEnter new mark ({rules.MIN_MARK_SECONDS}-{rules.MAX_TIME_LIMIT_SECONDS}s, or 'cancel'): ").strip()
+
+                    if new_mark_str.lower() == 'cancel':
+                        print("Adjustment cancelled for this competitor.")
+                        break
+
+                    try:
+                        new_mark = int(new_mark_str)
+
+                        # Validate against AAA rules
+                        if new_mark < rules.MIN_MARK_SECONDS:
+                            print(f"ERROR: Mark must be at least {rules.MIN_MARK_SECONDS} seconds (AAA rule)")
+                            continue
+
+                        if new_mark > rules.MAX_TIME_LIMIT_SECONDS:
+                            print(f"ERROR: Mark cannot exceed {rules.MAX_TIME_LIMIT_SECONDS} seconds (AAA rule)")
+                            continue
+
+                        # Show change
+                        old_mark = competitor['mark']
+                        competitor['mark'] = new_mark
+                        competitor['manual_adjustment'] = True
+                        competitor['original_mark'] = old_mark
+
+                        print(f"\n✓ Updated {competitor['name']}: Mark {old_mark} → {new_mark}")
+                        break
+
+                    except ValueError:
+                        print("ERROR: Mark must be a whole number")
+                        continue
+
+            except ValueError:
+                print(f"ERROR: Invalid input. Enter number (1-{len(adjusted_results)}), 'done', or 'cancel'")
+                continue
+
+
+def _display_handicap_summary(handicap_results: List[Dict], wood_selection: Dict) -> None:
+    """
+    Display summary table of handicap marks (helper function).
+
+    Args:
+        handicap_results: List of handicap dicts
+        wood_selection: Wood characteristics for context
+    """
+    print("\n" + "="*70)
+    print("HANDICAP MARKS")
+    print("="*70)
+
+    print(f"\n{'#':<4} {'Competitor':<25} {'Mark':<6} {'Pred Time':<10} {'Confidence':<12} {'Status'}")
+    print("-"*70)
+
+    for idx, result in enumerate(handicap_results, 1):
+        status = "*ADJUSTED*" if result.get('manual_adjustment') else ""
+        print(f"{idx:<4} {result['name']:<25} {result['mark']:<6} {result['predicted_time']:<10.1f} {result['confidence']:<12} {status}")
+
+    print("\n" + "="*70)
+    print(f"Wood: {wood_selection.get('species', 'Unknown')}, "
+          f"{wood_selection.get('size_mm', '?')}mm, "
+          f"Quality {wood_selection.get('quality', '?')}")
+    print(f"Event: {wood_selection.get('event', '?')}")
+    print("="*70)

@@ -72,21 +72,37 @@ def get_all_predictions(
     if results_df is None:
         results_df = load_results_df()
 
-    # 1. Get baseline prediction (statistical baseline without quality adjustment)
-    historical_times, data_source = get_competitor_historical_times_flexible(
-        competitor_name, species, event_code, results_df
+    # 1. Get baseline prediction with TIME-DECAY WEIGHTING (critical for aging competitors)
+    # Get historical data WITH weights (based on age of result)
+    historical_data, data_source = get_competitor_historical_times_flexible(
+        competitor_name, species, event_code, results_df, return_weights=True
     )
 
-    if len(historical_times) >= 3:
-        weights = [1.5, 1.3, 1.1, 1.0, 0.9, 0.8]
-        weighted_times = [t * w for t, w in zip(historical_times[:6], weights[:len(historical_times)])]
-        baseline = sum(weighted_times) / sum(weights[:len(historical_times)])
+    if len(historical_data) >= 3:
+        # Calculate weighted average using time-decay weights
+        # Each item is (time, date, weight) where weight = 0.5^(days_old/730)
+        weighted_sum = sum(time * weight for time, date, weight in historical_data)
+        weight_sum = sum(weight for time, date, weight in historical_data)
+        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
+
         confidence = "HIGH"
-        explanation = f"Statistical baseline ({data_source})"
-    elif len(historical_times) > 0:
-        baseline = statistics.mean(historical_times)
+
+        # Calculate effective sample size (accounting for weights)
+        # Results from 10+ years ago contribute almost nothing
+        effective_n = weight_sum
+        avg_weight = weight_sum / len(historical_data)
+
+        explanation = f"Time-weighted baseline ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
+
+    elif len(historical_data) > 0:
+        # Limited history - still use weights but note low confidence
+        weighted_sum = sum(time * weight for time, date, weight in historical_data)
+        weight_sum = sum(weight for time, date, weight in historical_data)
+        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
+
         confidence = "MEDIUM"
-        explanation = f"Limited history ({data_source})"
+        avg_weight = weight_sum / len(historical_data)
+        explanation = f"Limited time-weighted history ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
     else:
         baseline, baseline_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
         if baseline:

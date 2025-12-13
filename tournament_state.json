@@ -94,25 +94,25 @@
       "round_name": "Heat 1",
       "competitors": [
         "Cody Labahn",
-        "Angus Nicholson",
+        "David Moses Jr.",
         "Ian Wilson",
-        "Erin LaVoie",
+        "Eric Hoberg",
         "Erin Cramsey"
       ],
       "competitors_df": [
         {
-          "competitor_id": "C003",
-          "competitor_name": "Angus Nicholson",
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
           "competitor_country": "USA",
-          "state_province": "OR",
+          "state_province": "MT",
           "gender": "M"
         },
         {
-          "competitor_id": "C004",
-          "competitor_name": "Erin LaVoie",
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
           "competitor_country": "USA",
           "state_province": "WA",
-          "gender": "F"
+          "gender": "M"
         },
         {
           "competitor_id": "C005",
@@ -139,143 +139,155 @@
       "handicap_results": [
         {
           "name": "Cody Labahn",
-          "predicted_time": "22.878942",
+          "predicted_time": "30.971071",
           "method_used": "ML",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 27.09090909090909,
-              "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "time": 32.4,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
               "error": null
             },
             "ml": {
-              "time": "22.878942",
+              "time": "30.971071",
               "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 27.1,
-              "confidence": "HIGH",
-              "explanation": "Predicted 27.1s (competitor history on various wood types, AI quality adjusted)",
+              "time": 30.5,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 30.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 166
+          "mark": 115,
+          "manual_adjustment": true,
+          "original_mark": 110,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
-          "name": "Angus Nicholson",
-          "predicted_time": "27.470661",
+          "name": "David Moses Jr.",
+          "predicted_time": "31.699785",
           "method_used": "ML",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 28.282051282051277,
+              "time": 25.111560516902863,
               "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.19)",
               "error": null
             },
             "ml": {
-              "time": "27.470661",
-              "confidence": "MEDIUM",
-              "explanation": "SB ML model (100 training records)",
+              "time": "31.699785",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 28.3,
+              "time": 23.5,
               "confidence": "HIGH",
-              "explanation": "Predicted 28.3s (competitor history on various wood types, AI quality adjusted)",
+              "explanation": "Predicted 23.5s (time-weighted history on various wood types (10 results, avg weight 0.19), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 161
+          "mark": 109,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
           "name": "Ian Wilson",
-          "predicted_time": "29.246712",
+          "predicted_time": "36.659847",
           "method_used": "ML",
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 29.974358974358974,
-              "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "time": 38.1,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
               "error": null
             },
             "ml": {
-              "time": "29.246712",
+              "time": "36.659847",
               "confidence": "MEDIUM",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 30.0,
-              "confidence": "HIGH",
-              "explanation": "Predicted 30.0s (competitor history on various wood types, AI quality adjusted)",
+              "time": 36.2,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 36.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 159
+          "mark": 104,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
-          "name": "Erin LaVoie",
-          "predicted_time": "62.73855",
+          "name": "Eric Hoberg",
+          "predicted_time": "41.293015",
           "method_used": "ML",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 40.060606060606055,
+              "time": 32.289614723139465,
               "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 0.69)",
               "error": null
             },
             "ml": {
-              "time": "62.73855",
+              "time": "41.293015",
               "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 40.1,
+              "time": 30.5,
               "confidence": "HIGH",
-              "explanation": "Predicted 40.1s (competitor history on various wood types, AI quality adjusted)",
+              "explanation": "Predicted 30.5s (time-weighted history on various wood types (6 results, avg weight 0.69), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 126
+          "mark": 100,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
           "name": "Erin Cramsey",
-          "predicted_time": "93.94981",
+          "predicted_time": "56.232388",
           "method_used": "ML",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 61.36206896551725,
-              "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "time": 63.1,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
               "error": null
             },
             "ml": {
-              "time": "93.94981",
+              "time": "56.232388",
               "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 61.4,
-              "confidence": "HIGH",
-              "explanation": "Predicted 61.4s (competitor history on various wood types, AI quality adjusted)",
+              "time": 59.2,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 59.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 95
+          "mark": 85,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         }
       ],
       "actual_results": {},
@@ -288,26 +300,26 @@
       "round_number": 2,
       "round_name": "Heat 2",
       "competitors": [
-        "David Moses Jr.",
         "Cole Schlenker",
+        "Angus Nicholson",
+        "Erin LaVoie",
         "Alex Kaper",
-        "Eric Hoberg",
         "Gillian Shannon"
       ],
       "competitors_df": [
         {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
           "competitor_country": "USA",
-          "state_province": "MT",
+          "state_province": "OR",
           "gender": "M"
         },
         {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
           "competitor_country": "USA",
           "state_province": "WA",
-          "gender": "M"
+          "gender": "F"
         },
         {
           "competitor_id": "C006",
@@ -333,144 +345,154 @@
       ],
       "handicap_results": [
         {
-          "name": "David Moses Jr.",
-          "predicted_time": "22.441956",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 24.909090909090907,
-              "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
-              "error": null
-            },
-            "ml": {
-              "time": "22.441956",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 24.9,
-              "confidence": "HIGH",
-              "explanation": "Predicted 24.9s (competitor history on various wood types, AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 166
-        },
-        {
           "name": "Cole Schlenker",
-          "predicted_time": "23.22637",
+          "predicted_time": "27.769526",
           "method_used": "ML",
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 27.307692307692307,
+              "time": 27.0,
               "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "explanation": "Time-weighted baseline (on various wood types, 3 results, avg weight 1.00)",
               "error": null
             },
             "ml": {
-              "time": "23.22637",
+              "time": "27.769526",
               "confidence": "MEDIUM",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 27.3,
+              "time": 25.3,
               "confidence": "HIGH",
-              "explanation": "Predicted 27.3s (competitor history on various wood types, AI quality adjusted)",
+              "explanation": "Predicted 25.3s (time-weighted history on various wood types (3 results, avg weight 1.00), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 165
+          "mark": 113,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": "32.02583",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 33.6,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
+              "error": null
+            },
+            "ml": {
+              "time": "32.02583",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 31.5,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 31.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 109,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
+        },
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": "37.982616",
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records)",
+          "predictions": {
+            "baseline": {
+              "time": 14.9,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
+              "error": null
+            },
+            "ml": {
+              "time": "37.982616",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records)",
+              "error": null
+            },
+            "llm": {
+              "time": 14.05,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 14.1s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+              "error": null
+            }
+          },
+          "mark": 103,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
           "name": "Alex Kaper",
-          "predicted_time": "36.122776",
+          "predicted_time": "39.742355",
           "method_used": "ML",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 32.293103448275865,
+              "time": 31.4,
               "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00)",
               "error": null
             },
             "ml": {
-              "time": "36.122776",
+              "time": "39.742355",
               "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 32.3,
+              "time": 29.6,
               "confidence": "HIGH",
-              "explanation": "Predicted 32.3s (competitor history on various wood types, AI quality adjusted)",
+              "explanation": "Predicted 29.6s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 152
-        },
-        {
-          "name": "Eric Hoberg",
-          "predicted_time": "41.16356",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 34.22727272727273,
-              "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
-              "error": null
-            },
-            "ml": {
-              "time": "41.16356",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 34.2,
-              "confidence": "HIGH",
-              "explanation": "Predicted 34.2s (competitor history on various wood types, AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 147
+          "mark": 101,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         },
         {
           "name": "Gillian Shannon",
-          "predicted_time": "185.08069",
+          "predicted_time": "137.57709",
           "method_used": "ML",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "predictions": {
             "baseline": {
-              "time": 120.18181818181817,
+              "time": 119.56540494963383,
               "confidence": "HIGH",
-              "explanation": "Statistical baseline (on various wood types)",
+              "explanation": "Time-weighted baseline (on various wood types, 16 results, avg weight 0.91)",
               "error": null
             },
             "ml": {
-              "time": "185.08069",
+              "time": "137.57709",
               "confidence": "HIGH",
-              "explanation": "SB ML model (100 training records)",
+              "explanation": "SB ML model (104 training records)",
               "error": null
             },
             "llm": {
-              "time": 120.2,
+              "time": 112.6,
               "confidence": "HIGH",
-              "explanation": "Predicted 120.2s (competitor history on various wood types, AI quality adjusted)",
+              "explanation": "Predicted 112.6s (time-weighted history on various wood types (16 results, avg weight 0.91), AI quality adjusted)",
               "error": null
             }
           },
-          "mark": 3
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2025-12-12T21:38:41"
         }
       ],
       "actual_results": {},
@@ -492,283 +514,305 @@
   "handicap_results_all": [
     {
       "name": "Gillian Shannon",
-      "predicted_time": "185.08069",
+      "predicted_time": "137.57709",
       "method_used": "ML",
       "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 120.18181818181817,
+          "time": 119.56540494963383,
           "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "explanation": "Time-weighted baseline (on various wood types, 16 results, avg weight 0.91)",
           "error": null
         },
         "ml": {
-          "time": "185.08069",
+          "time": "137.57709",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 120.2,
+          "time": 112.6,
           "confidence": "HIGH",
-          "explanation": "Predicted 120.2s (competitor history on various wood types, AI quality adjusted)",
+          "explanation": "Predicted 112.6s (time-weighted history on various wood types (16 results, avg weight 0.91), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 3
+      "mark": 3,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "Erin Cramsey",
-      "predicted_time": "93.94981",
+      "predicted_time": "56.232388",
       "method_used": "ML",
       "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 61.36206896551725,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "time": 63.1,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
           "error": null
         },
         "ml": {
-          "time": "93.94981",
+          "time": "56.232388",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 61.4,
-          "confidence": "HIGH",
-          "explanation": "Predicted 61.4s (competitor history on various wood types, AI quality adjusted)",
+          "time": 59.2,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 59.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 95
-    },
-    {
-      "name": "Erin LaVoie",
-      "predicted_time": "62.73855",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 40.060606060606055,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
-          "error": null
-        },
-        "ml": {
-          "time": "62.73855",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 40.1,
-          "confidence": "HIGH",
-          "explanation": "Predicted 40.1s (competitor history on various wood types, AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 126
+      "mark": 85,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "Eric Hoberg",
-      "predicted_time": "41.16356",
+      "predicted_time": "41.293015",
       "method_used": "ML",
       "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 34.22727272727273,
+          "time": 32.289614723139465,
           "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 0.69)",
           "error": null
         },
         "ml": {
-          "time": "41.16356",
+          "time": "41.293015",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 34.2,
+          "time": 30.5,
           "confidence": "HIGH",
-          "explanation": "Predicted 34.2s (competitor history on various wood types, AI quality adjusted)",
+          "explanation": "Predicted 30.5s (time-weighted history on various wood types (6 results, avg weight 0.69), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 147
+      "mark": 100,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "Alex Kaper",
-      "predicted_time": "36.122776",
+      "predicted_time": "39.742355",
       "method_used": "ML",
       "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 32.293103448275865,
+          "time": 31.4,
           "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00)",
           "error": null
         },
         "ml": {
-          "time": "36.122776",
+          "time": "39.742355",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 32.3,
+          "time": 29.6,
           "confidence": "HIGH",
-          "explanation": "Predicted 32.3s (competitor history on various wood types, AI quality adjusted)",
+          "explanation": "Predicted 29.6s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 152
+      "mark": 101,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
+    },
+    {
+      "name": "Erin LaVoie",
+      "predicted_time": "37.982616",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (104 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 14.9,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
+          "error": null
+        },
+        "ml": {
+          "time": "37.982616",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 14.05,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 14.1s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 103,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "Ian Wilson",
-      "predicted_time": "29.246712",
+      "predicted_time": "36.659847",
       "method_used": "ML",
       "confidence": "MEDIUM",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 29.974358974358974,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "time": 38.1,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
           "error": null
         },
         "ml": {
-          "time": "29.246712",
+          "time": "36.659847",
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 30.0,
-          "confidence": "HIGH",
-          "explanation": "Predicted 30.0s (competitor history on various wood types, AI quality adjusted)",
+          "time": 36.2,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 36.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 159
+      "mark": 104,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "Angus Nicholson",
-      "predicted_time": "27.470661",
+      "predicted_time": "32.02583",
       "method_used": "ML",
       "confidence": "MEDIUM",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 28.282051282051277,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
-          "error": null
-        },
-        "ml": {
-          "time": "27.470661",
+          "time": 33.6,
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 28.3,
-          "confidence": "HIGH",
-          "explanation": "Predicted 28.3s (competitor history on various wood types, AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 161
-    },
-    {
-      "name": "Cole Schlenker",
-      "predicted_time": "23.22637",
-      "method_used": "ML",
-      "confidence": "MEDIUM",
-      "explanation": "SB ML model (100 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 27.307692307692307,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
           "error": null
         },
         "ml": {
-          "time": "23.22637",
+          "time": "32.02583",
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 27.3,
-          "confidence": "HIGH",
-          "explanation": "Predicted 27.3s (competitor history on various wood types, AI quality adjusted)",
+          "time": 31.5,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 31.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 165
-    },
-    {
-      "name": "Cody Labahn",
-      "predicted_time": "22.878942",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 27.09090909090909,
-          "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
-          "error": null
-        },
-        "ml": {
-          "time": "22.878942",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 27.1,
-          "confidence": "HIGH",
-          "explanation": "Predicted 27.1s (competitor history on various wood types, AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 166
+      "mark": 109,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     },
     {
       "name": "David Moses Jr.",
-      "predicted_time": "22.441956",
+      "predicted_time": "31.699785",
       "method_used": "ML",
       "confidence": "HIGH",
-      "explanation": "SB ML model (100 training records)",
+      "explanation": "SB ML model (104 training records)",
       "predictions": {
         "baseline": {
-          "time": 24.909090909090907,
+          "time": 25.111560516902863,
           "confidence": "HIGH",
-          "explanation": "Statistical baseline (on various wood types)",
+          "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.19)",
           "error": null
         },
         "ml": {
-          "time": "22.441956",
+          "time": "31.699785",
           "confidence": "HIGH",
-          "explanation": "SB ML model (100 training records)",
+          "explanation": "SB ML model (104 training records)",
           "error": null
         },
         "llm": {
-          "time": 24.9,
+          "time": 23.5,
           "confidence": "HIGH",
-          "explanation": "Predicted 24.9s (competitor history on various wood types, AI quality adjusted)",
+          "explanation": "Predicted 23.5s (time-weighted history on various wood types (10 results, avg weight 0.19), AI quality adjusted)",
           "error": null
         }
       },
-      "mark": 166
+      "mark": 109,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
+    },
+    {
+      "name": "Cody Labahn",
+      "predicted_time": "30.971071",
+      "method_used": "ML",
+      "confidence": "HIGH",
+      "explanation": "SB ML model (104 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 32.4,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
+          "error": null
+        },
+        "ml": {
+          "time": "30.971071",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 30.5,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 30.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 115,
+      "manual_adjustment": true,
+      "original_mark": 110,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
+    },
+    {
+      "name": "Cole Schlenker",
+      "predicted_time": "27.769526",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (104 training records)",
+      "predictions": {
+        "baseline": {
+          "time": 27.0,
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 3 results, avg weight 1.00)",
+          "error": null
+        },
+        "ml": {
+          "time": "27.769526",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records)",
+          "error": null
+        },
+        "llm": {
+          "time": 25.3,
+          "confidence": "HIGH",
+          "explanation": "Predicted 25.3s (time-weighted history on various wood types (3 results, avg weight 1.00), AI quality adjusted)",
+          "error": null
+        }
+      },
+      "mark": 113,
+      "approved_by": "AK",
+      "approved_at": "2025-12-12T21:38:41"
     }
   ]
 }
