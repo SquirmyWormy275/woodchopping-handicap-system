@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional
 import textwrap
 import numpy as np
 
-from config import sim_config
+from config import sim_config, llm_config
 from woodchopping.predictions.llm import call_ollama
 from woodchopping.simulation.monte_carlo import run_monte_carlo_simulation
 from woodchopping.simulation.visualization import (
@@ -274,7 +274,7 @@ RESPONSE REQUIREMENTS:
 
 Your Expert Assessment:"""
 
-    response = call_ollama(prompt)
+    response = call_ollama(prompt, num_predict=llm_config.TOKENS_FAIRNESS_ASSESSMENT)
 
     if response:
         return response
@@ -316,6 +316,62 @@ RECOMMENDATIONS:
 - {"Handicaps are ready for competition use - no adjustments needed." if win_rate_spread < 6 else f"Review predictions for {most_favored} and {most_disadvantaged} - time estimates may need adjustment."}
 - {"Continue collecting historical data to improve future predictions." if win_rate_spread < 10 else "Consider adjusting quality/species factors in prediction model."}
 - {"Monitor real competition results to validate simulation predictions." if win_rate_spread < 16 else "Recalibrate baseline calculations before using these handicaps in competition."}"""
+
+
+def format_ai_assessment(assessment_text: str, width: int = 100) -> None:
+    """
+    Format and print AI assessment with intelligent text wrapping.
+
+    Preserves structure while wrapping long lines:
+    - Section headers (lines ending with colon or ALL CAPS) stay on single line
+    - Bullet points get hanging indent (initial=2 spaces, subsequent=4 spaces)
+    - Regular paragraphs wrap at word boundaries
+    - Blank lines between sections are maintained
+
+    Args:
+        assessment_text: Raw AI assessment text
+        width: Maximum line width for wrapping (default 100)
+
+    Example:
+        >>> format_ai_assessment(ai_response, width=100)
+    """
+    paragraphs = assessment_text.split('\n\n')
+
+    for paragraph in paragraphs:
+        if not paragraph.strip():
+            continue
+
+        lines = paragraph.split('\n')
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+
+            # Check if it's a section header (contains colon, typically uppercase)
+            if ':' in stripped and (
+                stripped.isupper() or
+                stripped.split(':')[0].isupper()
+            ):
+                # Don't wrap section headers - keep on single line
+                print(stripped)
+            # Check if it's a bullet point
+            elif stripped.startswith(('-', '*', '•', '▪', '◦')):
+                # Wrap bullet points with hanging indent
+                wrapped = textwrap.wrap(
+                    stripped,
+                    width=width,
+                    initial_indent='  ',
+                    subsequent_indent='    '
+                )
+                for wrapped_line in wrapped:
+                    print(wrapped_line)
+            else:
+                # Regular paragraph text - wrap with no special indent
+                wrapped = textwrap.wrap(stripped, width=width)
+                for wrapped_line in wrapped:
+                    print(wrapped_line)
+
+        print()  # Blank line between paragraphs/sections
 
 
 def simulate_and_assess_handicaps(
@@ -383,20 +439,8 @@ def simulate_and_assess_handicaps(
 
     ai_assessment = get_ai_assessment_of_handicaps(analysis)
 
-    # Preserve structure while wrapping long lines
-    # Split into paragraphs first, then wrap each paragraph independently
+    # Format and display with intelligent text wrapping
     print("")  # Add spacing
-    paragraphs = ai_assessment.split('\n\n')
-    for paragraph in paragraphs:
-        if paragraph.strip():
-            # Check if it's a section header (contains colon at start)
-            lines = paragraph.split('\n')
-            for line in lines:
-                if line.strip():
-                    # Wrap long lines to 100 characters for better readability
-                    wrapped_lines = textwrap.wrap(line, width=100, subsequent_indent='  ')
-                    for wrapped_line in wrapped_lines:
-                        print(wrapped_line)
-            print()  # Blank line between sections
+    format_ai_assessment(ai_assessment, width=100)
 
     print("="*70)

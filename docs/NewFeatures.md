@@ -47,3 +47,10 @@
     * menu option 2 will be batshit crazy. I need this to be a failsafe if a judge or competitor is questioning the integrity of the system or is more technically inclined to understand how this program works. For menu option 2, I want a no-bullshit explanation of EXACTLY how this program manually tabulates the handicaps, tabulates them via LLM, and tabulates them via ML. This needs to hit the PERFECT balance between accurate technical explanations and accessibility to someone who does not have time to read the entire project documentation. I know there is an IPO diagram and functions library in the documentation, but I just want a clear and concise explanation only of how the handicaps themselves are calculated. maybe include some awesome ASCII art featuring a wizard that says "Warning: Turbo Nerd Territory! Proceed with Caution!" or something like that. I am leaving it up to your artistic interpretation but make this menu option fun, lightherated, and feauture a badass wizard.
 
 * I want these explanations/submenus accessible in 2 separate points in the program. The most visible place should be a #15 option on the main menu. The second place as I have stated before is after the handicaps analysis has been presented (after all of the other options within Main Menu option 5 have been exhausted). I am giving you creative license to name the menus/submenus to best meet the needs of my intent (make it accessible to judges and competitors that have questions on the integrity of the system)
+
+
+
+
+## Time Decay (Asymptotic)
+
+* In addition to weighting times based on length of time from when 

@@ -25,7 +25,8 @@ def calculate_ai_enhanced_handicaps(
     quality: int,
     event_code: str,
     results_df: pd.DataFrame,
-    progress_callback: Optional[Callable[[int, int, str], None]] = None
+    progress_callback: Optional[Callable[[int, int, str], None]] = None,
+    tournament_results: Optional[Dict[str, float]] = None
 ) -> Optional[List[Dict[str, Any]]]:
     """
     Calculate handicaps using dual prediction system (Baseline + ML + LLM).
@@ -33,6 +34,10 @@ def calculate_ai_enhanced_handicaps(
     This function processes each competitor in the heat, generates predictions using
     multiple methods, selects the best prediction, and calculates handicap marks
     according to AAA competition rules.
+
+    TOURNAMENT RESULT WEIGHTING: When tournament_results is provided, same-tournament
+    times are weighted at 97% vs historical data (3%). This is critical for semis/finals
+    where competitors have already performed on the SAME WOOD being used in all rounds.
 
     Args:
         heat_assignment_df: DataFrame containing competitors in heat with 'competitor_name' column
@@ -43,6 +48,9 @@ def calculate_ai_enhanced_handicaps(
         results_df: Historical results DataFrame with competitor performance data
         progress_callback: Optional callback function(current, total, competitor_name)
                           for progress tracking during calculation
+        tournament_results: Optional dict of {competitor_name: actual_time} from completed
+                           rounds in THIS tournament. When provided, these times receive
+                           97% weight vs historical data (3%) for maximum accuracy.
 
     Returns:
         List of dictionaries containing handicap data for each competitor:
@@ -91,9 +99,10 @@ def calculate_ai_enhanced_handicaps(
         if progress_callback:
             progress_callback(idx, total_competitors, comp_name)
 
-        # Get ALL predictions (baseline, ML, LLM)
+        # Get ALL predictions (baseline, ML, LLM) with tournament result weighting
         all_preds = get_all_predictions(
-            comp_name, species, diameter, quality, event_code, results_df
+            comp_name, species, diameter, quality, event_code, results_df,
+            tournament_results=tournament_results
         )
 
         # Select best prediction for handicap marks

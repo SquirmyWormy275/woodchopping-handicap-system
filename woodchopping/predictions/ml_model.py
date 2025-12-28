@@ -389,28 +389,57 @@ def predict_time_ml(
             wood_janka = wood_row.iloc[0].get('janka_hard', 500)
             wood_spec_grav = wood_row.iloc[0].get('spec_gravity', 0.5)
 
-    # Calculate competitor average time for this event
+    # Calculate competitor average time for this event WITH TIME-DECAY WEIGHTING
+    # Critical for consistency: same exponential decay as baseline and LLM predictions
+    # Recent performances weighted higher than old peak performances (especially for aging competitors)
     comp_data = results_df[
         (results_df['competitor_name'] == competitor_name) &
         (results_df['event'] == event_code)
     ]
 
     if not comp_data.empty:
-        competitor_avg = comp_data['raw_time'].mean()
+        # Apply time-decay weighting: weight = 0.5^(days_old / 730)
+        # This ensures recent performances dominate the average
+        if 'date' in comp_data.columns:
+            weights = comp_data['date'].apply(
+                lambda d: calculate_performance_weight(d, half_life_days=730)
+            )
+            # Calculate weighted average
+            competitor_avg = (comp_data['raw_time'] * weights).sum() / weights.sum()
+        else:
+            # Fallback to simple mean if dates unavailable (backward compatibility)
+            competitor_avg = comp_data['raw_time'].mean()
+
         experience = len(comp_data)
         confidence = "HIGH" if len(comp_data) >= 5 else "MEDIUM"
     else:
         # Fallback: use all competitor data regardless of event
         comp_all_data = results_df[results_df['competitor_name'] == competitor_name]
         if not comp_all_data.empty:
-            competitor_avg = comp_all_data['raw_time'].mean()
+            # Apply time-decay weighting to cross-event data as well
+            if 'date' in comp_all_data.columns:
+                weights = comp_all_data['date'].apply(
+                    lambda d: calculate_performance_weight(d, half_life_days=730)
+                )
+                competitor_avg = (comp_all_data['raw_time'] * weights).sum() / weights.sum()
+            else:
+                competitor_avg = comp_all_data['raw_time'].mean()
+
             experience = len(comp_all_data)
             confidence = "MEDIUM"
         else:
-            # New competitor: use event average
+            # New competitor: use event average (time-decay weighted)
             event_data = results_df[results_df['event'] == event_code]
             if not event_data.empty:
-                competitor_avg = event_data['raw_time'].mean()
+                # Apply time-decay to event baseline as well for consistency
+                if 'date' in event_data.columns:
+                    weights = event_data['date'].apply(
+                        lambda d: calculate_performance_weight(d, half_life_days=730)
+                    )
+                    competitor_avg = (event_data['raw_time'] * weights).sum() / weights.sum()
+                else:
+                    competitor_avg = event_data['raw_time'].mean()
+
                 experience = 1
                 confidence = "LOW"
             else:
@@ -430,13 +459,32 @@ def predict_time_ml(
 
     # Make prediction using event-specific model
     try:
-        predicted_time = model.predict(features)[0]
+        base_prediction = model.predict(features)[0]
+
+        # Apply WOOD QUALITY ADJUSTMENT
+        # Quality scale: 0-10, where 5 is average
+        # Lower quality (0-4) = harder/firmer wood = slower times (positive adjustment)
+        # Higher quality (6-10) = softer/easier wood = faster times (negative adjustment)
+        # Adjustment: ±2% per quality point from average
+        quality = int(quality) if quality is not None else 5
+        quality_offset = quality - 5  # Range: -5 to +5
+        quality_factor = 1.0 + (-quality_offset * 0.02)  # -10% to +10%
+
+        predicted_time = base_prediction * quality_factor
 
         # Sanity check: ensure prediction is reasonable
         if predicted_time < 5 or predicted_time > 300:
             return None, None, f"ML prediction out of range ({predicted_time:.1f}s)"
 
+        # Build explanation with quality adjustment info
         explanation = f"{event_upper} ML model ({_model_training_data_size} training records)"
+
+        if quality != 5:
+            adjustment_pct = (quality_factor - 1.0) * 100
+            if quality < 5:
+                explanation += f", quality {quality}/10 (firmer, {adjustment_pct:+.0f}%)"
+            else:
+                explanation += f", quality {quality}/10 (softer, {adjustment_pct:+.0f}%)"
 
         return predicted_time, confidence, explanation
 

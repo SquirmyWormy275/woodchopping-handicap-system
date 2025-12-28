@@ -24,9 +24,6 @@ class Rules:
     MAX_TIME_LIMIT_SECONDS: int = 180
     """Maximum time limit for completion"""
 
-    MAX_VALIDATION_TIME: int = 300
-    """Maximum time for data validation (5 minutes)"""
-
     # Performance variance (critical for fairness)
     PERFORMANCE_VARIANCE_SECONDS: int = 3
     """Absolute performance variation (±3 seconds) for all competitors"""
@@ -51,23 +48,17 @@ class DataRequirements:
     """Minimum records per event (SB/UH) for event-specific models"""
 
     # Validation ranges
-    MIN_DIAMETER_MM: int = 150
+    MIN_DIAMETER_MM: int = 225
     """Minimum valid block diameter in millimeters"""
 
     MAX_DIAMETER_MM: int = 500
     """Maximum valid block diameter in millimeters"""
 
-    MIN_VALID_TIME_SECONDS: float = 0.0
-    """Minimum valid time (exclusive)"""
+    MIN_VALID_TIME_SECONDS: float = 10.0
+    """Minimum valid time (exclusive) - elite choppers can achieve sub-15s times"""
 
     MAX_VALID_TIME_SECONDS: float = 300.0
     """Maximum valid time (inclusive)"""
-
-    MIN_QUALITY_RATING: int = 0
-    """Minimum wood quality rating"""
-
-    MAX_QUALITY_RATING: int = 10
-    """Maximum wood quality rating"""
 
     # Outlier detection
     OUTLIER_IQR_MULTIPLIER: float = 3.0
@@ -77,7 +68,7 @@ class DataRequirements:
     HIGH_CONFIDENCE_MIN_EVENTS: int = 5
     """Minimum events for HIGH confidence predictions"""
 
-    MEDIUM_CONFIDENCE_MIN_EVENTS: int = 1
+    MEDIUM_CONFIDENCE_MIN_EVENTS: int = 3
     """Minimum events for MEDIUM confidence predictions"""
 
 
@@ -136,12 +127,13 @@ class MLConfig:
     EVENT_ENCODING_UH: int = 1
     """Underhand event encoding"""
 
-    # Default wood properties (fallback values)
-    DEFAULT_JANKA_HARDNESS: float = 500.0
-    """Default Janka hardness if species not found"""
+    # Default wood properties (fallback values when species lookup fails)
+    # Based on Eastern White Pine (S01) - common baseline species
+    DEFAULT_JANKA_HARDNESS: float = 1690.0
+    """Default Janka hardness if species not found (Eastern White Pine)"""
 
-    DEFAULT_SPECIFIC_GRAVITY: float = 0.5
-    """Default specific gravity if species not found"""
+    DEFAULT_SPECIFIC_GRAVITY: float = 0.34
+    """Default specific gravity if species not found (Eastern White Pine)"""
 
 
 # =============================================================================
@@ -152,8 +144,8 @@ class MLConfig:
 class SimulationConfig:
     """Monte Carlo simulation parameters"""
 
-    NUM_SIMULATIONS: int = 1_000_000
-    """Number of race simulations to run"""
+    NUM_SIMULATIONS: int = 2_000_000
+    """Number of race simulations to run for maximum statistical precision"""
 
     # Fairness assessment thresholds
     FAIRNESS_THRESHOLD_EXCELLENT: float = 0.02
@@ -181,17 +173,30 @@ class SimulationConfig:
 class LLMConfig:
     """Ollama LLM settings for AI-enhanced predictions"""
 
-    DEFAULT_MODEL: str = "qwen2.5:7b"
-    """Default Ollama model (optimized for mathematical reasoning)"""
+    DEFAULT_MODEL: str = "qwen2.5:32b"
+    """Default Ollama model (32B parameters for maximum mathematical precision)"""
 
     OLLAMA_URL: str = "http://localhost:11434/api/generate"
     """Ollama API endpoint"""
 
-    TIMEOUT_SECONDS: int = 30
-    """Request timeout in seconds"""
+    TIMEOUT_SECONDS: int = 120
+    """Request timeout in seconds (increased for comprehensive analyses)"""
 
     MAX_RETRIES: int = 2
     """Maximum retry attempts for failed requests"""
+
+    # Token limits for different use cases
+    TOKENS_TIME_PREDICTION: int = 50
+    """Token limit for single-number time predictions (fast responses)"""
+
+    TOKENS_ANALYSIS_SHORT: int = 200
+    """Token limit for short comparative analysis (3-4 sentences)"""
+
+    TOKENS_FAIRNESS_ASSESSMENT: int = 5000
+    """Token limit for comprehensive fairness assessment (detailed multi-paragraph analysis)"""
+
+    TOKENS_PREDICTION_ANALYSIS: int = 1000
+    """Token limit for comprehensive prediction method analysis (15-20 sentence multi-section analysis)"""
 
 
 # =============================================================================

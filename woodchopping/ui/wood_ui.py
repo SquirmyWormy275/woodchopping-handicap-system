@@ -26,7 +26,16 @@ def wood_menu(wood_selection: Dict) -> Dict:
 
     while True:
         print("\n--- Wood Menu ---")
-        print(f"Current: species={wood_selection.get('species')}, "
+
+        # Display species name instead of code
+        species_code = wood_selection.get('species')
+        if species_code:
+            from woodchopping.data import get_species_name_from_code
+            species_display = get_species_name_from_code(species_code)
+        else:
+            species_display = None
+
+        print(f"Current: species={species_display}, "
               f"size_mm={wood_selection.get('size_mm')}, "
               f"quality={wood_selection.get('quality')}")
         print("1) Select wood species")
@@ -67,22 +76,25 @@ def select_wood_species(wood_selection: Dict) -> Dict:
         print("No wood data available.")
         return wood_selection
 
-    if "species" not in wood_df.columns:
-        print("Wood sheet missing 'species' column.")
+    # Ensure both species name and code columns exist
+    if "species" not in wood_df.columns or "speciesID" not in wood_df.columns:
+        print("Wood sheet missing required columns (species or speciesID).")
         return wood_selection
 
-    species_list = wood_df["species"].astype(str).tolist()
-
+    # Display species with both name and code for clarity
     print("\nAvailable wood species:")
-    for i, sp in enumerate(species_list, start=1):
-        print(f"{i}) {sp}")
+    for i, row in wood_df.iterrows():
+        species_name = row["species"]
+        species_code = row["speciesID"]
+        print(f"{i+1}) {species_code} - {species_name}")
 
     choice = input("Select species by number: ").strip()
 
     try:
         idx = int(choice) - 1
-        if 0 <= idx < len(species_list):
-            wood_selection["species"] = species_list[idx]
+        if 0 <= idx < len(wood_df):
+            # CRITICAL: Store species CODE (S01, S02, etc.), NOT name
+            wood_selection["species"] = wood_df.iloc[idx]["speciesID"]
             format_wood(wood_selection)
         else:
             print("Invalid selection.")
@@ -155,10 +167,18 @@ def format_wood(ws: Dict) -> str:
     Returns:
         str: Formatted header string
     """
-    s = ws.get("species", "—")
+    species_code = ws.get("species", "—")
     d = ws.get("size_mm", "—")
     q = ws.get("quality", "—")
-    header = f"Selected Wood -> Species: {s}, Diameter: {d} mm, Quality: {q}"
+
+    # Get species name from code for display
+    if species_code != "—":
+        from woodchopping.data import get_species_name_from_code
+        species_display = get_species_name_from_code(species_code)
+    else:
+        species_display = "—"
+
+    header = f"Selected Wood -> Species: {species_display}, Diameter: {d} mm, Quality: {q}"
     print(f"Wood selection updated: {header}")
     return header
 

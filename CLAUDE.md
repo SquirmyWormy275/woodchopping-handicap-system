@@ -23,6 +23,47 @@ python MainProgram.py
 - Ollama running locally with qwen2.5:7b model
 - `woodchopping.xlsx` in the same directory as scripts
 
+## ⚠️ CRITICAL DEVELOPMENT RULE - DOCUMENTATION SYNC
+
+**STANDING ORDER (MANDATORY):**
+
+Whenever you make ANY change to the program code, you MUST update the relevant documentation:
+
+### 1. For ALL Code Changes:
+- Update technical documentation in `docs/` if functionality changes
+- Update `README.md` if user-facing features change
+- Update `SYSTEM_STATUS.md` if system capabilities change
+
+### 2. For Prediction Model Changes (ESPECIALLY IMPORTANT):
+- **ALWAYS update `explanation_system_functions.py`** (STRATHEX guide)
+- Update sections explaining how predictions work
+- Add examples showing the new behavior
+- Document the improvement in the "System Improvements" section
+- Ensure judges understand WHY and HOW changes affect handicaps
+
+### 3. Examples of Changes That Require Documentation:
+- ✓ Time-decay weighting formulas
+- ✓ Diameter scaling logic
+- ✓ Wood quality adjustments
+- ✓ Prediction selection priority
+- ✓ Feature engineering changes
+- ✓ New prediction methods
+- ✓ Algorithm parameter changes
+- ✓ ANY change that affects handicap calculations
+
+### 4. Documentation Files to Check:
+- `explanation_system_functions.py` - Educational wizard (judges read this!)
+- `docs/SYSTEM_STATUS.md` - Current capabilities
+- `docs/ML_AUDIT_REPORT.md` - ML model documentation
+- `README.md` - User-facing guide
+
+### 5. Why This Matters:
+**Trust = Understanding**
+
+Judges must understand how the system works to trust its handicaps. Outdated documentation destroys trust. If the code changes but documentation doesn't, judges will notice discrepancies and lose confidence in the system.
+
+**This is NOT optional. Documentation updates are part of the code change, not a separate task.**
+
 ## Architecture
 
 ### Core Components
@@ -60,6 +101,20 @@ python MainProgram.py
 - Proven fairer than proportional variance (31% vs 6.7% win rate spread in testing)
 - Implemented in `simulate_single_race()`
 
+**Tournament Result Weighting (Same-Wood Optimization)**
+- **CRITICAL V4.3.1 FEATURE**: When generating semis/finals, handicaps are AUTOMATICALLY RECALCULATED using heat/semi results
+- Tournament results from completed rounds weighted at 97% vs historical data (3%)
+- Rationale: Same wood across all rounds = most accurate predictor possible
+- Formula: `prediction = (tournament_time × 0.97) + (historical_baseline × 0.03)`
+- Automatic activation in `generate_next_round()`:
+  1. Extracts actual times from completed rounds via `extract_tournament_results()`
+  2. Passes tournament times to `calculate_ai_enhanced_handicaps()` via `tournament_results` parameter
+  3. `get_all_predictions()` applies 97% weighting to same-tournament times
+  4. Confidence upgraded to "VERY HIGH" when tournament data used
+- Example: Heat result 27.1s (TODAY, same wood) beats historical 24.5s (YEARS ago, different wood)
+- Eliminates previous issue where semis/finals ignored fresh performance data from earlier rounds
+- See `explanation_system_functions.py` Improvement #4 for judge-facing documentation
+
 **Tournament State Management**
 ```python
 tournament_state = {
@@ -70,7 +125,11 @@ tournament_state = {
     'all_competitors_df': DataFrame,
     'rounds': list,                         # List of round objects (heats/semis/finals)
     'capacity_info': dict,                  # From calculate_tournament_scenarios()
-    'handicap_results_all': list            # [{name, mark, predicted_time, ...}, ...]
+    'handicap_results_all': list,           # [{name, mark, predicted_time, ...}, ...]
+    'wood_species': str,                    # Wood characteristics for recalculation
+    'wood_diameter': float,
+    'wood_quality': int,
+    'event_code': str
 }
 ```
 

@@ -9,6 +9,7 @@ This module handles multi-round tournament operations including:
 """
 
 import json
+import copy
 from math import ceil
 from typing import Dict, List, Optional
 import pandas as pd
@@ -345,8 +346,41 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
     return advancers
 
 
+def extract_tournament_results(tournament_state: Dict) -> Dict[str, float]:
+    """Extract actual cutting times from completed tournament rounds.
+
+    This function collects all recorded times from heats/semis that have been completed.
+    These times represent performance on the SAME wood being used throughout the tournament,
+    making them the most accurate predictor for subsequent rounds.
+
+    Args:
+        tournament_state: Global tournament state containing all rounds
+
+    Returns:
+        dict: {competitor_name: actual_cutting_time, ...}
+              Only includes competitors who have completed times recorded
+    """
+    tournament_results = {}
+
+    for round_obj in tournament_state.get('rounds', []):
+        # Only use completed rounds
+        if round_obj.get('status') == 'completed':
+            # Extract actual results (cutting times)
+            for competitor_name, cutting_time in round_obj.get('actual_results', {}).items():
+                # Use the most recent time if competitor appeared in multiple rounds
+                # (e.g., if semis already completed and generating finals)
+                tournament_results[competitor_name] = cutting_time
+
+    return tournament_results
+
+
 def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_round_type: str) -> List[Dict]:
     """Generate semi-final or final rounds from advancing competitors.
+
+    CRITICAL ENHANCEMENT: This function now RECALCULATES handicaps using actual times
+    from completed rounds in THIS TOURNAMENT. Since the wood is identical across all rounds,
+    these same-tournament results are weighted at 97% vs historical data (3%), providing
+    the most accurate handicaps possible.
 
     Args:
         tournament_state: Global tournament state
@@ -354,17 +388,65 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
         next_round_type: 'semi' or 'final'
 
     Returns:
-        list: List of round_object dictionaries for next stage
+        list: List of round_object dictionaries for next stage with RECALCULATED handicaps
     """
 
-    # Extract handicap results for advancers only
-    all_results = []
-    for round_obj in tournament_state['rounds']:
-        if 'handicap_results' in round_obj and round_obj['handicap_results']:
-            all_results.extend(round_obj['handicap_results'])
+    # Extract actual cutting times from completed rounds (NEW - critical improvement)
+    tournament_results = extract_tournament_results(tournament_state)
 
-    # Filter to just advancers
-    advancer_results = [r for r in all_results if r['name'] in all_advancers]
+    print(f"\n{'='*70}")
+    print(f"  RECALCULATING HANDICAPS USING TOURNAMENT RESULTS")
+    print(f"{'='*70}")
+    print(f"\nUsing actual times from completed rounds (97% weight):")
+    for name, time in tournament_results.items():
+        if name in all_advancers:
+            print(f"  • {name}: {time:.2f}s")
+
+    # Import handicap calculation function
+    from woodchopping.handicaps import calculate_ai_enhanced_handicaps
+    from woodchopping.data import load_results_df
+
+    # Get DataFrame for advancers only
+    all_advancers_df = tournament_state['all_competitors_df'][
+        tournament_state['all_competitors_df']['competitor_name'].isin(all_advancers)
+    ].copy()
+
+    # RECALCULATE handicaps with tournament results prioritized
+    # Check if wood characteristics are stored (v4.3.1+)
+    wood_species = tournament_state.get('wood_species')
+    wood_diameter = tournament_state.get('wood_diameter')
+    wood_quality = tournament_state.get('wood_quality')
+    event_code = tournament_state.get('event_code')
+
+    if not all([wood_species, wood_diameter, event_code is not None, wood_quality is not None]):
+        print("\n⚠ WARNING: Wood characteristics not found in tournament state.")
+        print("Cannot recalculate handicaps using tournament results.")
+        print("Using original handicaps from initial calculation.")
+
+        # Fallback: extract handicap results from previous rounds
+        all_results = []
+        for round_obj in tournament_state['rounds']:
+            if 'handicap_results' in round_obj and round_obj['handicap_results']:
+                all_results.extend(round_obj['handicap_results'])
+
+        advancer_results = [r for r in all_results if r['name'] in all_advancers]
+    else:
+        # Normal path: recalculate with tournament weighting
+        results_df = load_results_df()
+
+        # Calculate new handicaps with tournament result weighting
+        advancer_results = calculate_ai_enhanced_handicaps(
+            all_advancers_df,
+            wood_species,
+            wood_diameter,
+            wood_quality,
+            event_code,
+            results_df,
+            tournament_results=tournament_results  # NEW parameter for same-tournament weighting
+        )
+
+    print(f"\n✓ Handicaps recalculated using tournament performance data")
+    print(f"{'='*70}\n")
 
     # Determine number of heats for next round
     num_stands = tournament_state['num_stands']
@@ -378,15 +460,10 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     else:
         num_heats = ceil(len(all_advancers) / num_stands)
 
-    # Get DataFrame for advancers only
-    all_advancers_df = tournament_state['all_competitors_df'][
-        tournament_state['all_competitors_df']['competitor_name'].isin(all_advancers)
-    ].copy()
-
-    # Use same distribution algorithm (snake draft)
+    # Use same distribution algorithm (snake draft) with RECALCULATED handicaps
     next_rounds = distribute_competitors_into_heats(
         all_advancers_df,
-        advancer_results,
+        advancer_results,  # Now contains recalculated handicaps using tournament data
         num_stands,
         num_heats
     )
@@ -474,7 +551,7 @@ def save_tournament_state(tournament_state: Dict, filename: str = "tournament_st
     """
     try:
         # Convert DataFrames to dict format for JSON serialization
-        state_copy = tournament_state.copy()
+        state_copy = copy.deepcopy(tournament_state)
 
         # Convert main competitors DataFrame
         if not state_copy['all_competitors_df'].empty:

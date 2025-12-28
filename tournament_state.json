@@ -1,5 +1,5 @@
 {
-  "event_name": "SB Test 1",
+  "event_name": "SB Test DEC28",
   "num_stands": 5,
   "tentative_competitors": 10,
   "format": "heats_to_finals",
@@ -93,9 +93,9 @@
       "round_number": 1,
       "round_name": "Heat 1",
       "competitors": [
-        "Cody Labahn",
-        "David Moses Jr.",
-        "Ian Wilson",
+        "Erin LaVoie",
+        "Alex Kaper",
+        "Cole Schlenker",
         "Eric Hoberg",
         "Erin Cramsey"
       ],
@@ -108,213 +108,6 @@
           "gender": "M"
         },
         {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C005",
-          "competitor_name": "Erin Cramsey",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C007",
-          "competitor_name": "Cody Labahn",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C010",
-          "competitor_name": "Ian Wilson",
-          "competitor_country": "USA",
-          "state_province": "CA",
-          "gender": "M"
-        }
-      ],
-      "handicap_results": [
-        {
-          "name": "Cody Labahn",
-          "predicted_time": "30.971071",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 32.4,
-              "confidence": "MEDIUM",
-              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-              "error": null
-            },
-            "ml": {
-              "time": "30.971071",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 30.5,
-              "confidence": "MEDIUM",
-              "explanation": "Predicted 30.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 115,
-          "manual_adjustment": true,
-          "original_mark": 110,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
-          "name": "David Moses Jr.",
-          "predicted_time": "31.699785",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 25.111560516902863,
-              "confidence": "HIGH",
-              "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.19)",
-              "error": null
-            },
-            "ml": {
-              "time": "31.699785",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 23.5,
-              "confidence": "HIGH",
-              "explanation": "Predicted 23.5s (time-weighted history on various wood types (10 results, avg weight 0.19), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 109,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
-          "name": "Ian Wilson",
-          "predicted_time": "36.659847",
-          "method_used": "ML",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 38.1,
-              "confidence": "MEDIUM",
-              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-              "error": null
-            },
-            "ml": {
-              "time": "36.659847",
-              "confidence": "MEDIUM",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 36.2,
-              "confidence": "MEDIUM",
-              "explanation": "Predicted 36.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 104,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
-          "name": "Eric Hoberg",
-          "predicted_time": "41.293015",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 32.289614723139465,
-              "confidence": "HIGH",
-              "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 0.69)",
-              "error": null
-            },
-            "ml": {
-              "time": "41.293015",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 30.5,
-              "confidence": "HIGH",
-              "explanation": "Predicted 30.5s (time-weighted history on various wood types (6 results, avg weight 0.69), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 100,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
-          "name": "Erin Cramsey",
-          "predicted_time": "56.232388",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 63.1,
-              "confidence": "MEDIUM",
-              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-              "error": null
-            },
-            "ml": {
-              "time": "56.232388",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 59.2,
-              "confidence": "MEDIUM",
-              "explanation": "Predicted 59.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 85,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        }
-      ],
-      "actual_results": {},
-      "advancers": [],
-      "num_to_advance": 2,
-      "status": "pending"
-    },
-    {
-      "round_type": "heat",
-      "round_number": 2,
-      "round_name": "Heat 2",
-      "competitors": [
-        "Cole Schlenker",
-        "Angus Nicholson",
-        "Erin LaVoie",
-        "Alex Kaper",
-        "Gillian Shannon"
-      ],
-      "competitors_df": [
-        {
-          "competitor_id": "C003",
-          "competitor_name": "Angus Nicholson",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
           "competitor_id": "C004",
           "competitor_name": "Erin LaVoie",
           "competitor_country": "USA",
@@ -322,10 +115,10 @@
           "gender": "F"
         },
         {
-          "competitor_id": "C006",
-          "competitor_name": "Gillian Shannon",
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
           "competitor_country": "USA",
-          "state_province": "MT",
+          "state_province": "OR",
           "gender": "F"
         },
         {
@@ -345,154 +138,684 @@
       ],
       "handicap_results": [
         {
-          "name": "Cole Schlenker",
-          "predicted_time": "27.769526",
-          "method_used": "ML",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 27.0,
-              "confidence": "HIGH",
-              "explanation": "Time-weighted baseline (on various wood types, 3 results, avg weight 1.00)",
-              "error": null
-            },
-            "ml": {
-              "time": "27.769526",
-              "confidence": "MEDIUM",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 25.3,
-              "confidence": "HIGH",
-              "explanation": "Predicted 25.3s (time-weighted history on various wood types (3 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 113,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
-          "name": "Angus Nicholson",
-          "predicted_time": "32.02583",
-          "method_used": "ML",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "predictions": {
-            "baseline": {
-              "time": 33.6,
-              "confidence": "MEDIUM",
-              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-              "error": null
-            },
-            "ml": {
-              "time": "32.02583",
-              "confidence": "MEDIUM",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
-            },
-            "llm": {
-              "time": 31.5,
-              "confidence": "MEDIUM",
-              "explanation": "Predicted 31.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
-            }
-          },
-          "mark": 109,
-          "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
-        },
-        {
           "name": "Erin LaVoie",
-          "predicted_time": "37.982616",
-          "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
+          "predicted_time": 16.345840644657073,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
           "predictions": {
             "baseline": {
-              "time": 14.9,
+              "time": 16.345840644657073,
               "confidence": "MEDIUM",
-              "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-              "error": null
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
             },
             "ml": {
-              "time": "37.982616",
+              "time": "29.155582",
               "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
             },
             "llm": {
-              "time": 14.05,
+              "time": 13.955,
               "confidence": "MEDIUM",
-              "explanation": "Predicted 14.1s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
+              "explanation": "Predicted 14.0s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
             }
           },
-          "mark": 103,
+          "mark": 129,
           "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
+          "approved_at": "2025-12-28T03:17:27"
         },
         {
           "name": "Alex Kaper",
-          "predicted_time": "39.742355",
-          "method_used": "ML",
+          "predicted_time": 26.686824270903703,
+          "method_used": "Baseline (scaled)",
           "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
+          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
           "predictions": {
             "baseline": {
-              "time": 31.4,
+              "time": 26.686824270903703,
               "confidence": "HIGH",
-              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00)",
-              "error": null
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
             },
             "ml": {
-              "time": "39.742355",
+              "time": "26.944973",
               "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
             },
             "llm": {
-              "time": 29.6,
+              "time": 29.5,
               "confidence": "HIGH",
-              "explanation": "Predicted 29.6s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted)",
-              "error": null
+              "explanation": "Predicted 29.5s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
             }
           },
-          "mark": 101,
+          "mark": 119,
           "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Cole Schlenker",
+          "predicted_time": 26.346864726051425,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 26.346864726051425,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+            },
+            "ml": {
+              "time": "20.662966",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 29.1,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 29.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            }
+          },
+          "mark": 119,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Eric Hoberg",
+          "predicted_time": 30.596359036704882,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 30.596359036704882,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+            },
+            "ml": {
+              "time": "27.361914",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 34.08,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 34.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            }
+          },
+          "mark": 115,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": 69.22298957569538,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 69.22298957569538,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
+            },
+            "ml": {
+              "time": "62.17724",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 59.2,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 59.2s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            }
+          },
+          "mark": 76,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        }
+      ],
+      "actual_results": {
+        "Erin LaVoie": 45.65,
+        "Alex Kaper": 56.78,
+        "Cole Schlenker": 50.5,
+        "Eric Hoberg": 48.8,
+        "Erin Cramsey": 76.8
+      },
+      "advancers": [
+        "Erin Cramsey",
+        "Erin LaVoie"
+      ],
+      "num_to_advance": 2,
+      "status": "completed",
+      "finish_order": {
+        "Erin LaVoie": 2,
+        "Alex Kaper": 3,
+        "Cole Schlenker": 4,
+        "Eric Hoberg": 5,
+        "Erin Cramsey": 1
+      }
+    },
+    {
+      "round_type": "heat",
+      "round_number": 2,
+      "round_name": "Heat 2",
+      "competitors": [
+        "Angus Nicholson",
+        "David Moses Jr.",
+        "Cody Labahn",
+        "Ian Wilson",
+        "Gillian Shannon"
+      ],
+      "competitors_df": [
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C006",
+          "competitor_name": "Gillian Shannon",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "handicap_results": [
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": "19.829819",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+          "predictions": {
+            "baseline": {
+              "time": 34.385045353435835,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 2 results, avg weight 0.99) [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "ml": {
+              "time": "19.829819",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "llm": {
+              "time": 34.1,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 34.1s (limited time-weighted history on S05 (exact match) (2 results, avg weight 0.99), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            }
+          },
+          "mark": 126,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": 21.342286709641733,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 21.342286709641733,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+            },
+            "ml": {
+              "time": "25.395638",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 23.65,
+              "confidence": "HIGH",
+              "explanation": "Predicted 23.6s (time-weighted history on various wood types (10 results, avg weight 0.18), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            }
+          },
+          "mark": 124,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Cody Labahn",
+          "predicted_time": 27.536723133034393,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 27.536723133034393,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+            },
+            "ml": {
+              "time": "21.793404",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 30.5,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 30.5s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            }
+          },
+          "mark": 118,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Ian Wilson",
+          "predicted_time": "27.15508",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+          "predictions": {
+            "baseline": {
+              "time": 36.576,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "ml": {
+              "time": "27.15508",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "llm": {
+              "time": 36.1,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 36.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            }
+          },
+          "mark": 118,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
         },
         {
           "name": "Gillian Shannon",
-          "predicted_time": "137.57709",
+          "predicted_time": "141.97198",
           "method_used": "ML",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
           "predictions": {
             "baseline": {
-              "time": 119.56540494963383,
-              "confidence": "HIGH",
-              "explanation": "Time-weighted baseline (on various wood types, 16 results, avg weight 0.91)",
-              "error": null
+              "time": 274.62193962520297,
+              "confidence": "LOW",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.95) [Scaled from 225mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Scaled from 225mm to 275mm (larger, 50mm difference)"
             },
             "ml": {
-              "time": "137.57709",
-              "confidence": "HIGH",
-              "explanation": "SB ML model (104 training records)",
-              "error": null
+              "time": "141.97198",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm"
             },
             "llm": {
-              "time": 112.6,
-              "confidence": "HIGH",
-              "explanation": "Predicted 112.6s (time-weighted history on various wood types (16 results, avg weight 0.91), AI quality adjusted)",
-              "error": null
+              "time": 203.5,
+              "confidence": "LOW",
+              "explanation": "Predicted 203.5s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.95), AI quality adjusted) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm"
             }
           },
           "mark": 3,
           "approved_by": "AK",
-          "approved_at": "2025-12-12T21:38:41"
+          "approved_at": "2025-12-28T03:17:27"
+        }
+      ],
+      "actual_results": {
+        "Angus Nicholson": 56.7,
+        "David Moses Jr.": 55.6,
+        "Cody Labahn": 67.8,
+        "Ian Wilson": 61.4,
+        "Gillian Shannon": 116.7
+      },
+      "advancers": [
+        "Angus Nicholson",
+        "David Moses Jr."
+      ],
+      "num_to_advance": 2,
+      "status": "completed",
+      "finish_order": {
+        "Angus Nicholson": 1,
+        "David Moses Jr.": 2,
+        "Cody Labahn": 5,
+        "Ian Wilson": 4,
+        "Gillian Shannon": 3
+      }
+    },
+    {
+      "round_type": "final",
+      "round_number": 1,
+      "round_name": "Final",
+      "competitors": [
+        "Erin LaVoie",
+        "Angus Nicholson",
+        "David Moses Jr.",
+        "Erin Cramsey"
+      ],
+      "competitors_df": [
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        }
+      ],
+      "handicap_results": [
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": 16.345840644657073,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 16.345840644657073,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
+            },
+            "ml": {
+              "time": "29.155582",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 13.955,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 14.0s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            }
+          },
+          "mark": 129,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": "19.829819",
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+          "predictions": {
+            "baseline": {
+              "time": 34.385045353435835,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 2 results, avg weight 0.99) [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "ml": {
+              "time": "19.829819",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            },
+            "llm": {
+              "time": 34.1,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 34.1s (limited time-weighted history on S05 (exact match) (2 results, avg weight 0.99), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null
+            }
+          },
+          "mark": 126,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": 21.342286709641733,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 21.342286709641733,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+            },
+            "ml": {
+              "time": "25.395638",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 23.65,
+              "confidence": "HIGH",
+              "explanation": "Predicted 23.6s (time-weighted history on various wood types (10 results, avg weight 0.18), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+            }
+          },
+          "mark": 124,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
+        },
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": 69.22298957569538,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 69.22298957569538,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
+            },
+            "ml": {
+              "time": "62.17724",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            },
+            "llm": {
+              "time": 59.2,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 59.2s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+            }
+          },
+          "mark": 76,
+          "approved_by": "AK",
+          "approved_at": "2025-12-28T03:17:27"
         }
       ],
       "actual_results": {},
@@ -514,305 +837,393 @@
   "handicap_results_all": [
     {
       "name": "Gillian Shannon",
-      "predicted_time": "137.57709",
+      "predicted_time": "141.97198",
       "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
       "predictions": {
         "baseline": {
-          "time": 119.56540494963383,
-          "confidence": "HIGH",
-          "explanation": "Time-weighted baseline (on various wood types, 16 results, avg weight 0.91)",
-          "error": null
+          "time": 274.62193962520297,
+          "confidence": "LOW",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.95) [Scaled from 225mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 225.0,
+          "scaling_warning": "Scaled from 225mm to 275mm (larger, 50mm difference)"
         },
         "ml": {
-          "time": "137.57709",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
+          "time": "141.97198",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 225.0,
+          "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm"
         },
         "llm": {
-          "time": 112.6,
-          "confidence": "HIGH",
-          "explanation": "Predicted 112.6s (time-weighted history on various wood types (16 results, avg weight 0.91), AI quality adjusted)",
-          "error": null
+          "time": 203.5,
+          "confidence": "LOW",
+          "explanation": "Predicted 203.5s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.95), AI quality adjusted) [Hist data from 225mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 225.0,
+          "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm"
         }
       },
       "mark": 3,
       "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
+      "approved_at": "2025-12-28T03:17:27"
     },
     {
       "name": "Erin Cramsey",
-      "predicted_time": "56.232388",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
+      "predicted_time": 69.22298957569538,
+      "method_used": "Baseline (scaled)",
+      "confidence": "MEDIUM",
+      "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
       "predictions": {
         "baseline": {
-          "time": 63.1,
+          "time": 69.22298957569538,
           "confidence": "MEDIUM",
-          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-          "error": null
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
         },
         "ml": {
-          "time": "56.232388",
+          "time": "62.17724",
           "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
         },
         "llm": {
           "time": 59.2,
           "confidence": "MEDIUM",
-          "explanation": "Predicted 59.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
+          "explanation": "Predicted 59.2s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
         }
       },
-      "mark": 85,
+      "mark": 76,
       "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
+      "approved_at": "2025-12-28T03:17:27"
     },
     {
       "name": "Eric Hoberg",
-      "predicted_time": "41.293015",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 32.289614723139465,
-          "confidence": "HIGH",
-          "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 0.69)",
-          "error": null
-        },
-        "ml": {
-          "time": "41.293015",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 30.5,
-          "confidence": "HIGH",
-          "explanation": "Predicted 30.5s (time-weighted history on various wood types (6 results, avg weight 0.69), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 100,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "Alex Kaper",
-      "predicted_time": "39.742355",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 31.4,
-          "confidence": "HIGH",
-          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00)",
-          "error": null
-        },
-        "ml": {
-          "time": "39.742355",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 29.6,
-          "confidence": "HIGH",
-          "explanation": "Predicted 29.6s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 101,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "Erin LaVoie",
-      "predicted_time": "37.982616",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 14.9,
-          "confidence": "MEDIUM",
-          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-          "error": null
-        },
-        "ml": {
-          "time": "37.982616",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 14.05,
-          "confidence": "MEDIUM",
-          "explanation": "Predicted 14.1s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 103,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "Ian Wilson",
-      "predicted_time": "36.659847",
-      "method_used": "ML",
+      "predicted_time": 30.596359036704882,
+      "method_used": "Baseline (scaled)",
       "confidence": "MEDIUM",
-      "explanation": "SB ML model (104 training records)",
+      "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
       "predictions": {
         "baseline": {
-          "time": 38.1,
+          "time": 30.596359036704882,
           "confidence": "MEDIUM",
-          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-          "error": null
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
         },
         "ml": {
-          "time": "36.659847",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
+          "time": "27.361914",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
         },
         "llm": {
-          "time": 36.2,
+          "time": 34.08,
           "confidence": "MEDIUM",
-          "explanation": "Predicted 36.2s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 104,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "Angus Nicholson",
-      "predicted_time": "32.02583",
-      "method_used": "ML",
-      "confidence": "MEDIUM",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 33.6,
-          "confidence": "MEDIUM",
-          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-          "error": null
-        },
-        "ml": {
-          "time": "32.02583",
-          "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 31.5,
-          "confidence": "MEDIUM",
-          "explanation": "Predicted 31.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 109,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "David Moses Jr.",
-      "predicted_time": "31.699785",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 25.111560516902863,
-          "confidence": "HIGH",
-          "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.19)",
-          "error": null
-        },
-        "ml": {
-          "time": "31.699785",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 23.5,
-          "confidence": "HIGH",
-          "explanation": "Predicted 23.5s (time-weighted history on various wood types (10 results, avg weight 0.19), AI quality adjusted)",
-          "error": null
-        }
-      },
-      "mark": 109,
-      "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
-    },
-    {
-      "name": "Cody Labahn",
-      "predicted_time": "30.971071",
-      "method_used": "ML",
-      "confidence": "HIGH",
-      "explanation": "SB ML model (104 training records)",
-      "predictions": {
-        "baseline": {
-          "time": 32.4,
-          "confidence": "MEDIUM",
-          "explanation": "Limited time-weighted history (on Ponderosa Pine (exact match), 1 results, avg weight 1.00)",
-          "error": null
-        },
-        "ml": {
-          "time": "30.971071",
-          "confidence": "HIGH",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
-        },
-        "llm": {
-          "time": 30.5,
-          "confidence": "MEDIUM",
-          "explanation": "Predicted 30.5s (limited time-weighted history on Ponderosa Pine (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
+          "explanation": "Predicted 34.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
         }
       },
       "mark": 115,
-      "manual_adjustment": true,
-      "original_mark": 110,
       "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "Cody Labahn",
+      "predicted_time": 27.536723133034393,
+      "method_used": "Baseline (scaled)",
+      "confidence": "MEDIUM",
+      "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+      "predictions": {
+        "baseline": {
+          "time": 27.536723133034393,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+        },
+        "ml": {
+          "time": "21.793404",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        },
+        "llm": {
+          "time": 30.5,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 30.5s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        }
+      },
+      "mark": 118,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "Ian Wilson",
+      "predicted_time": "27.15508",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+      "predictions": {
+        "baseline": {
+          "time": 36.576,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        },
+        "ml": {
+          "time": "27.15508",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        },
+        "llm": {
+          "time": 36.1,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 36.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted)",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        }
+      },
+      "mark": 118,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "Alex Kaper",
+      "predicted_time": 26.686824270903703,
+      "method_used": "Baseline (scaled)",
+      "confidence": "HIGH",
+      "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+      "predictions": {
+        "baseline": {
+          "time": 26.686824270903703,
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+        },
+        "ml": {
+          "time": "26.944973",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        },
+        "llm": {
+          "time": 29.5,
+          "confidence": "HIGH",
+          "explanation": "Predicted 29.5s (time-weighted history on various wood types (5 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        }
+      },
+      "mark": 119,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
     },
     {
       "name": "Cole Schlenker",
-      "predicted_time": "27.769526",
-      "method_used": "ML",
+      "predicted_time": 26.346864726051425,
+      "method_used": "Baseline (scaled)",
       "confidence": "MEDIUM",
-      "explanation": "SB ML model (104 training records)",
+      "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
       "predictions": {
         "baseline": {
-          "time": 27.0,
-          "confidence": "HIGH",
-          "explanation": "Time-weighted baseline (on various wood types, 3 results, avg weight 1.00)",
-          "error": null
+          "time": 26.346864726051425,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 1.00) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
         },
         "ml": {
-          "time": "27.769526",
+          "time": "20.662966",
           "confidence": "MEDIUM",
-          "explanation": "SB ML model (104 training records)",
-          "error": null
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
         },
         "llm": {
-          "time": 25.3,
-          "confidence": "HIGH",
-          "explanation": "Predicted 25.3s (time-weighted history on various wood types (3 results, avg weight 1.00), AI quality adjusted)",
-          "error": null
+          "time": 29.1,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 29.1s (limited time-weighted history on S05 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
         }
       },
-      "mark": 113,
+      "mark": 119,
       "approved_by": "AK",
-      "approved_at": "2025-12-12T21:38:41"
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "David Moses Jr.",
+      "predicted_time": 21.342286709641733,
+      "method_used": "Baseline (scaled)",
+      "confidence": "HIGH",
+      "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+      "predictions": {
+        "baseline": {
+          "time": 21.342286709641733,
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 10 results, avg weight 0.18) [Scaled from 300mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Scaled from 300mm to 275mm (smaller, 25mm difference)"
+        },
+        "ml": {
+          "time": "25.395638",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        },
+        "llm": {
+          "time": 23.65,
+          "confidence": "HIGH",
+          "explanation": "Predicted 23.6s (time-weighted history on various wood types (10 results, avg weight 0.18), AI quality adjusted) [Hist data from 300mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 300.0,
+          "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm"
+        }
+      },
+      "mark": 124,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "Angus Nicholson",
+      "predicted_time": "19.829819",
+      "method_used": "ML",
+      "confidence": "MEDIUM",
+      "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+      "predictions": {
+        "baseline": {
+          "time": 34.385045353435835,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 2 results, avg weight 0.99) [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        },
+        "ml": {
+          "time": "19.829819",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%)",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        },
+        "llm": {
+          "time": 34.1,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 34.1s (limited time-weighted history on S05 (exact match) (2 results, avg weight 0.99), AI quality adjusted)",
+          "error": null,
+          "scaled": false,
+          "original_diameter": null,
+          "scaling_warning": null
+        }
+      },
+      "mark": 126,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
+    },
+    {
+      "name": "Erin LaVoie",
+      "predicted_time": 16.345840644657073,
+      "method_used": "Baseline (scaled)",
+      "confidence": "MEDIUM",
+      "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+      "predictions": {
+        "baseline": {
+          "time": 16.345840644657073,
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S05 (exact match), 1 results, avg weight 0.98) [Scaled from 250mm] [Quality 7/10: softer, -4%]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Scaled from 250mm to 275mm (larger, 25mm difference)"
+        },
+        "ml": {
+          "time": "29.155582",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (104 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+        },
+        "llm": {
+          "time": 13.955,
+          "confidence": "MEDIUM",
+          "explanation": "Predicted 14.0s (limited time-weighted history on S05 (exact match) (1 results, avg weight 0.98), AI quality adjusted) [Hist data from 250mm]",
+          "error": null,
+          "scaled": true,
+          "original_diameter": 250.0,
+          "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm"
+        }
+      },
+      "mark": 129,
+      "approved_by": "AK",
+      "approved_at": "2025-12-28T03:17:27"
     }
   ]
 }

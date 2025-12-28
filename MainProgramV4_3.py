@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-STRATHEX - Woodchopping Handicap Calculator v4.2
+STRATHEX - Woodchopping Handicap Calculator v4.3
 Professional Competition System
 """
 
@@ -25,8 +25,41 @@ if sys.platform == 'win32':
     except:
         pass  # If it fails, we'll fallback to ASCII banner
 
-#Import Functions from project_functions.py
-import FunctionsLibrary as pf
+# Import functions from modular woodchopping package
+from woodchopping.data import (
+    load_competitors_df,
+    load_results_df,
+    append_results_to_excel,
+)
+from woodchopping.ui import (
+    wood_menu,
+    select_event_code,
+    select_all_event_competitors,
+    personnel_management_menu,
+)
+from woodchopping.ui.handicap_ui import (
+    judge_approval,
+    manual_adjust_handicaps,
+)
+from woodchopping.predictions.prediction_aggregator import (
+    display_basic_prediction_table,
+    display_comprehensive_prediction_analysis,
+    display_handicap_calculation_explanation,
+)
+from woodchopping.ui.tournament_ui import (
+    calculate_tournament_scenarios,
+    distribute_competitors_into_heats,
+    select_heat_advancers,
+    generate_next_round,
+    view_tournament_status,
+    save_tournament_state,
+    load_tournament_state,
+    auto_save_state,
+)
+from woodchopping.handicaps import calculate_ai_enhanced_handicaps
+from woodchopping.simulation import simulate_and_assess_handicaps
+
+# Keep explanation system (educational tool)
 import explanation_system_functions as explain
 
 # STRATHEX Banner
@@ -41,7 +74,7 @@ try:
 ║   ██████╔╝   ██║   ██║  ██║██║  ██║   ██║   ██║  ██║███████╗██╔╝╚██╗ ║
 ║   ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
 ║                                                                      ║
-║              WOODCHOPPING HANDICAP CALCULATOR v4.2                   ║
+║              WOODCHOPPING HANDICAP CALCULATOR v4.3                   ║
 ║                    Professional Competition System                   ║
 ║                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
@@ -62,7 +95,7 @@ time.sleep(0.8)
 Sheet "competitors" contains competitor data
 Sheet "wood" contains wood species data'''
 try:
-    comp_df = pf.load_competitors_df()
+    comp_df = load_competitors_df()
 except Exception as e:
     print(f"Error loading roster from Excel: {e}")
     comp_df = pd.DataFrame(columns=["competitor_name", "competitor_country"])
@@ -169,7 +202,7 @@ while True:
 
     if menu_choice == '1':
         # Configure wood characteristics (same as before)
-        wood_selection = pf.wood_menu(wood_selection)
+        wood_selection = wood_menu(wood_selection)
 
     elif menu_choice == '2':
         # Configure Tournament: stands + format
@@ -183,10 +216,10 @@ while True:
 
             # Get event code first
             if not wood_selection.get('event'):
-                wood_selection = pf.select_event_code(wood_selection)
+                wood_selection = select_event_code(wood_selection)
 
             # Calculate scenarios
-            scenarios = pf.calculate_tournament_scenarios(num_stands, tentative)
+            scenarios = calculate_tournament_scenarios(num_stands, tentative)
 
             # Display all three scenarios
             print("\n" + "=" * 70)
@@ -248,7 +281,7 @@ while True:
         max_comp = tournament_state['capacity_info'].get('max_competitors')
         print(f"\nMaximum competitors for this format: {max_comp}")
 
-        selected_df = pf.select_all_event_competitors(comp_df, max_comp)
+        selected_df = select_all_event_competitors(comp_df, max_comp)
 
         if not selected_df.empty:
             tournament_state['all_competitors_df'] = selected_df
@@ -347,8 +380,8 @@ while True:
             sys.stdout.flush()
 
         # Use existing calculate_ai_enhanced_handicaps function with progress
-        results_df = pf.load_results_df()
-        handicap_results = pf.calculate_ai_enhanced_handicaps(
+        results_df = load_results_df()
+        handicap_results = calculate_ai_enhanced_handicaps(
             tournament_state['all_competitors_df'],
             wood_selection['species'],
             wood_selection['size_mm'],
@@ -372,6 +405,12 @@ while True:
 
         tournament_state['handicap_results_all'] = handicap_results
 
+        # Store wood characteristics in tournament state for recalculation in later rounds
+        tournament_state['wood_species'] = wood_selection['species']
+        tournament_state['wood_diameter'] = wood_selection['size_mm']
+        tournament_state['wood_quality'] = wood_selection['quality']
+        tournament_state['event_code'] = wood_selection['event']
+
         # Success message with axe icon
         print("\n" + "=" * 70)
         print("    ⚒  HANDICAP CALCULATION COMPLETE! ⚒")
@@ -379,19 +418,41 @@ while True:
         print("=" * 70)
 
     elif menu_choice == '5':
-        # View handicaps + fairness analysis with DUAL PREDICTION DISPLAY
+        # View handicaps + comprehensive analysis (NEW 5-PHASE FLOW)
         if not tournament_state.get('handicap_results_all'):
             print("\nERROR: Calculate handicaps first (Option 4)")
             input("\nPress Enter to return to menu...")
             continue
 
-        # Display handicaps with all prediction methods (Baseline + ML + LLM)
-        pf.display_dual_predictions(
+        # PHASE 1: Display initial handicap marks with basic prediction table
+        display_basic_prediction_table(
             tournament_state['handicap_results_all'],
             wood_selection
         )
 
-        # HANDICAP APPROVAL WORKFLOW
+        # PHASE 2: Monte Carlo fairness simulation
+        run_mc = input("\nRun Monte Carlo fairness simulation? (y/n): ").strip().lower()
+        if run_mc == 'y':
+            simulate_and_assess_handicaps(tournament_state['handicap_results_all'])
+
+        # PHASE 3: Comprehensive AI Analysis of Predictions
+        show_analysis = input("\nView detailed AI analysis of prediction methods? (y/n): ").strip().lower()
+        if show_analysis == 'y':
+            try:
+                display_comprehensive_prediction_analysis(
+                    tournament_state['handicap_results_all'],
+                    wood_selection
+                )
+            except Exception as e:
+                print(f"\n⚠ Error during AI analysis: {e}")
+                print("Continuing without AI analysis...")
+
+        # PHASE 4: Optional explanation of handicap calculations
+        show_calc = input("\nView explanation of how handicaps are calculated? (y/n): ").strip().lower()
+        if show_calc == 'y':
+            display_handicap_calculation_explanation()
+
+        # PHASE 5: Judge approval workflow
         print("\n" + "="*70)
         print("  HANDICAP APPROVAL")
         print("="*70)
@@ -402,7 +463,7 @@ while True:
 
         if approval_choice == '2':
             # Manual adjustment workflow
-            adjusted_results, initials, timestamp = pf.manual_adjust_handicaps(
+            adjusted_results, initials, timestamp = manual_adjust_handicaps(
                 tournament_state['handicap_results_all'],
                 wood_selection
             )
@@ -420,7 +481,7 @@ while True:
 
         elif approval_choice == '1':
             # Accept as calculated - still requires approval
-            initials, timestamp = pf.judge_approval()
+            initials, timestamp = judge_approval()
 
             if initials:  # Accepted and approved
                 for result in tournament_state['handicap_results_all']:
@@ -432,17 +493,24 @@ while True:
         else:
             print("\n⚠ Invalid choice - handicaps NOT approved")
 
-        # Offer Monte Carlo simulation
-        run_mc = input("\nRun Monte Carlo fairness simulation? (y/n): ").strip().lower()
-        if run_mc == 'y':
-            pf.simulate_and_assess_handicaps(tournament_state['handicap_results_all'])
-
     elif menu_choice == '6':
         # Generate initial heats
         if not tournament_state.get('handicap_results_all'):
             print("\nERROR: Calculate handicaps first (Option 4)")
             input("\nPress Enter to return to menu...")
             continue
+
+        # Check if heats already exist
+        if tournament_state.get('rounds'):
+            print("\n" + "=" * 70)
+            print("  ⚠ WARNING: HEATS ALREADY EXIST")
+            print("=" * 70)
+            print(f"\nExisting heats: {len(tournament_state['rounds'])} heat(s)")
+            regenerate = input("\nRegenerate heats? This will OVERWRITE existing assignments (y/n): ").strip().lower()
+            if regenerate != 'y':
+                print("\n✓ Heat generation cancelled")
+                input("\nPress Enter to return to menu...")
+                continue
 
         num_competitors = len(tournament_state['all_competitors'])
         num_stands = tournament_state['num_stands']
@@ -480,7 +548,7 @@ while True:
             num_heats = ceil(num_competitors / num_stands)
             print(f"\nGenerating {num_heats} heats with balanced skill distribution...")
 
-            heats = pf.distribute_competitors_into_heats(
+            heats = distribute_competitors_into_heats(
                 tournament_state['all_competitors_df'],
                 tournament_state['handicap_results_all'],
                 num_stands,
@@ -502,8 +570,9 @@ while True:
             print(f"{'='*70}")
 
         # Auto-save
-        pf.auto_save_state(tournament_state)
+        auto_save_state(tournament_state)
         print("\n✓ Tournament state auto-saved")
+        input("\nPress Enter to return to menu...")
 
     elif menu_choice == '7':
         # Record heat results + select advancers
@@ -539,7 +608,7 @@ while True:
             print(f"\n{'='*70}")
             print(f"  RECORDING RESULTS FOR {selected_heat['round_name']}")
             print(f"{'='*70}")
-            pf.append_results_to_excel(
+            append_results_to_excel(
                 heat_assignment_df,  # Legacy param (not used)
                 wood_selection,
                 round_object=selected_heat,
@@ -555,12 +624,12 @@ while True:
                 print("✓ Results saved to historical data for future handicap calculations")
             else:
                 # Multi-round tournament - select advancers
-                advancers = pf.select_heat_advancers(selected_heat)
+                advancers = select_heat_advancers(selected_heat)
                 print(f"\n✓ {selected_heat['round_name']} completed")
                 print(f"✓ Advancers: {', '.join(advancers)}")
 
             # Auto-save
-            pf.auto_save_state(tournament_state)
+            auto_save_state(tournament_state)
 
         except (ValueError, IndexError):
             print("Invalid selection.")
@@ -612,7 +681,7 @@ while True:
         print(f"\nGenerating {next_type} round...")
 
         # Generate next round
-        next_rounds = pf.generate_next_round(tournament_state, all_advancers, next_type)
+        next_rounds = generate_next_round(tournament_state, all_advancers, next_type)
 
         # Append to tournament state
         tournament_state['rounds'].extend(next_rounds)
@@ -626,23 +695,23 @@ while True:
                 print(f"  - {name}")
 
         # Auto-save
-        pf.auto_save_state(tournament_state)
+        auto_save_state(tournament_state)
 
     elif menu_choice == '9':
         # View tournament status
-        pf.view_tournament_status(tournament_state)
+        view_tournament_status(tournament_state)
 
     elif menu_choice == '10':
         # Personnel management menu
-        comp_df = pf.personnel_management_menu(comp_df)
+        comp_df = personnel_management_menu(comp_df)
 
     elif menu_choice == '11':
         # Save tournament state
-        pf.save_tournament_state(tournament_state, "tournament_state.json")
+        save_tournament_state(tournament_state, "tournament_state.json")
 
     elif menu_choice == '12':
         # Load previous tournament
-        loaded_state = pf.load_tournament_state("tournament_state.json")
+        loaded_state = load_tournament_state("tournament_state.json")
         if loaded_state:
             tournament_state.update(loaded_state)
             print("✓ Tournament state loaded successfully")
@@ -650,7 +719,7 @@ while True:
     elif menu_choice == '13':
         # Reload roster from Excel
         try:
-            comp_df = pf.load_competitors_df()
+            comp_df = load_competitors_df()
             print("✓ Roster reloaded from Excel")
         except Exception as e:
             print(f"Failed to reload roster: {e}")
@@ -663,7 +732,7 @@ while True:
         # Exit
         save_prompt = input("\nSave tournament state before exiting? (y/n): ").strip().lower()
         if save_prompt == 'y':
-            pf.auto_save_state(tournament_state)
+            auto_save_state(tournament_state)
         print("\nGoodbye!")
         break
 

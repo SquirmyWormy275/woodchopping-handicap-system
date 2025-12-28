@@ -19,7 +19,7 @@ from woodchopping.data import (
 )
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 from woodchopping.simulation import simulate_and_assess_handicaps
-from config import paths, rules
+from config import paths, rules, sim_config
 
 
 # File/sheet names from config
@@ -182,11 +182,11 @@ def view_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> No
 
     # Offer Monte Carlo simulation
     print("\nWould you like to run a Monte Carlo simulation to validate these handicaps?")
-    print("This will simulate 250,000 races to assess fairness.")
+    print(f"This will simulate {sim_config.NUM_SIMULATIONS:,} races to assess fairness.")
     choice = input("Run simulation? (y/n): ").strip().lower()
 
     if choice == 'y':
-        simulate_and_assess_handicaps(results, num_simulations=250000)
+        simulate_and_assess_handicaps(results, num_simulations=sim_config.NUM_SIMULATIONS)
 
 
 def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
@@ -549,7 +549,13 @@ def _display_handicap_summary(handicap_results: List[Dict], wood_selection: Dict
         print(f"{idx:<4} {result['name']:<25} {result['mark']:<6} {result['predicted_time']:<10.1f} {result['confidence']:<12} {status}")
 
     print("\n" + "="*70)
-    print(f"Wood: {wood_selection.get('species', 'Unknown')}, "
+
+    # Get species name from code
+    from woodchopping.data import get_species_name_from_code
+    species_code = wood_selection.get('species', 'Unknown')
+    species_name = get_species_name_from_code(species_code)
+
+    print(f"Wood: {species_name}, "
           f"{wood_selection.get('size_mm', '?')}mm, "
           f"Quality {wood_selection.get('quality', '?')}")
     print(f"Event: {wood_selection.get('event', '?')}")

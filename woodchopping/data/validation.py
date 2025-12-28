@@ -127,3 +127,33 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
         )
 
     return df, warnings
+
+
+def validate_heat_data(heat_assignment_df, wood_selection):
+    """
+    Validate that heat assignment and wood selection are ready for handicap calculation.
+
+    Args:
+        heat_assignment_df: DataFrame of competitors in the heat
+        wood_selection: Dictionary with wood characteristics
+
+    Returns:
+        bool: True if valid, False if missing required data
+
+    Example:
+        >>> if validate_heat_data(heat_df, wood_dict):
+        ...     calculate_handicaps(...)
+    """
+    if heat_assignment_df is None or heat_assignment_df.empty:
+        print("\nNo competitors in heat assignment. Use Competitor Menu -> Select Competitors for Heat.")
+        return False
+
+    if not wood_selection.get("species") or not wood_selection.get("size_mm"):
+        print("\nWood selection incomplete. Use Wood Menu to set species and size.")
+        return False
+
+    if not wood_selection.get("event"):
+        print("\nEvent not selected. Use Wood Menu -> Select event (SB/UH) or Main Menu option 3.")
+        return False
+
+    return True
