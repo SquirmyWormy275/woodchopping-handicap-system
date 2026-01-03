@@ -1,7 +1,7 @@
 # Woodchopping Handicap System - Complete Status Report
 
-**Date**: December 28, 2025
-**Version**: 4.3.1
+**Date**: January 2, 2026
+**Version**: 4.5
 **Status**: PRODUCTION READY
 
 ---
@@ -20,6 +20,7 @@ All major prediction methods are now fully functional, consistent, and validated
 [PASSED] Tournament Result Weighting (Same-Wood Optimization)
 [PASSED] Handicap Calculation
 [PASSED] Fairness Validation
+[PASSED] Multi-Event Tournament Management
 ```
 
 ---
@@ -31,7 +32,7 @@ All major prediction methods are now fully functional, consistent, and validated
 #### A. Baseline Predictions - [COMPLETE]
 - **Method**: Statistical time-weighted average
 - **Time-Decay**: Exponential (2-year half-life) ✓
-- **Diameter Scaling**: Physics-based (exponent 1.4) ✓
+- **Diameter Scaling**: QAA empirical tables (150+ years validated) ✓
 - **Wood Quality**: ±2% per quality point ✓
 - **Confidence Levels**: HIGH/MEDIUM/LOW based on data quantity
 - **Fallback Logic**: Competitor+Event → Competitor → Event Baseline
@@ -121,24 +122,29 @@ All major prediction methods are now fully functional, consistent, and validated
 
 ### 5. Diameter Scaling - [COMPLETE]
 
-**Formula**: `time_scaled = time_original × (diameter_target / diameter_original)^1.4`
+**Method**: QAA Empirical Lookup Tables (Queensland Axemen's Association)
 
 **Implementation**:
-- Baseline predictions: Direct scaling applied ✓
+- Baseline predictions: QAA table lookup applied ✓
 - ML predictions: Flagged when historical diameter ≠ target ✓
 - Selection logic: Prefers baseline when scaling applied ✓
+- Wood type classification: Hardwood/Medium/Softwood automatic ✓
+
+**Covered Diameters**: 225mm, 250mm, 275mm, 300mm, 325mm, 350mm
+**Standard Diameter**: 300mm (12" blocks)
 
 **Metadata Tracking**:
 - `scaled`: Boolean flag
 - `original_diameter`: Source diameter
-- `scaling_warning`: Human-readable message
-- Confidence adjustment: HIGH → MEDIUM when scaled
+- `scaling_warning`: Human-readable message with wood type
+- Confidence adjustment: HIGH → MEDIUM when scaled >25mm
 
 **Validation**:
-- Physics-based exponent (1.4) empirically reasonable
-- Can be calibrated using `calibrate_scaling_exponent()` function
+- 150+ years of Australian woodchopping data
+- More reliable than any formula-based approach
+- Separate tables for different wood types
 
-**Status**: Fully implemented and working
+**Status**: Fully implemented with QAA tables (Dec 29, 2025)
 
 ### 6. Time-Decay Weighting - [FULLY CONSISTENT]
 
@@ -268,9 +274,39 @@ Diameter scaling applied: 1/4 competitors
 
 ---
 
-## Recent Improvements (Version 4.3.1)
+## Recent Improvements
 
-### 1. Tournament Result Weighting (Dec 28, 2025)
+### Version 4.5 (January 2, 2026)
+
+#### Multi-Event Tournament Management System
+- **Feature**: Complete multi-event tournament workflow for designing entire tournament days
+- **Capability**: Judges can create tournaments with multiple independent events (e.g., "225mm SB", "300mm UH", "275mm SB")
+- **Implementation**: New Option 16 in main menu launches dedicated multi-event tournament interface
+- **Key Features**:
+  - Independent event configuration (wood, stands, competitors per event)
+  - Batch schedule generation (all heats for all events at once)
+  - Sequential results entry workflow (auto-advances to next incomplete round)
+  - Final tournament summary with top 3 placings per event
+  - Event-aware HeatID format for Excel results storage
+  - Auto-save functionality at major operation points
+- **Architecture**: Each event is a complete `tournament_state` wrapped in a list
+- **Tournament Weighting**: 97% same-event data applies within each event only (not cross-event)
+- **Files**: New module [woodchopping/ui/multi_event_ui.py](../woodchopping/ui/multi_event_ui.py) (~1075 lines)
+- **Status**: Ready for production use
+
+### Version 4.4
+
+#### 1. QAA Empirical Diameter Scaling (Dec 29, 2025)
+- **Issue**: Power-law formula (exponent 1.4) was mathematically reasonable but unvalidated
+- **Impact**: Cross-diameter predictions relied on fitted formula rather than empirical data
+- **Fix**: Replaced formula with QAA empirical lookup tables (150+ years Australian data)
+- **Source**: Queensland Axemen's Association official handicapping manual
+- **Tables**: Separate scaling for Hardwood, Medium wood, and Softwood
+- **Result**: More reliable scaling based on actual competition results, not theoretical physics
+- **Activation**: Automatic in baseline predictions when historical diameter ≠ target
+- **See**: [qaa_scaling.py](qaa_scaling.py) and QAA.pdf in `.claude/` directory
+
+### 2. Tournament Result Weighting (Dec 28, 2025)
 - **Issue**: Semis/finals used historical data, ignoring recent heat/semi results on SAME wood
 - **Impact**: Less accurate handicaps for later tournament rounds
 - **Fix**: Automatic 97% weighting for same-tournament results when generating next round
@@ -280,31 +316,24 @@ Diameter scaling applied: 1/4 competitors
 - **Confidence**: Upgraded to VERY HIGH when tournament data used
 - **See**: Updated explanation_system_functions.py (Improvement #4)
 
-### 2. Time-Decay Consistency (Dec 24, 2025)
+### 3. Time-Decay Consistency (Dec 24, 2025)
 - **Issue**: ML feature used simple mean, not time-weighted
 - **Impact**: Aging competitors' old peaks dominated predictions
 - **Fix**: Applied exponential time-decay to all ML feature calculations
 - **Result**: 3-5 second improvement for aging competitors with long historical spans
 - **See**: TIME_DECAY_CONSISTENCY_UPDATE.md
 
-### 2. Wood Quality Integration (Dec 24, 2025)
+### 4. Wood Quality Integration (Dec 24, 2025)
 - **Issue**: Quality parameter only used by LLM
 - **Impact**: ML and baseline ignored wood condition
 - **Fix**: Added ±2% per quality point adjustment to all methods
 - **Range**: Quality 0 (+10%) to Quality 10 (-10%)
 - **Result**: All methods now account for wood softness/hardness
 
-### 3. Diameter Scaling (Dec 23, 2025)
-- **Issue**: Cross-diameter predictions wildly inaccurate
-- **Impact**: 325mm data used for 275mm predictions without adjustment
-- **Fix**: Implemented physics-based scaling (exponent 1.4)
-- **Result**: 9-second improvement for Moses (33.8s → 24.5s)
-- **See**: SCALING_IMPROVEMENTS.md
-
-### 4. Prediction Selection Optimization (Dec 23, 2025)
+### 5. Prediction Selection Optimization (Dec 23, 2025)
 - **Issue**: ML extrapolation preferred over baseline scaling
 - **Impact**: Less accurate cross-diameter predictions
-- **Fix**: Prioritize baseline when diameter scaling applied
+- **Fix**: Prioritize baseline when diameter scaling applied with QAA tables
 - **Result**: More reliable handicaps when historical diameter ≠ target
 
 ---

@@ -54,6 +54,28 @@ from woodchopping.ui.handicap_ui import (
     append_results_to_excel
 )
 
+# Multi-Event Tournament UI
+from woodchopping.ui.multi_event_ui import (
+    create_multi_event_tournament,
+    save_multi_event_tournament,
+    load_multi_event_tournament,
+    auto_save_multi_event,
+    add_event_to_tournament,
+    view_wood_count,
+    view_tournament_schedule,
+    remove_event_from_tournament,
+    calculate_all_event_handicaps,
+    view_analyze_all_handicaps,
+    approve_event_handicaps,
+    generate_complete_day_schedule,
+    view_all_handicaps_summary,
+    sequential_results_workflow,
+    get_next_incomplete_round,
+    display_event_progress,
+    extract_event_placements,
+    generate_tournament_summary
+)
+
 
 __all__ = [
     # Tournament UI
@@ -91,4 +113,24 @@ __all__ = [
     'validate_heat_data',
     'view_handicaps',
     'append_results_to_excel',
+
+    # Multi-Event Tournament UI
+    'create_multi_event_tournament',
+    'save_multi_event_tournament',
+    'load_multi_event_tournament',
+    'auto_save_multi_event',
+    'add_event_to_tournament',
+    'view_wood_count',
+    'view_tournament_schedule',
+    'remove_event_from_tournament',
+    'calculate_all_event_handicaps',
+    'view_analyze_all_handicaps',
+    'approve_event_handicaps',
+    'generate_complete_day_schedule',
+    'view_all_handicaps_summary',
+    'sequential_results_workflow',
+    'get_next_incomplete_round',
+    'display_event_progress',
+    'extract_event_placements',
+    'generate_tournament_summary',
 ]

@@ -190,14 +190,17 @@ Time-Decay:
 
 ## Version Control
 
-This documentation set reflects **Version 4.3** (December 2025)
+This documentation set reflects **Version 4.4** (December 2025)
 
-**Major Changes in V4.3**:
+**Major Changes in V4.4**:
+- Complete modular architecture migration (eliminated FunctionsLibrary.py)
+- Tournament result weighting (97% same-wood optimization)
 - Time-decay weighting made consistent across all methods
 - Wood quality adjustments added to ML and baseline
 - Diameter scaling implemented and validated
+- Comprehensive documentation overhaul
 
-**Last Documentation Update**: December 24, 2025
+**Last Documentation Update**: December 28, 2025
 
 ---
 

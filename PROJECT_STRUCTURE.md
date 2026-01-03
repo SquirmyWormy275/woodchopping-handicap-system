@@ -11,7 +11,7 @@ woodchopping-handicap-system/
 │
 ├── README.md                      # ← START HERE: Project overview
 ├── CLAUDE.md                      # AI assistant & architecture guide
-├── MainProgramV4_3.py             # ← RUN THIS: Main program
+├── MainProgramV4_4.py             # ← RUN THIS: Main program
 ├── config.py                      # System configuration
 ├── woodchopping.xlsx              # Historical results database
 ├── tournament_state.json          # Saved tournament state
@@ -38,7 +38,7 @@ woodchopping-handicap-system/
 
 ### Want to USE the program?
 ```
-1. Open: MainProgramV4_3.py
+1. Open: MainProgramV4_4.py
 2. Read: docs/ReadMe.md (user manual)
 ```
 
@@ -144,7 +144,7 @@ woodchopping/
 ## File Naming Conventions
 
 ### Python Files
-- `MainProgramV4_3.py` - Main entry point (CamelCase + version)
+- `MainProgramV4_4.py` - Main entry point (CamelCase + version)
 - `module_name.py` - Modules (snake_case)
 - `test_feature.py` - Tests (test_ prefix)
 
@@ -201,7 +201,7 @@ cd tests
 python test_both_events.py
 
 # Start program
-python MainProgramV4_3.py
+python MainProgramV4_4.py
 ```
 
 ---

@@ -40,6 +40,12 @@ from woodchopping.predictions.prediction_aggregator import (
     display_dual_predictions,
 )
 
+# Check My Work Validation
+from woodchopping.predictions.check_my_work import (
+    check_my_work,
+    display_check_my_work,
+)
+
 __all__ = [
     # LLM Integration
     "call_ollama",
@@ -58,4 +64,7 @@ __all__ = [
     "select_best_prediction",
     "generate_prediction_analysis_llm",
     "display_dual_predictions",
+    # Check My Work
+    "check_my_work",
+    "display_check_my_work",
 ]

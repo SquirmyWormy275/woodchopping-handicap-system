@@ -12,7 +12,7 @@ The system implements a critical innovation: absolute variance modeling (±3 sec
 
 ```bash
 # Run main program
-python MainProgram.py
+python MainProgramV4_4.py
 
 # Ensure Ollama is running locally for AI predictions
 # Model required: qwen2.5:7b (optimized for mathematical reasoning)
@@ -64,19 +64,73 @@ Judges must understand how the system works to trust its handicaps. Outdated doc
 
 **This is NOT optional. Documentation updates are part of the code change, not a separate task.**
 
+## ⚠️ CRITICAL DEVELOPMENT RULE - ASCII ART ALIGNMENT
+
+**STANDING ORDER (MANDATORY):**
+
+All ASCII art banners and box-drawing elements MUST adhere to strict alignment standards. Misaligned borders destroy the professional appearance of the CLI interface.
+
+### 1. Standard Banner Width:
+- **Total width: EXACTLY 70 characters per line**
+- Border characters (╔╗╚╝║) + 68 characters of internal content
+- Top border: `╔` + `═` × 68 + `╗`
+- Bottom border: `╚` + `═` × 68 + `╝`
+- Side borders: `║` + 68 chars content + `║`
+
+### 2. Implementation Requirements:
+- **NEVER manually count spaces for centering**
+- **ALWAYS use Python's `.center(68)` method** for automatic alignment
+- **NEVER use complex ASCII block letters** - they are error-prone and difficult to align
+- Use simple text-based designs with box-drawing characters
+
+### 3. Correct Implementation Pattern:
+```python
+print("╔" + "═" * 68 + "╗")
+print("║" + " " * 68 + "║")
+print("║" + "──────────────────────────────".center(68) + "║")
+print("║" + "BANNER TITLE TEXT".center(68) + "║")
+print("║" + "Subtitle or Description".center(68) + "║")
+print("║" + "──────────────────────────────".center(68) + "║")
+print("║" + " " * 68 + "║")
+print("╚" + "═" * 68 + "╝")
+```
+
+### 4. Verification Before Commit:
+- Verify each banner line is exactly 70 characters total
+- Test the banner output in the actual CLI to confirm alignment
+- If borders don't align, the implementation is WRONG
+
+### 5. Approved Banner Designs:
+Current approved banners in the codebase:
+- **Single Event Tournament Menu** ([MainProgramV4_4.py:194-205](MainProgramV4_4.py#L194-L205)) - "HANDICAP CALCULATION SYSTEM"
+- **Multi-Event Tournament Menu** ([MainProgramV4_4.py:745-753](MainProgramV4_4.py#L745-L753)) - "TOURNAMENT CONTROL SYSTEM"
+
+### 6. Why This Matters:
+**Professionalism = Attention to Detail**
+
+This software is being considered for use at professional woodchopping competitions (Missoula Pro-Am, Mason County Western Qualifier). Judges and event organizers will judge the system's credibility partly by its presentation. Misaligned banners signal carelessness and reduce confidence in the system's accuracy.
+
+**This is NOT optional. Proper alignment is a requirement, not a preference.**
+
 ## Architecture
 
 ### Core Components
 
-**MainProgram.py** - Tournament management interface
+**MainProgramV4_4.py** - Tournament management interface
 - Multi-round tournament system (heats → semis → finals)
-- Main menu loop with 14 options covering tournament setup, handicap calculation, heat management, and personnel management
+- Main menu loop with 16 options covering tournament setup, handicap calculation, heat management, and personnel management
+- **New Option 16**: Multi-event tournament mode for designing complete tournament days with multiple independent events
 - Tournament state management (`tournament_state` dict) tracks event configuration, rounds, competitors, and handicap results
+- Multi-event tournament state (`multi_event_tournament_state` dict) tracks multiple events with independent configurations
 - Legacy single-heat mode preserved for backward compatibility via `heat_assignment_df`
 
-**FunctionsLibrary.py** - Function library (~2500+ lines)
-- All business logic: handicap calculation, AI predictions, Monte Carlo simulation, Excel I/O, tournament round generation
-- See [ReadMe.md](ReadMe.md) lines 176-211 for complete function dictionary
+**woodchopping/** - Modular package (V4.4 fully modular architecture)
+- All business logic organized by domain: data loading, predictions, handicaps, simulation, UI
+- **data/**: Excel I/O, validation, preprocessing
+- **predictions/**: Baseline, ML (XGBoost), LLM (Ollama), diameter scaling, prediction aggregation
+- **handicaps/**: Handicap calculation logic
+- **simulation/**: Monte Carlo fairness validation
+- **ui/**: User interface modules for wood, competitors, handicaps, tournaments, personnel, multi-event tournaments
 
 **woodchopping.xlsx** - Data persistence
 - `Competitor` sheet: CompetitorID, Name, Country, State/Province, Gender
@@ -102,7 +156,7 @@ Judges must understand how the system works to trust its handicaps. Outdated doc
 - Implemented in `simulate_single_race()`
 
 **Tournament Result Weighting (Same-Wood Optimization)**
-- **CRITICAL V4.3.1 FEATURE**: When generating semis/finals, handicaps are AUTOMATICALLY RECALCULATED using heat/semi results
+- **CRITICAL V4.4 FEATURE**: When generating semis/finals, handicaps are AUTOMATICALLY RECALCULATED using heat/semi results
 - Tournament results from completed rounds weighted at 97% vs historical data (3%)
 - Rationale: Same wood across all rounds = most accurate predictor possible
 - Formula: `prediction = (tournament_time × 0.97) + (historical_baseline × 0.03)`
@@ -147,6 +201,50 @@ Each round object structure:
 }
 ```
 
+**Multi-Event Tournament State Management**
+```python
+multi_event_tournament_state = {
+    'tournament_mode': 'multi_event',
+    'tournament_name': str,                # Tournament name
+    'tournament_date': str,                # Tournament date
+    'total_events': int,                   # Number of events
+    'events_completed': int,               # Number of completed events
+    'current_event_index': int,            # Current event index
+    'events': [                            # List of event objects
+        {
+            'event_id': str,               # Unique event identifier
+            'event_name': str,             # "225mm SB", "300mm UH", etc.
+            'event_order': int,            # Event sequence number
+            'status': str,                 # 'pending', 'configured', 'ready', 'in_progress', 'completed'
+            'wood_species': str,           # Wood characteristics (independent per event)
+            'wood_diameter': float,
+            'wood_quality': int,
+            'event_code': str,
+            'num_stands': int,             # Tournament configuration (independent per event)
+            'format': str,
+            'capacity_info': dict,
+            'all_competitors': list,       # Competitors (independent per event)
+            'all_competitors_df': DataFrame,
+            'handicap_results_all': list,
+            'rounds': list,                # Same structure as single-event system
+            'final_results': {             # Top 3 placements
+                'first_place': str,
+                'second_place': str,
+                'third_place': str,
+                'all_placements': dict
+            }
+        }
+    ]
+}
+```
+
+**Key Multi-Event Design Decisions:**
+- Each event is essentially a complete `tournament_state` wrapped in a list
+- Tournament result weighting (97%) applies within each event only (not cross-event)
+- Event-aware HeatID format: `"<event_code>-<event_name>-<round_name>"`
+- Sequential workflow auto-advances to next incomplete round
+- Auto-save after major operations (add event, generate schedule, record results)
+
 **AI Integration**
 - Uses Ollama API (localhost:11434) with qwen2.5:7b model
 - `call_ollama(prompt, model)` handles all AI requests
@@ -154,6 +252,41 @@ Each round object structure:
   1. Time prediction with quality adjustments (`predict_competitor_time_with_ai()`)
   2. Fairness assessment of Monte Carlo results (`get_ai_assessment_of_handicaps()`)
 - Graceful fallback if Ollama unavailable
+
+**Championship Events vs Handicap Events (Multi-Event Tournaments)**
+
+The system supports two event types in multi-event tournaments:
+
+**Handicap Events** (default):
+- System calculates individual marks based on AI-predicted performance
+- Uses historical data + AI predictions to create fair competition
+- All competitors should theoretically finish simultaneously
+- Back markers (slower) start first with lower marks, front markers (faster) start last with higher marks
+- Monte Carlo simulation validates fairness (target: <2% win rate spread)
+- Full analysis and manual adjustment workflow available
+
+**Championship Events**:
+- All competitors receive Mark 3 (same start time)
+- Fastest raw time wins - traditional "race to the finish" format
+- No AI predictions or handicap calculations needed
+- Event type selected during event configuration (Option 2)
+- Championship events skip handicap calculation (Option 5)
+- Championship events bypass Monte Carlo analysis (Option 6 simplified)
+- Approval is simplified - no manual adjustments (Option 7)
+- Tournament result weighting does NOT apply (all marks stay Mark 3 in semis/finals)
+
+**Multi-Event Tournament Workflow**:
+- Tournaments can mix Handicap and Championship events
+- Each event has independent configuration (wood, competitors, format, event type)
+- Championship events auto-generate Mark 3 during configuration and set status='ready'
+- Handicap events require batch calculation (Option 5) to generate marks
+- Both event types flow through same round generation and results entry workflow
+- Results from both event types append to Excel Results sheet
+
+**Event Type Field**:
+- Stored in event state as `event_type: 'handicap' | 'championship'`
+- Default is 'handicap' for backward compatibility
+- Legacy tournaments loaded without event_type default to 'handicap'
 
 ## Development Workflow
 
@@ -170,12 +303,13 @@ Each round object structure:
 
 ### Adding New Functionality
 
-When adding features to FunctionsLibrary.py:
+When adding features to the modular woodchopping package:
 - Follow existing naming conventions (snake_case functions)
-- Add function to dictionary in [ReadMe.md](ReadMe.md) lines 176-211
+- Place functions in appropriate modules based on domain (data/, predictions/, handicaps/, simulation/, ui/)
 - Excel operations should use openpyxl, not pandas to_excel (for atomic appends)
 - All UI functions should return updated state objects (e.g., `wood_selection` dict, DataFrames)
 - Use `format_wood(wood_selection)` to display current wood config in menus
+- Export new functions through module `__init__.py` files for easy importing
 
 ### Monte Carlo Simulation
 

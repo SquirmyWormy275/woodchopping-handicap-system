@@ -1,0 +1,2386 @@
+{
+  "tournament_mode": "multi_event",
+  "tournament_name": "Michael Kelly Memorial",
+  "tournament_date": "2026-01-03",
+  "created_at": "2026-01-03T03:56:33.824992",
+  "total_events": 3,
+  "events_completed": 0,
+  "current_event_index": 0,
+  "events": [
+    {
+      "event_id": "event_1",
+      "event_name": "275mm SB",
+      "event_order": 1,
+      "status": "scheduled",
+      "event_type": "handicap",
+      "wood_species": "S04",
+      "wood_diameter": 275.0,
+      "wood_quality": 7,
+      "event_code": "SB",
+      "num_stands": 5,
+      "format": "heats_to_finals",
+      "capacity_info": {
+        "max_competitors": 10,
+        "num_heats": 2,
+        "num_semis": 0,
+        "num_finals": 1,
+        "advancers_per_heat": 3,
+        "total_blocks": 15,
+        "description": "2 heats of 5 (max 10 competitors)\n  → Top 3 from each heat advance\n  → 5-person Final"
+      },
+      "all_competitors": [
+        "Eric Hoberg",
+        "David Moses Jr.",
+        "Angus Nicholson",
+        "Erin LaVoie",
+        "Erin Cramsey",
+        "Gillian Shannon",
+        "Cody Labahn",
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Ian Wilson"
+      ],
+      "all_competitors_df": [
+        {
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C006",
+          "competitor_name": "Gillian Shannon",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C008",
+          "competitor_name": "Cole Schlenker",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C009",
+          "competitor_name": "Alex Kaper",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "handicap_results_all": [
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": 27.84,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 7 results, avg weight 0.94) [QAA scaling: 62.7s @ 250.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 27.84,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 7 results, avg weight 0.94) [QAA scaling: 62.7s @ 250.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "QAA scaling: 250mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 79.42523193359375,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 58.9,
+              "confidence": "HIGH",
+              "explanation": "Predicted 58.9s (time-weighted history on various wood types (7 results, avg weight 0.94), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Gillian Shannon",
+          "predicted_time": 27.84,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S04 (exact match), 2 results, avg weight 1.00) [QAA scaling: 86.0s @ 225.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 27.84,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 2 results, avg weight 1.00) [QAA scaling: 86.0s @ 225.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "QAA scaling: 225mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 123.62488555908203,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 81.2,
+              "confidence": "LOW",
+              "explanation": "Predicted 81.2s (limited time-weighted history on S04 (exact match) (2 results, avg weight 1.00), AI quality adjusted) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Ian Wilson",
+          "predicted_time": 26.43910789489746,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+          "predictions": {
+            "baseline": {
+              "time": 29.759999999999998,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 26.43910789489746,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 29.1,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 29.1s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 5,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": 24.0,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 11 results, avg weight 0.26) [QAA scaling: 35.8s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 24.0,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 11 results, avg weight 0.26) [QAA scaling: 35.8s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "QAA scaling: 300mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 26.8576717376709,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 34.0,
+              "confidence": "HIGH",
+              "explanation": "Predicted 34.0s (time-weighted history on various wood types (11 results, avg weight 0.26), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 7,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": 24.0,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.80) [QAA scaling: 37.4s @ 250.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 24.0,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.80) [QAA scaling: 37.4s @ 250.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "QAA scaling: 250mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 26.185646057128906,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 35.2,
+              "confidence": "HIGH",
+              "explanation": "Predicted 35.2s (time-weighted history on various wood types (9 results, avg weight 0.80), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 7,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Alex Kaper",
+          "predicted_time": 24.0,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 1.00) [QAA scaling: 35.6s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 24.0,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 1.00) [QAA scaling: 35.6s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "QAA scaling: 300mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 23.536413192749023,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 33.5,
+              "confidence": "HIGH",
+              "explanation": "Predicted 33.5s (time-weighted history on various wood types (6 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 7,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Eric Hoberg",
+          "predicted_time": 23.04,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 35.0s @ 300.0mm = 24.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 23.04,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 35.0s @ 300.0mm = 24.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "QAA scaling: 300mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 24.171096801757812,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 32.9,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 32.9s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 8,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": 21.692777633666992,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+          "predictions": {
+            "baseline": {
+              "time": 33.639955766909964,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 21.692777633666992,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 32.9,
+              "confidence": "HIGH",
+              "explanation": "Predicted 32.9s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 10,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Cody Labahn",
+          "predicted_time": 21.119999999999997,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.73) [QAA scaling: 33.4s @ 300.0mm = 22.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 21.119999999999997,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.73) [QAA scaling: 33.4s @ 300.0mm = 22.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "QAA scaling: 300mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 23.149866104125977,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 31.3,
+              "confidence": "HIGH",
+              "explanation": "Predicted 31.3s (time-weighted history on various wood types (9 results, avg weight 0.73), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 10,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Cole Schlenker",
+          "predicted_time": 14.399999999999999,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 22.0s @ 300.0mm = 15.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+          "predictions": {
+            "baseline": {
+              "time": 14.399999999999999,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 22.0s @ 300.0mm = 15.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "QAA scaling: 300mm to 275mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 22.501157760620117,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 20.7,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 20.7s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 300.0,
+              "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 17,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        }
+      ],
+      "rounds": [
+        {
+          "round_type": "heat",
+          "round_number": 1,
+          "round_name": "Heat 1",
+          "competitors": [
+            "Cole Schlenker",
+            "Eric Hoberg",
+            "David Moses Jr.",
+            "Ian Wilson",
+            "Erin Cramsey"
+          ],
+          "competitors_df": [
+            {
+              "competitor_id": "C001",
+              "competitor_name": "Eric Hoberg",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C002",
+              "competitor_name": "David Moses Jr.",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C005",
+              "competitor_name": "Erin Cramsey",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C008",
+              "competitor_name": "Cole Schlenker",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C010",
+              "competitor_name": "Ian Wilson",
+              "competitor_country": "USA",
+              "state_province": "CA",
+              "gender": "M"
+            }
+          ],
+          "handicap_results": [
+            {
+              "name": "Cole Schlenker",
+              "predicted_time": 14.399999999999999,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 22.0s @ 300.0mm = 15.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 14.399999999999999,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 22.0s @ 300.0mm = 15.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "QAA scaling: 300mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 22.501157760620117,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 20.7,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 20.7s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 17,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Eric Hoberg",
+              "predicted_time": 23.04,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 35.0s @ 300.0mm = 24.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 23.04,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [QAA scaling: 35.0s @ 300.0mm = 24.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "QAA scaling: 300mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 24.171096801757812,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 32.9,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 32.9s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 8,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "David Moses Jr.",
+              "predicted_time": 24.0,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 11 results, avg weight 0.26) [QAA scaling: 35.8s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 24.0,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 11 results, avg weight 0.26) [QAA scaling: 35.8s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "QAA scaling: 300mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 26.8576717376709,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 34.0,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 34.0s (time-weighted history on various wood types (11 results, avg weight 0.26), AI quality adjusted) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 7,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Ian Wilson",
+              "predicted_time": 26.43910789489746,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 29.759999999999998,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S04 (exact match), 1 results, avg weight 1.00) [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 26.43910789489746,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 29.1,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 29.1s (limited time-weighted history on S04 (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 5,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin Cramsey",
+              "predicted_time": 27.84,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 7 results, avg weight 0.94) [QAA scaling: 62.7s @ 250.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 27.84,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 7 results, avg weight 0.94) [QAA scaling: 62.7s @ 250.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "QAA scaling: 250mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 79.42523193359375,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 58.9,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 58.9s (time-weighted history on various wood types (7 results, avg weight 0.94), AI quality adjusted) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            }
+          ],
+          "actual_results": {},
+          "advancers": [],
+          "num_to_advance": 2,
+          "status": "pending"
+        },
+        {
+          "round_type": "heat",
+          "round_number": 2,
+          "round_name": "Heat 2",
+          "competitors": [
+            "Angus Nicholson",
+            "Cody Labahn",
+            "Erin LaVoie",
+            "Alex Kaper",
+            "Gillian Shannon"
+          ],
+          "competitors_df": [
+            {
+              "competitor_id": "C003",
+              "competitor_name": "Angus Nicholson",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C004",
+              "competitor_name": "Erin LaVoie",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C006",
+              "competitor_name": "Gillian Shannon",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C007",
+              "competitor_name": "Cody Labahn",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C009",
+              "competitor_name": "Alex Kaper",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            }
+          ],
+          "handicap_results": [
+            {
+              "name": "Angus Nicholson",
+              "predicted_time": 21.692777633666992,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 33.639955766909964,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 21.692777633666992,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 32.9,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 32.9s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 10,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Cody Labahn",
+              "predicted_time": 21.119999999999997,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.73) [QAA scaling: 33.4s @ 300.0mm = 22.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 21.119999999999997,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.73) [QAA scaling: 33.4s @ 300.0mm = 22.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "QAA scaling: 300mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 23.149866104125977,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 31.3,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 31.3s (time-weighted history on various wood types (9 results, avg weight 0.73), AI quality adjusted) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 10,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin LaVoie",
+              "predicted_time": 24.0,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.80) [QAA scaling: 37.4s @ 250.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 24.0,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 9 results, avg weight 0.80) [QAA scaling: 37.4s @ 250.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "QAA scaling: 250mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 26.185646057128906,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 35.2,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 35.2s (time-weighted history on various wood types (9 results, avg weight 0.80), AI quality adjusted) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 7,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Alex Kaper",
+              "predicted_time": 24.0,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 1.00) [QAA scaling: 35.6s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 24.0,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 6 results, avg weight 1.00) [QAA scaling: 35.6s @ 300.0mm = 25.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "QAA scaling: 300mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 23.536413192749023,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 33.5,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 33.5s (time-weighted history on various wood types (6 results, avg weight 1.00), AI quality adjusted) [Hist data from 300mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 300.0,
+                  "scaling_warning": "Historical data primarily from 300mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 7,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Gillian Shannon",
+              "predicted_time": 27.84,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S04 (exact match), 2 results, avg weight 1.00) [QAA scaling: 86.0s @ 225.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 27.84,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S04 (exact match), 2 results, avg weight 1.00) [QAA scaling: 86.0s @ 225.0mm = 29.0s @ 275.0mm (100% med, 2096 Janka)] [Quality 7/10: softer, -4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "QAA scaling: 225mm to 275mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 123.62488555908203,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 7/10 (softer, -4%) [Hist data from 225mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 81.2,
+                  "confidence": "LOW",
+                  "explanation": "Predicted 81.2s (limited time-weighted history on S04 (exact match) (2 results, avg weight 1.00), AI quality adjusted) [Hist data from 225mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "Historical data primarily from 225mm, predicting for 275mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            }
+          ],
+          "actual_results": {},
+          "advancers": [],
+          "num_to_advance": 2,
+          "status": "pending"
+        }
+      ],
+      "final_results": {
+        "first_place": null,
+        "second_place": null,
+        "third_place": null,
+        "all_placements": {}
+      },
+      "analysis_completed": true
+    },
+    {
+      "event_id": "event_2",
+      "event_name": "375mm UH",
+      "event_order": 2,
+      "status": "scheduled",
+      "event_type": "championship",
+      "wood_species": "S05",
+      "wood_diameter": 375.0,
+      "wood_quality": 8,
+      "event_code": "UH",
+      "num_stands": 5,
+      "format": "single_heat",
+      "capacity_info": {
+        "max_competitors": 5,
+        "num_heats": 1,
+        "num_semis": 0,
+        "num_finals": 0,
+        "advancers_per_heat": 0,
+        "total_blocks": 5,
+        "description": "Single heat with up to 5 competitors\n  → Perfect for training, testing, or casual events\n  → Results can still be saved to build historical data\n  → No advancement rounds"
+      },
+      "all_competitors": [
+        "Eric Hoberg",
+        "David Moses Jr.",
+        "Angus Nicholson",
+        "Erin LaVoie",
+        "Erin Cramsey"
+      ],
+      "all_competitors_df": [
+        {
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        }
+      ],
+      "handicap_results_all": [
+        {
+          "name": "Eric Hoberg",
+          "predicted_time": 0.0,
+          "method_used": "Championship",
+          "confidence": "N/A",
+          "explanation": "Championship event: fastest time wins",
+          "predictions": {},
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": 0.0,
+          "method_used": "Championship",
+          "confidence": "N/A",
+          "explanation": "Championship event: fastest time wins",
+          "predictions": {},
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": 0.0,
+          "method_used": "Championship",
+          "confidence": "N/A",
+          "explanation": "Championship event: fastest time wins",
+          "predictions": {},
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": 0.0,
+          "method_used": "Championship",
+          "confidence": "N/A",
+          "explanation": "Championship event: fastest time wins",
+          "predictions": {},
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": 0.0,
+          "method_used": "Championship",
+          "confidence": "N/A",
+          "explanation": "Championship event: fastest time wins",
+          "predictions": {},
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        }
+      ],
+      "rounds": [
+        {
+          "round_name": "Heat 1",
+          "round_type": "heat",
+          "round_number": 1,
+          "competitors": [
+            "Eric Hoberg",
+            "David Moses Jr.",
+            "Angus Nicholson",
+            "Erin LaVoie",
+            "Erin Cramsey"
+          ],
+          "competitors_df": [
+            {
+              "competitor_id": "C001",
+              "competitor_name": "Eric Hoberg",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C002",
+              "competitor_name": "David Moses Jr.",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C003",
+              "competitor_name": "Angus Nicholson",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C004",
+              "competitor_name": "Erin LaVoie",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C005",
+              "competitor_name": "Erin Cramsey",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "F"
+            }
+          ],
+          "handicap_results": [
+            {
+              "name": "Eric Hoberg",
+              "predicted_time": 0.0,
+              "method_used": "Championship",
+              "confidence": "N/A",
+              "explanation": "Championship event: fastest time wins",
+              "predictions": {},
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "David Moses Jr.",
+              "predicted_time": 0.0,
+              "method_used": "Championship",
+              "confidence": "N/A",
+              "explanation": "Championship event: fastest time wins",
+              "predictions": {},
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Angus Nicholson",
+              "predicted_time": 0.0,
+              "method_used": "Championship",
+              "confidence": "N/A",
+              "explanation": "Championship event: fastest time wins",
+              "predictions": {},
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin LaVoie",
+              "predicted_time": 0.0,
+              "method_used": "Championship",
+              "confidence": "N/A",
+              "explanation": "Championship event: fastest time wins",
+              "predictions": {},
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin Cramsey",
+              "predicted_time": 0.0,
+              "method_used": "Championship",
+              "confidence": "N/A",
+              "explanation": "Championship event: fastest time wins",
+              "predictions": {},
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            }
+          ],
+          "num_to_advance": 0,
+          "status": "pending",
+          "actual_results": {},
+          "finish_order": {},
+          "advancers": []
+        }
+      ],
+      "final_results": {
+        "first_place": null,
+        "second_place": null,
+        "third_place": null,
+        "all_placements": {}
+      }
+    },
+    {
+      "event_id": "event_3",
+      "event_name": "300mm SB",
+      "event_order": 3,
+      "status": "scheduled",
+      "event_type": "handicap",
+      "wood_species": "S01",
+      "wood_diameter": 300.0,
+      "wood_quality": 3,
+      "event_code": "SB",
+      "num_stands": 5,
+      "format": "heats_to_finals",
+      "capacity_info": {
+        "max_competitors": 10,
+        "num_heats": 2,
+        "num_semis": 0,
+        "num_finals": 1,
+        "advancers_per_heat": 3,
+        "total_blocks": 15,
+        "description": "2 heats of 5 (max 10 competitors)\n  → Top 3 from each heat advance\n  → 5-person Final"
+      },
+      "all_competitors": [
+        "Eric Hoberg",
+        "David Moses Jr.",
+        "Angus Nicholson",
+        "Erin LaVoie",
+        "Erin Cramsey",
+        "Gillian Shannon",
+        "Cody Labahn",
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Ian Wilson"
+      ],
+      "all_competitors_df": [
+        {
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C006",
+          "competitor_name": "Gillian Shannon",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C008",
+          "competitor_name": "Cole Schlenker",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C009",
+          "competitor_name": "Alex Kaper",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "handicap_results_all": [
+        {
+          "name": "Erin Cramsey",
+          "predicted_time": 36.4,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 0.61) [QAA scaling: 55.0s @ 250.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+          "predictions": {
+            "baseline": {
+              "time": 36.4,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 0.61) [QAA scaling: 55.0s @ 250.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "QAA scaling: 250mm to 300mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 87.4023208618164,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 56.9,
+              "confidence": "LOW",
+              "explanation": "Predicted 56.9s (limited time-weighted history on S01 (exact match) (1 results, avg weight 0.61), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Gillian Shannon",
+          "predicted_time": 36.4,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Time-weighted baseline (on various wood types, 17 results, avg weight 0.91) [QAA scaling: 119.2s @ 225.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+          "predictions": {
+            "baseline": {
+              "time": 36.4,
+              "confidence": "MEDIUM",
+              "explanation": "Time-weighted baseline (on various wood types, 17 results, avg weight 0.91) [QAA scaling: 119.2s @ 225.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "QAA scaling: 225mm to 300mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 134.19956970214844,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 300mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 123.9,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 123.9s (time-weighted history on various wood types (17 results, avg weight 0.91), AI quality adjusted) [Hist data from 225mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 225.0,
+              "scaling_warning": "Historical data primarily from 225mm, predicting for 300mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 3,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Ian Wilson",
+          "predicted_time": 32.24,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 38.1s @ 275.0mm = 31.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+          "predictions": {
+            "baseline": {
+              "time": 32.24,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 38.1s @ 275.0mm = 31.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "QAA scaling: 275mm to 300mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 31.35500717163086,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 275mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 39.5,
+              "confidence": "HIGH",
+              "explanation": "Predicted 39.5s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted) [Hist data from 275mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 8,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "David Moses Jr.",
+          "predicted_time": 31.80845069885254,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+          "predictions": {
+            "baseline": {
+              "time": 26.622082719691225,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.26) [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 31.80845069885254,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 26.6,
+              "confidence": "HIGH",
+              "explanation": "Predicted 26.6s (time-weighted history on S01 (exact match) (6 results, avg weight 0.26), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 8,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Angus Nicholson",
+          "predicted_time": 30.16,
+          "method_used": "Baseline (scaled)",
+          "confidence": "HIGH",
+          "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 35.0s @ 275.0mm = 29.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+          "predictions": {
+            "baseline": {
+              "time": 30.16,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 35.0s @ 275.0mm = 29.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "QAA scaling: 275mm to 300mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 26.213153839111328,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 275mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 36.4,
+              "confidence": "HIGH",
+              "explanation": "Predicted 36.4s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted) [Hist data from 275mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 275.0,
+              "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 10,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Eric Hoberg",
+          "predicted_time": 28.897998809814453,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+          "predictions": {
+            "baseline": {
+              "time": 36.68609099524528,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S01 (exact match), 2 results, avg weight 0.51) [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 28.897998809814453,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 36.5,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 36.5s (limited time-weighted history on S01 (exact match) (2 results, avg weight 0.51), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 11,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Alex Kaper",
+          "predicted_time": 28.210426330566406,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+          "predictions": {
+            "baseline": {
+              "time": 39.52,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 1.00) [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 28.210426330566406,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 39.4,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 39.4s (limited time-weighted history on S01 (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 12,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Erin LaVoie",
+          "predicted_time": 28.080000000000002,
+          "method_used": "Baseline (scaled)",
+          "confidence": "MEDIUM",
+          "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.70) [QAA scaling: 32.6s @ 250.0mm = 27.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+          "predictions": {
+            "baseline": {
+              "time": 28.080000000000002,
+              "confidence": "MEDIUM",
+              "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.70) [QAA scaling: 32.6s @ 250.0mm = 27.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "QAA scaling: 250mm to 300mm",
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 31.08042335510254,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 33.9,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 33.9s (time-weighted history on S01 (exact match) (6 results, avg weight 0.70), AI quality adjusted) [Hist data from 250mm]",
+              "error": null,
+              "scaled": true,
+              "original_diameter": 250.0,
+              "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+              "tournament_weighted": false
+            }
+          },
+          "mark": 12,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Cody Labahn",
+          "predicted_time": 27.791667938232422,
+          "method_used": "ML",
+          "confidence": "HIGH",
+          "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+          "predictions": {
+            "baseline": {
+              "time": 25.789474886975803,
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S01 (exact match), 2 results, avg weight 0.27) [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 27.791667938232422,
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 25.8,
+              "confidence": "MEDIUM",
+              "explanation": "Predicted 25.8s (limited time-weighted history on S01 (exact match) (2 results, avg weight 0.27), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 12,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        },
+        {
+          "name": "Cole Schlenker",
+          "predicted_time": 27.04082489013672,
+          "method_used": "ML",
+          "confidence": "MEDIUM",
+          "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+          "predictions": {
+            "baseline": {
+              "time": 34.16393023974729,
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 4 results, avg weight 1.00) [Quality 3/10: firmer, +4%]",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "ml": {
+              "time": 27.04082489013672,
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            },
+            "llm": {
+              "time": 34.1,
+              "confidence": "HIGH",
+              "explanation": "Predicted 34.1s (time-weighted history on various wood types (4 results, avg weight 1.00), AI quality adjusted)",
+              "error": null,
+              "scaled": false,
+              "original_diameter": null,
+              "scaling_warning": null,
+              "tournament_weighted": false
+            }
+          },
+          "mark": 13,
+          "approved_by": "AK",
+          "approved_at": "2026-01-03T04:27:01"
+        }
+      ],
+      "rounds": [
+        {
+          "round_type": "heat",
+          "round_number": 1,
+          "round_name": "Heat 1",
+          "competitors": [
+            "Cole Schlenker",
+            "Cody Labahn",
+            "Eric Hoberg",
+            "David Moses Jr.",
+            "Erin Cramsey"
+          ],
+          "competitors_df": [
+            {
+              "competitor_id": "C001",
+              "competitor_name": "Eric Hoberg",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C002",
+              "competitor_name": "David Moses Jr.",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C005",
+              "competitor_name": "Erin Cramsey",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C007",
+              "competitor_name": "Cody Labahn",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C008",
+              "competitor_name": "Cole Schlenker",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            }
+          ],
+          "handicap_results": [
+            {
+              "name": "Cole Schlenker",
+              "predicted_time": 27.04082489013672,
+              "method_used": "ML",
+              "confidence": "MEDIUM",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 34.16393023974729,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 4 results, avg weight 1.00) [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 27.04082489013672,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 34.1,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 34.1s (time-weighted history on various wood types (4 results, avg weight 1.00), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 13,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Cody Labahn",
+              "predicted_time": 27.791667938232422,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 25.789474886975803,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S01 (exact match), 2 results, avg weight 0.27) [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 27.791667938232422,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 25.8,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 25.8s (limited time-weighted history on S01 (exact match) (2 results, avg weight 0.27), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 12,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Eric Hoberg",
+              "predicted_time": 28.897998809814453,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 36.68609099524528,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S01 (exact match), 2 results, avg weight 0.51) [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 28.897998809814453,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 36.5,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 36.5s (limited time-weighted history on S01 (exact match) (2 results, avg weight 0.51), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 11,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "David Moses Jr.",
+              "predicted_time": 31.80845069885254,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 26.622082719691225,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.26) [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 31.80845069885254,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 26.6,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 26.6s (time-weighted history on S01 (exact match) (6 results, avg weight 0.26), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 8,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin Cramsey",
+              "predicted_time": 36.4,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 0.61) [QAA scaling: 55.0s @ 250.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 36.4,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 0.61) [QAA scaling: 55.0s @ 250.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "QAA scaling: 250mm to 300mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 87.4023208618164,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 56.9,
+                  "confidence": "LOW",
+                  "explanation": "Predicted 56.9s (limited time-weighted history on S01 (exact match) (1 results, avg weight 0.61), AI quality adjusted) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            }
+          ],
+          "actual_results": {},
+          "advancers": [],
+          "num_to_advance": 2,
+          "status": "pending"
+        },
+        {
+          "round_type": "heat",
+          "round_number": 2,
+          "round_name": "Heat 2",
+          "competitors": [
+            "Alex Kaper",
+            "Erin LaVoie",
+            "Angus Nicholson",
+            "Ian Wilson",
+            "Gillian Shannon"
+          ],
+          "competitors_df": [
+            {
+              "competitor_id": "C003",
+              "competitor_name": "Angus Nicholson",
+              "competitor_country": "USA",
+              "state_province": "OR",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C004",
+              "competitor_name": "Erin LaVoie",
+              "competitor_country": "USA",
+              "state_province": "WA",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C006",
+              "competitor_name": "Gillian Shannon",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "F"
+            },
+            {
+              "competitor_id": "C009",
+              "competitor_name": "Alex Kaper",
+              "competitor_country": "USA",
+              "state_province": "MT",
+              "gender": "M"
+            },
+            {
+              "competitor_id": "C010",
+              "competitor_name": "Ian Wilson",
+              "competitor_country": "USA",
+              "state_province": "CA",
+              "gender": "M"
+            }
+          ],
+          "handicap_results": [
+            {
+              "name": "Alex Kaper",
+              "predicted_time": 28.210426330566406,
+              "method_used": "ML",
+              "confidence": "HIGH",
+              "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+              "predictions": {
+                "baseline": {
+                  "time": 39.52,
+                  "confidence": "MEDIUM",
+                  "explanation": "Limited time-weighted history (on S01 (exact match), 1 results, avg weight 1.00) [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 28.210426330566406,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 39.4,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 39.4s (limited time-weighted history on S01 (exact match) (1 results, avg weight 1.00), AI quality adjusted)",
+                  "error": null,
+                  "scaled": false,
+                  "original_diameter": null,
+                  "scaling_warning": null,
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 12,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Erin LaVoie",
+              "predicted_time": 28.080000000000002,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.70) [QAA scaling: 32.6s @ 250.0mm = 27.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 28.080000000000002,
+                  "confidence": "MEDIUM",
+                  "explanation": "Time-weighted baseline (on S01 (exact match), 6 results, avg weight 0.70) [QAA scaling: 32.6s @ 250.0mm = 27.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "QAA scaling: 250mm to 300mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 31.08042335510254,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 33.9,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 33.9s (time-weighted history on S01 (exact match) (6 results, avg weight 0.70), AI quality adjusted) [Hist data from 250mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 250.0,
+                  "scaling_warning": "Historical data primarily from 250mm, predicting for 300mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 12,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Angus Nicholson",
+              "predicted_time": 30.16,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 35.0s @ 275.0mm = 29.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 30.16,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 35.0s @ 275.0mm = 29.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "QAA scaling: 275mm to 300mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 26.213153839111328,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 275mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 36.4,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 36.4s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted) [Hist data from 275mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 10,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Ian Wilson",
+              "predicted_time": 32.24,
+              "method_used": "Baseline (scaled)",
+              "confidence": "HIGH",
+              "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 38.1s @ 275.0mm = 31.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 32.24,
+                  "confidence": "HIGH",
+                  "explanation": "Time-weighted baseline (on various wood types, 5 results, avg weight 0.99) [QAA scaling: 38.1s @ 275.0mm = 31.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "QAA scaling: 275mm to 300mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 31.35500717163086,
+                  "confidence": "HIGH",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 275mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 39.5,
+                  "confidence": "HIGH",
+                  "explanation": "Predicted 39.5s (time-weighted history on various wood types (5 results, avg weight 0.99), AI quality adjusted) [Hist data from 275mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 275.0,
+                  "scaling_warning": "Historical data primarily from 275mm, predicting for 300mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 8,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            },
+            {
+              "name": "Gillian Shannon",
+              "predicted_time": 36.4,
+              "method_used": "Baseline (scaled)",
+              "confidence": "MEDIUM",
+              "explanation": "Time-weighted baseline (on various wood types, 17 results, avg weight 0.91) [QAA scaling: 119.2s @ 225.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+              "predictions": {
+                "baseline": {
+                  "time": 36.4,
+                  "confidence": "MEDIUM",
+                  "explanation": "Time-weighted baseline (on various wood types, 17 results, avg weight 0.91) [QAA scaling: 119.2s @ 225.0mm = 35.0s @ 300.0mm (100% med, 2028 Janka)] [Quality 3/10: firmer, +4%]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "QAA scaling: 225mm to 300mm",
+                  "tournament_weighted": false
+                },
+                "ml": {
+                  "time": 134.19956970214844,
+                  "confidence": "MEDIUM",
+                  "explanation": "SB ML model (114 training records), quality 3/10 (firmer, +4%) [Hist data from 225mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "Historical data primarily from 225mm, predicting for 300mm",
+                  "tournament_weighted": false
+                },
+                "llm": {
+                  "time": 123.9,
+                  "confidence": "MEDIUM",
+                  "explanation": "Predicted 123.9s (time-weighted history on various wood types (17 results, avg weight 0.91), AI quality adjusted) [Hist data from 225mm]",
+                  "error": null,
+                  "scaled": true,
+                  "original_diameter": 225.0,
+                  "scaling_warning": "Historical data primarily from 225mm, predicting for 300mm",
+                  "tournament_weighted": false
+                }
+              },
+              "mark": 3,
+              "approved_by": "AK",
+              "approved_at": "2026-01-03T04:27:01"
+            }
+          ],
+          "actual_results": {},
+          "advancers": [],
+          "num_to_advance": 2,
+          "status": "pending"
+        }
+      ],
+      "final_results": {
+        "first_place": null,
+        "second_place": null,
+        "third_place": null,
+        "all_placements": {}
+      }
+    }
+  ]
+}

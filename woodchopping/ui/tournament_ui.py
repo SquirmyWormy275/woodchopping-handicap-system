@@ -31,7 +31,7 @@ def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) 
             }
     """
 
-    # SCENARIO 0: Single Heat (Training/Testing)
+    # SCENARIO 0: Single Heat Mode
     # Strategy: One heat only, perfect for practice/testing/small casual events
     scenario_0 = {
         'max_competitors': num_stands,
@@ -374,7 +374,8 @@ def extract_tournament_results(tournament_state: Dict) -> Dict[str, float]:
     return tournament_results
 
 
-def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_round_type: str) -> List[Dict]:
+def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_round_type: str,
+                       is_championship: bool = False) -> List[Dict]:
     """Generate semi-final or final rounds from advancing competitors.
 
     CRITICAL ENHANCEMENT: This function now RECALCULATES handicaps using actual times
@@ -386,6 +387,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
         tournament_state: Global tournament state
         all_advancers: All competitors advancing from previous round
         next_round_type: 'semi' or 'final'
+        is_championship: If True, skip handicap recalculation (Championship event - all Mark 3)
 
     Returns:
         list: List of round_object dictionaries for next stage with RECALCULATED handicaps
@@ -394,6 +396,62 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     # Extract actual cutting times from completed rounds (NEW - critical improvement)
     tournament_results = extract_tournament_results(tournament_state)
 
+    # Skip recalculation for Championship events (everyone stays at Mark 3)
+    if is_championship:
+        print(f"\n{'='*70}")
+        print(f"  CHAMPIONSHIP EVENT - PRESERVING MARK 3")
+        print(f"{'='*70}")
+        print(f"\nAll {len(all_advancers)} advancers keep Mark 3 (fastest time wins)")
+
+        # Create simple handicap results with Mark 3
+        advancer_results = []
+        for comp_name in all_advancers:
+            advancer_results.append({
+                'name': comp_name,
+                'predicted_time': 0.0,  # Not used for championship
+                'method_used': 'Championship',
+                'confidence': 'N/A',
+                'explanation': 'Championship event: fastest time wins',
+                'predictions': {},
+                'mark': 3
+            })
+
+        print(f"✓ Championship marks assigned for next round")
+        print(f"{'='*70}\n")
+
+        # Skip to heat distribution
+        num_stands = tournament_state['num_stands']
+        all_advancers_df = tournament_state['all_competitors_df'][
+            tournament_state['all_competitors_df']['competitor_name'].isin(all_advancers)
+        ].copy()
+
+        if next_round_type == 'final':
+            num_heats = 1
+        elif next_round_type == 'semi':
+            num_heats = ceil(len(all_advancers) / num_stands)
+        else:
+            num_heats = ceil(len(all_advancers) / num_stands)
+
+        next_rounds = distribute_competitors_into_heats(
+            all_advancers_df,
+            advancer_results,
+            num_stands,
+            num_heats
+        )
+
+        # Update round type and names
+        for i, round_obj in enumerate(next_rounds):
+            round_obj['round_type'] = next_round_type
+            if next_round_type == 'final':
+                round_obj['round_name'] = 'Final'
+                round_obj['round_number'] = 1
+            elif next_round_type == 'semi':
+                round_obj['round_name'] = f'Semi {i + 1}'
+                round_obj['round_number'] = i + 1
+
+        return next_rounds
+
+    # Handicap event: full recalculation with tournament weighting
     print(f"\n{'='*70}")
     print(f"  RECALCULATING HANDICAPS USING TOURNAMENT RESULTS")
     print(f"{'='*70}")
@@ -412,7 +470,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     ].copy()
 
     # RECALCULATE handicaps with tournament results prioritized
-    # Check if wood characteristics are stored (v4.3.1+)
+    # Check if wood characteristics are stored (v4.4+)
     wood_species = tournament_state.get('wood_species')
     wood_diameter = tournament_state.get('wood_diameter')
     wood_quality = tournament_state.get('wood_quality')

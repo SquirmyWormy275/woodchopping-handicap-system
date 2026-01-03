@@ -27,10 +27,11 @@ from woodchopping.predictions.ai_predictor import predict_competitor_time_with_a
 from woodchopping.predictions.llm import call_ollama
 from woodchopping.predictions.diameter_scaling import (
     get_diameter_info_from_historical_data,
-    scale_time,
     adjust_confidence_for_scaling,
     calibrate_scaling_exponent
 )
+# QAA empirical scaling tables (replaces power-law formula)
+from woodchopping.predictions.qaa_scaling import scale_time_qaa
 
 
 def get_all_predictions(
@@ -180,26 +181,38 @@ def get_all_predictions(
                 confidence = "LOW"
                 explanation = "Default estimate (no history)"
 
-    # Apply diameter scaling to baseline if needed
+    # Determine quality value (needed for QAA scaling and quality adjustment)
+    quality_val = int(quality) if quality is not None else 5
+
+    # Apply QAA diameter scaling to baseline if needed
     if hist_diameter and hist_diameter != diameter:
-        scaled_baseline, scaling_meta = scale_time(baseline, hist_diameter, diameter)
+        # Use QAA empirical tables (150+ years of Australian data)
+        # CRITICAL: Pass quality to enable interpolation between hardwood/medium/softwood tables
+        scaled_baseline, scaling_explanation = scale_time_qaa(
+            baseline, hist_diameter, diameter, species, quality=quality_val
+        )
         baseline = scaled_baseline
 
         # Adjust confidence if significant scaling was applied
-        if scaling_meta.was_scaled:
-            confidence = adjust_confidence_for_scaling(confidence, scaling_meta)
-            explanation = f"{explanation} [Scaled from {hist_diameter:.0f}mm]"
+        diameter_diff = abs(hist_diameter - diameter)
+        if diameter_diff > 25:
+            # Downgrade confidence for large scaling jumps
+            if confidence == "VERY HIGH":
+                confidence = "HIGH"
+            elif confidence == "HIGH":
+                confidence = "MEDIUM"
 
-            predictions['baseline']['scaled'] = True
-            predictions['baseline']['original_diameter'] = hist_diameter
-            predictions['baseline']['scaling_warning'] = scaling_meta.warning_message
+        explanation = f"{explanation} [{scaling_explanation}]"
+
+        predictions['baseline']['scaled'] = True
+        predictions['baseline']['original_diameter'] = hist_diameter
+        predictions['baseline']['scaling_warning'] = f"QAA scaling: {hist_diameter:.0f}mm to {diameter:.0f}mm"
 
     # Apply WOOD QUALITY ADJUSTMENT to baseline
     # Quality scale: 0-10, where 5 is average
     # Lower quality (0-4) = harder/firmer wood = slower times (positive adjustment)
     # Higher quality (6-10) = softer/easier wood = faster times (negative adjustment)
     # Adjustment: ±2% per quality point from average
-    quality_val = int(quality) if quality is not None else 5
     if quality_val != 5:
         quality_offset = quality_val - 5  # Range: -5 to +5
         quality_factor = 1.0 + (-quality_offset * 0.02)  # -10% to +10%

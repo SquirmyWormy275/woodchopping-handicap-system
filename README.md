@@ -1,8 +1,8 @@
 # Woodchopping Handicap System (STRATHEX)
 
-**Version**: 4.3
+**Version**: 4.5
 **Status**: Production Ready
-**Last Updated**: December 24, 2025
+**Last Updated**: January 2, 2026
 
 A data-driven handicap calculation system for woodchopping competitions that combines historical performance analysis, machine learning (XGBoost), and AI-enhanced predictions to create fair, competitive handicaps.
 
@@ -14,7 +14,7 @@ A data-driven handicap calculation system for woodchopping competitions that com
 
 ```bash
 # Start the main tournament management program
-python MainProgramV4_3.py
+python MainProgramV4_4.py
 ```
 
 ### Prerequisites
@@ -36,7 +36,7 @@ pip install pandas openpyxl xgboost scikit-learn requests
 ```
 woodchopping-handicap-system/
 │
-├── MainProgramV4_3.py          # Main tournament management interface
+├── MainProgramV4_4.py          # Main tournament management interface
 ├── FunctionsLibrary.py         # Legacy function library (being phased out)
 ├── config.py                   # System configuration settings
 ├── woodchopping.xlsx           # Historical results database
@@ -93,6 +93,7 @@ Priority Logic:
 - **Time-Decay Weighting**: Recent performances weighted higher than old results
 - **Monte Carlo Simulation**: Validate handicap fairness (250,000 iterations)
 - **Multi-Round Tournaments**: Heats → Semi-finals → Finals
+- **Multi-Event Tournaments**: Design complete tournament days with multiple independent events (e.g., "225mm SB", "300mm UH", "275mm SB"), sequential results entry, and final tournament summary
 
 ### 4. Fairness Metrics
 
@@ -242,6 +243,7 @@ Adjustment: ±2% per quality point from average
 
 ## Version History
 
+- **V4.4** (Dec 2025): Complete modular migration, tournament result weighting, documentation overhaul
 - **V4.3** (Dec 2025): Time-decay consistency, wood quality integration
 - **V4.2** (Dec 2025): Added judges approval for handicaps
 - **V4.0** (Dec 2025): Modular architecture, separate SB/UH models

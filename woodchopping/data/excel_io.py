@@ -281,17 +281,18 @@ def save_time_to_results(
         print(f"Error saving time to results: {e}")
 
 
-def append_results_to_excel(heat_assignment_df, wood_selection, round_object=None, tournament_state=None):
+def append_results_to_excel(heat_assignment_df, wood_selection, round_object=None, tournament_state=None, event_name=None):
     """
     Append heat results to Excel Results sheet.
 
-    Supports both legacy single-heat system and new multi-round tournament system.
+    Supports both legacy single-heat system, single-event tournaments, and multi-event tournaments.
 
     Args:
         heat_assignment_df (DataFrame): LEGACY - competitors in heat (for backward compatibility)
         wood_selection (dict): Wood characteristics (species, size_mm, quality, event)
         round_object (dict): NEW - Round object from tournament system (optional)
-        tournament_state (dict): NEW - Tournament state for context (optional)
+        tournament_state (dict): NEW - Tournament state for single-event context (optional)
+        event_name (str): NEW - Event name for multi-event tournaments (optional)
     """
     # Determine if using new tournament system or legacy single-heat system
     if round_object is not None:
@@ -316,10 +317,18 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
     quality = wood_selection.get("quality")
 
     # Generate HeatID
-    if round_object and tournament_state:
-        # NEW: Use round name and tournament context
-        event_name = tournament_state.get('event_name', 'Event')
-        heat_id = f"{event_code}-{event_name}-{round_name}".replace(" ", "-")
+    if round_object and (tournament_state or event_name):
+        # NEW: Use round name and tournament/event context
+        if event_name:
+            # Multi-event tournament: use provided event_name
+            evt_name = event_name
+        elif tournament_state:
+            # Single-event tournament: get from tournament_state
+            evt_name = tournament_state.get('event_name', 'Event')
+        else:
+            evt_name = 'Event'
+
+        heat_id = f"{event_code}-{evt_name}-{round_name}".replace(" ", "-")
     else:
         # LEGACY: Prompt for Heat ID
         heat_id = input("Enter a Heat ID (e.g., SB-01-Qual or any short label): ").strip()

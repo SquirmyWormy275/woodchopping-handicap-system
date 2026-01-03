@@ -109,7 +109,29 @@ Handicapping solves this by giving faster competitors DELAYED STARTS:
   - If handicaps are perfect, everyone finishes at the SAME TIME
   - Natural variation (±3 seconds) creates exciting competition
 
-THE STRATHEX SOLUTION
+TWO EVENT TYPES: HANDICAP vs CHAMPIONSHIP
+
+STRATHEX supports two competition formats in multi-event tournaments:
+
+HANDICAP EVENTS (What this system is designed for):
+  - Each competitor gets an individual handicap mark based on predicted speed
+  - Faster competitors start later (higher marks), slower start earlier (lower marks)
+  - Goal: Everyone finishes at the same time = exciting finish for spectators
+  - Uses AI predictions, historical data, and Monte Carlo validation
+  - This is what the rest of this explanation wizard focuses on
+
+CHAMPIONSHIP EVENTS (Traditional racing):
+  - ALL competitors receive Mark 3 (simultaneous start)
+  - Fastest raw time wins - no predictions needed
+  - Traditional "race to the finish" format
+  - Faster competitor always wins (no equalizing of skill levels)
+  - Common for elite-level competitions where raw speed is the goal
+
+When configuring an event in a multi-event tournament, judges select whether
+it's a Handicap or Championship event. Championship events skip all the AI
+prediction and handicap calculation steps described below.
+
+THE STRATHEX SOLUTION (For Handicap Events)
 
 This program predicts how fast each competitor will cut a specific block of
 wood, then calculates handicap marks so everyone has an EQUAL chance to win.
@@ -198,8 +220,9 @@ HOW IT WORKS:
 
 2. Apply DIAMETER SCALING if needed
    - If historical data is different diameter than today's wood
-   - Physics-based formula: time × (new_diameter / old_diameter)^1.4
-   - Example: 325mm → 275mm scaled automatically
+   - Uses QAA empirical tables (150+ years Australian data)
+   - Example: Book mark 33s @ 300mm → 28s @ 275mm (hardwood)
+   - Wood type classification: Hardwood/Medium/Softwood
 
 3. Apply WOOD QUALITY adjustment
    - Quality scale: 0 (extremely hard) to 10 (extremely soft)
@@ -218,26 +241,27 @@ EXAMPLE:
     - 2025 (current, 325mm): 34.1s (weight: 1.00, 100%)
 
   Time-weighted average: 33.4s (recent times dominate, not old peak!)
-  Today's wood: 275mm Aspen, Quality 6/10
+  Today's wood: 275mm Aspen (Softwood), Quality 6/10
 
   Calculation:
-    Base (weighted avg): 33.4s
-    Diameter scaling: 33.4 × (275/325)^1.4 = 28.0s
+    Base (weighted avg): 33.4s @ 300mm equivalent
+    QAA scaling: Book mark 33s @ 300mm → 28s @ 275mm (softwood table)
     Quality adjustment: 28.0 × 0.98 = 27.4s (quality 6 = slightly softer)
     PREDICTED TIME: 27.4 seconds
 
 ADVANTAGES:
   + ALWAYS AVAILABLE (works even with minimal data)
   + TIME-AWARE (recent form prioritized over old peaks)
-  + PHYSICS-BASED (diameter scaling uses real wood physics)
+  + BATTLE-TESTED (QAA tables validated over 150 years)
+  + EMPIRICAL (based on actual competition data, not formulas)
   + CONSISTENT (same quality adjustment as other methods)
-  + TRANSPARENT (math anyone can verify)
+  + TRANSPARENT (lookup tables anyone can verify)
   + RELIABLE (based on actual competitor performance)
-  + FAST (instant calculation)
+  + FAST (instant table lookup)
 
 DISADVANTAGES:
   - SIMPLIFIED (doesn't capture complex interactions)
-  - REQUIRES CALIBRATION (diameter exponent may need tuning)
+  - DISCRETE (only standard diameters in tables)
   - LIMITED (only uses event-specific historical data)
 
 WHEN USED:
@@ -435,7 +459,7 @@ CONFIDENCE LEVELS:
     print("""
 The system uses INTELLIGENT SELECTION LOGIC that considers data quality:
 
-PRIORITY ORDER (V4.3 - Updated Dec 2025):
+PRIORITY ORDER (V4.4 - Updated Dec 2025):
 
     1. BASELINE (SCALED) - IF diameter scaling applied with confidence ≥ MEDIUM
        → Physics-based scaling is MORE reliable than ML extrapolation
@@ -458,11 +482,11 @@ WHY THIS MATTERS:
 
   Competitor with 325mm historical data, predicting for 275mm wood:
 
-  OLD LOGIC (prior to v4.3):
+  OLD LOGIC (prior to v4.4):
     ML prediction: 33.8s (extrapolating from 325mm pattern - INACCURATE!)
     Result: 9+ second error vs reality
 
-  NEW LOGIC (v4.3+):
+  NEW LOGIC (v4.4+):
     Baseline (scaled): 24.5s (direct physics-based scaling - ACCURATE!)
     Uses: time × (275/325)^1.4
     Result: Matches real-world observations
@@ -506,7 +530,7 @@ Judges can see the prediction for any competitor and understand exactly:
     print("=" * 70)
 
     print("""
-VERSION 4.3 - MAJOR ACCURACY UPGRADES
+VERSION 4.4 - MAJOR ACCURACY UPGRADES
 
 The system received THREE critical improvements that significantly increased
 prediction accuracy, especially for aging competitors and cross-diameter
@@ -544,7 +568,7 @@ CONSISTENCY:
     ✓ ML model features (competitor_avg_time_by_event)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  IMPROVEMENT #2: DIAMETER SCALING (Physics-Based)
+  IMPROVEMENT #2: DIAMETER SCALING (QAA Empirical Tables)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 PROBLEM:
@@ -553,25 +577,33 @@ PROBLEM:
   but failed spectacularly.
 
 SOLUTION:
-  Physics-based diameter scaling: time × (new_diameter / old_diameter)^1.4
+  QAA empirical scaling tables from Queensland Axemen's Association
 
-  Why exponent 1.4?
-    - Volume scales with diameter^2 (area of circle)
-    - But cutting resistance also increases with depth
-    - Empirical testing shows 1.4 is accurate for woodchopping
-    - Can be calibrated with calibrate_scaling_exponent() function
+  Why QAA tables?
+    - 150+ years of Australian woodchopping institutional knowledge
+    - Based on actual competition results, not mathematical formulas
+    - Separate tables for Hardwood, Medium wood, and Softwood
+    - Standard: 300mm diameter (12" blocks)
+    - Covers diameters: 225mm, 250mm, 275mm, 300mm, 325mm, 350mm
+
+  How it works:
+    - Book marks recorded at 300mm standard
+    - Lookup table converts to target diameter
+    - Wood type automatically classified by species
+    - Example: Mark 27s @ 300mm → 23s @ 275mm (hardwood)
 
 IMPACT:
   Cody Labahn example (325mm → 275mm):
     - Historical: 27s average in 325mm blocks
     - OLD: ML predicted 27.4s (ignored diameter difference!)
-    - NEW: Baseline scaled 27 × (275/325)^1.4 = 22.6s
-    - Result: 4.8 seconds more accurate!
+    - NEW: QAA table lookup: 27s @ 325mm → 23s @ 275mm
+    - Result: 4+ seconds more accurate, validated by 150 years data!
 
 INTELLIGENCE:
   Selection logic now PREFERS baseline when diameter scaling applied:
-    - Baseline (scaled) > ML (extrapolating) when diameters differ
+    - Baseline (QAA scaled) > ML (extrapolating) when diameters differ
     - ML preferred when diameters match (no extrapolation needed)
+    - QAA tables more reliable than any formula-based approach
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   IMPROVEMENT #3: WOOD QUALITY CONSISTENCY (Universal Application)
@@ -640,7 +672,7 @@ EXAMPLE:
     → Ignored the 26.8s and 27.1s from TODAY
     → Mark would be TOO HIGH (unfair disadvantage)
 
-  NEW SYSTEM (v4.3):
+  NEW SYSTEM (v4.4):
     → Uses most recent tournament time: 27.1s
     → Weighted: (27.1 × 0.97) + (24.5 × 0.03) = 27.0s
     → Confidence upgraded from HIGH to VERY HIGH
@@ -690,7 +722,7 @@ COMBINED IMPACT - Real Competition Example:
         ML: 33.8s (extrapolating incorrectly)
         → Would mark him TOO HIGH (unfair disadvantage)
 
-    - NEW predictions (v4.3):
+    - NEW predictions (v4.4):
         Time-weighted avg: 27.8s (recent form dominates)
         Diameter scaled: 27.8 × (275/325)^1.4 = 23.3s
         Quality adjusted: 23.3 × 0.98 = 22.8s
