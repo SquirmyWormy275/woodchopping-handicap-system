@@ -444,3 +444,172 @@ def simulate_and_assess_handicaps(
     format_ai_assessment(ai_assessment, width=100)
 
     print("="*70)
+
+
+def get_championship_race_analysis(analysis: Dict[str, Any], predictions: List[Dict]) -> str:
+    """
+    Use LLM to provide engaging race outcome predictions for championship format.
+
+    Analyzes Monte Carlo simulation results for a championship event (all competitors
+    start together, fastest time wins) and provides sports-commentary style analysis
+    focusing on competitive dynamics, likely winners, key matchups, and excitement factors.
+
+    Args:
+        analysis: Monte Carlo simulation results dict from run_monte_carlo_simulation()
+        predictions: List of competitor prediction dicts containing:
+            - name: Competitor name
+            - predicted_time: Predicted cutting time
+            - method_used: Prediction method (ML/LLM/Baseline)
+            - confidence: Confidence level
+
+    Returns:
+        Formatted championship race analysis text containing:
+            - RACE FAVORITE: Most likely winner identification
+            - KEY MATCHUPS: Competitors with similar predicted times
+            - PODIUM BATTLE: 2nd/3rd place competition analysis
+            - DARK HORSE: Potential upsets
+            - CONSISTENCY ANALYSIS: Notable variance patterns
+            - RACE DYNAMICS: Competitive narrative
+
+    Analysis Focus:
+        - Race outcome predictions (NOT fairness assessment)
+        - Competitive matchups and rivalries
+        - Upset potential and long-shot contenders
+        - Consistency patterns (high/low variance competitors)
+        - Overall race excitement and competitive balance
+
+    Example:
+        >>> analysis = run_monte_carlo_simulation(predictions)
+        >>> race_analysis = get_championship_race_analysis(analysis, predictions)
+        >>> print(race_analysis)
+        RACE FAVORITE: Alice
+        With a 45.2% win probability and fastest predicted time of 24.5s,
+        Alice is the clear favorite to win this championship event...
+
+    Note:
+        If Ollama is unavailable, returns a simplified statistical summary
+        instead of AI-generated analysis.
+    """
+    # Extract key metrics
+    winner_pcts = analysis['winner_percentages']
+    avg_positions = analysis['avg_finish_positions']
+    competitor_stats = analysis['competitor_time_stats']
+
+    # Identify race favorite (highest win rate)
+    favorite_name = max(winner_pcts.items(), key=lambda x: x[1])[0]
+    favorite_win_rate = winner_pcts[favorite_name]
+
+    # Find predicted times for context
+    pred_times = {pred['name']: pred['predicted_time'] for pred in predictions}
+
+    # Identify close matchups (competitors within 2 seconds predicted time)
+    matchups = []
+    for i, pred1 in enumerate(predictions):
+        for pred2 in predictions[i+1:]:
+            time_diff = abs(pred1['predicted_time'] - pred2['predicted_time'])
+            if time_diff <= 2.0:
+                matchups.append((pred1['name'], pred2['name'], time_diff))
+
+    # Identify dark horses (>10% win rate despite not being favorite)
+    dark_horses = [
+        (name, pct) for name, pct in winner_pcts.items()
+        if pct >= 10.0 and name != favorite_name
+    ]
+
+    # Identify consistency outliers (unusually high/low variance)
+    consistency_outliers = []
+    for name, stats in competitor_stats.items():
+        if stats['std_dev'] <= 2.5:
+            consistency_outliers.append((name, 'very high', stats['std_dev']))
+        elif stats['std_dev'] > 3.5:
+            consistency_outliers.append((name, 'very low', stats['std_dev']))
+
+    # Build detailed prompt for AI
+    prompt = f"""You are a professional woodchopping race analyst providing an engaging race preview for a championship event. All competitors start together (no handicaps) - fastest time wins.
+
+SIMULATION RESULTS ({analysis['num_simulations']:,} races):
+
+WIN PROBABILITIES:
+{chr(10).join(f"- {name}: {pct:.1f}% (predicted time: {pred_times[name]:.1f}s, avg finish: {avg_positions[name]:.2f})" for name, pct in sorted(winner_pcts.items(), key=lambda x: x[1], reverse=True))}
+
+INDIVIDUAL TIME STATISTICS:
+{chr(10).join(f"- {name}: mean={stats['mean']:.1f}s, std_dev={stats['std_dev']:.2f}s, range={stats['min']:.1f}s-{stats['max']:.1f}s, {stats['consistency_rating']}" for name, stats in competitor_stats.items())}
+
+CLOSE MATCHUPS (within 2 seconds):
+{chr(10).join(f"- {name1} vs {name2} ({diff:.1f}s difference)" for name1, name2, diff in matchups) if matchups else "- No particularly close matchups"}
+
+DARK HORSE CANDIDATES (>10% win rate):
+{chr(10).join(f"- {name}: {pct:.1f}% win rate" for name, pct in dark_horses) if dark_horses else "- None identified"}
+
+CONSISTENCY OUTLIERS:
+{chr(10).join(f"- {name}: {rating} consistency (std_dev={std:.2f}s)" for name, rating, std in consistency_outliers) if consistency_outliers else "- All competitors show normal variance"}
+
+YOUR TASK:
+Provide an engaging championship race analysis in sports-commentary style with these sections:
+
+1. RACE FAVORITE
+   - Identify most likely winner ({favorite_name}: {favorite_win_rate:.1f}%)
+   - Explain why they're favored (predicted time, consistency, win probability)
+   - Assess strength of favoritism (dominant or vulnerable?)
+
+2. KEY MATCHUPS
+   - Highlight 2-3 most interesting competitive matchups
+   - Focus on competitors with similar predicted times or win rates
+   - Create narrative tension and rivalry storylines
+
+3. PODIUM BATTLE
+   - Analyze the race for 2nd and 3rd place
+   - Identify which competitors are most likely to podium
+   - Discuss the competitive dynamics outside the winner
+
+4. DARK HORSE / UPSET POTENTIAL
+   - Identify long-shot competitors with realistic upset chances
+   - Explain what would need to happen for an upset
+   - Create "what if" excitement narratives
+
+5. CONSISTENCY ANALYSIS
+   - Comment on competitors with unusual consistency (very high or very low variance)
+   - Explain what consistency means for race outcomes
+   - Identify "boom or bust" performers vs reliable competitors
+
+6. RACE DYNAMICS
+   - Describe the overall competitive narrative
+   - Rate excitement level (blowout expected vs tight competition)
+   - Provide final prediction with caveats
+
+STYLE GUIDELINES:
+- Engaging, sports-commentary tone (think ESPN analyst)
+- Build excitement and narrative tension
+- Use specific statistics but make them accessible
+- Balance objective analysis with engaging storytelling
+- Keep each section concise (2-4 sentences)
+
+Generate the analysis now:"""
+
+    try:
+        # Call Ollama for AI analysis
+        ai_response = call_ollama(
+            prompt,
+            model=llm_config.PREDICTION_MODEL
+        )
+
+        return ai_response.strip()
+
+    except Exception as e:
+        # Fallback if Ollama unavailable
+        return f"""RACE FAVORITE: {favorite_name}
+{favorite_name} is the clear favorite with a {favorite_win_rate:.1f}% win probability and predicted time of {pred_times[favorite_name]:.1f}s.
+
+KEY MATCHUPS:
+{chr(10).join(f"- {name1} vs {name2}: Separated by only {diff:.1f}s in predicted time" for name1, name2, diff in matchups[:3]) if matchups else "No particularly close matchups identified."}
+
+PODIUM BATTLE:
+Top podium contenders based on win probabilities: {', '.join(f"{name} ({pct:.1f}%)" for name, pct in sorted(winner_pcts.items(), key=lambda x: x[1], reverse=True)[:3])}
+
+DARK HORSE:
+{chr(10).join(f"- {name} has upset potential with {pct:.1f}% win rate" for name, pct in dark_horses[:2]) if dark_horses else "No significant dark horse candidates."}
+
+RACE DYNAMICS:
+This race features {len(predictions)} competitors with win rates ranging from {min(winner_pcts.values()):.1f}% to {max(winner_pcts.values()):.1f}%. {"The favorite is heavily favored - expect a dominant performance." if favorite_win_rate > 50 else "Multiple competitors have realistic win chances - expect tight competition."}
+
+(Note: AI analysis unavailable - showing statistical summary. Error: {str(e)})"""

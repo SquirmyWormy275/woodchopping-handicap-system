@@ -37,12 +37,10 @@ Complete guide to all documentation in the Woodchopping Handicap System.
 
 ---
 
-## Technical Deep-Dives
+## Technical Documentation
 
-### ML Model & Predictions
-
-#### **[ML_AUDIT_REPORT.md](ML_AUDIT_REPORT.md)** - ML Model Audit
-**Status**: Updated Dec 24, 2025 (time-decay issue resolved)
+### **[ML_AUDIT_REPORT.md](ML_AUDIT_REPORT.md)** - ML Model Audit
+**Status**: Current (Jan 2026)
 **Contents**:
 - ML model architecture (XGBoost)
 - Feature engineering (6 features)
@@ -52,47 +50,12 @@ Complete guide to all documentation in the Woodchopping Handicap System.
 - Handicap calculation validation
 - Test results and fairness metrics
 
-#### **[TIME_DECAY_CONSISTENCY_UPDATE.md](TIME_DECAY_CONSISTENCY_UPDATE.md)** - Time-Decay Implementation
-**Date**: Dec 24, 2025
-**Status**: IMPLEMENTED
+### **[HANDICAP_SYSTEM_EXPLAINED.md](HANDICAP_SYSTEM_EXPLAINED.md)** - System Explanation
 **Contents**:
-- Problem identified (ML used simple mean)
-- Impact example (David Moses Jr. 3.6s improvement)
-- Implementation details (lines changed)
-- Testing results (0.3-0.8s spreads)
-- Before/after comparisons
-
-#### **[SCALING_IMPROVEMENTS.md](SCALING_IMPROVEMENTS.md)** - Diameter Scaling
-**Date**: Dec 23, 2025
-**Status**: IMPLEMENTED
-**Contents**:
-- Test case analysis (275mm Aspen)
-- Before/after prediction comparison
-- Scaling formula (exponent 1.4)
-- Real-world validation
-- Files modified
-
----
-
-## Problem Diagnosis
-
-### **[UH_PREDICTION_ISSUES.md](UH_PREDICTION_ISSUES.md)** - Original UH Problem
-**Date**: Dec 23, 2025
-**Problem**: UH predictions wildly inaccurate for cross-diameter cases
-**Root Cause**: No diameter scaling implemented
-**Resolution**: Diameter scaling module created
-
-### **[DIAGNOSIS.md](DIAGNOSIS.md)** - Initial Investigation
-**Date**: Dec 23, 2025
-**Contents**:
-- Historical data analysis
-- Competitor-by-competitor breakdown
-- Prediction method comparison
-- Issue identification
-
----
-
-## Feature Documentation
+- How handicaps work
+- AAA rules
+- Prediction methodology
+- Fairness objectives
 
 ### **[NewFeatures.md](NewFeatures.md)** - Planned Enhancements
 **Contents**:
@@ -102,23 +65,17 @@ Complete guide to all documentation in the Woodchopping Handicap System.
 - Time-weighted historical data
 - 3-Board Jigger support
 
-### **[HANDICAP_SYSTEM_EXPLAINED.md](HANDICAP_SYSTEM_EXPLAINED.md)** - System Explanation
+### **[CHECK_MY_WORK_FEATURE.md](CHECK_MY_WORK_FEATURE.md)** - Check My Work Validation
 **Contents**:
-- How handicaps work
-- AAA rules
-- Prediction methodology
-- Fairness objectives
+- Judge validation system
+- Cross-validation features
+- Manual override capabilities
 
----
-
-## Development History
-
-### **[MODULE_REFACTORING_COMPLETE.md](MODULE_REFACTORING_COMPLETE.md)** - Modular Refactor
-**Date**: Early Dec 2025
-**Changes**: Transitioned from monolithic FunctionsLibrary.py to modular `woodchopping/` package
-
-### **[REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md)** - Refactoring Summary
-### **[REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)** - Refactoring Details
+### **[QAA_INTERPOLATION_IMPLEMENTATION.md](QAA_INTERPOLATION_IMPLEMENTATION.md)** - QAA Interpolation
+**Contents**:
+- Quality/Age/Axe scaling logic
+- Interpolation algorithms
+- Implementation details
 
 ---
 
@@ -135,15 +92,6 @@ Complete guide to all documentation in the Woodchopping Handicap System.
 **...understand the ML model**
 → Read [ML_AUDIT_REPORT.md](ML_AUDIT_REPORT.md)
 
-**...understand time-decay weighting**
-→ Read [TIME_DECAY_CONSISTENCY_UPDATE.md](TIME_DECAY_CONSISTENCY_UPDATE.md)
-
-**...understand diameter scaling**
-→ Read [SCALING_IMPROVEMENTS.md](SCALING_IMPROVEMENTS.md)
-
-**...see how a specific problem was solved**
-→ Read [UH_PREDICTION_ISSUES.md](UH_PREDICTION_ISSUES.md) or [DIAGNOSIS.md](DIAGNOSIS.md)
-
 **...contribute code**
 → Read [CLAUDE.md](../CLAUDE.md) for architecture guidelines
 
@@ -155,52 +103,52 @@ Complete guide to all documentation in the Woodchopping Handicap System.
 ## Document Status Legend
 
 - **[CURRENT]**: Up-to-date, reflects current system state
-- **[RESOLVED]**: Problem documented and fixed
-- **[HISTORICAL]**: Documents past state or development process
 - **[PLANNED]**: Future enhancements not yet implemented
 
 ---
 
 ## Quick Reference
 
-### System Metrics (Dec 24, 2025)
+### System Metrics (V5.0 - Jan 2026)
 
 ```
-Test Results:
-- UH (275mm Aspen): 0.8s spread [EXCELLENT]
-- SB (300mm EWP): 0.3s spread [EXCELLENT]
+Architecture:
+- Fully modular package structure
+- Clean separation of concerns
+- Production-ready code organization
 
 ML Model Performance:
-- SB: MAE 2.55s, R² 0.989 (69 training records)
-- UH: MAE 2.35s, R² 0.878 (35 training records)
+- SB: MAE 2.55s, R² 0.989
+- UH: MAE 2.35s, R² 0.878
+
+Fairness Metrics:
+- Target win rate spread: < 2%
+- Absolute variance: ±3s for all competitors
+- Time-decay half-life: 730 days (2 years)
 
 Feature Importance:
 - competitor_avg_time_by_event: 73-82% (dominant)
 - Experience: 5-11%
 - Wood properties: 10-14%
 - Diameter: 1-5%
-
-Time-Decay:
-- Half-life: 730 days (2 years)
-- Applied to: ALL prediction methods ✓
-- Consistency: FULLY CONSISTENT ✓
 ```
 
 ---
 
 ## Version Control
 
-This documentation set reflects **Version 4.4** (December 2025)
+This documentation set reflects **Version 5.0** (January 2026)
 
-**Major Changes in V4.4**:
-- Complete modular architecture migration (eliminated FunctionsLibrary.py)
-- Tournament result weighting (97% same-wood optimization)
-- Time-decay weighting made consistent across all methods
-- Wood quality adjustments added to ML and baseline
-- Diameter scaling implemented and validated
-- Comprehensive documentation overhaul
+**Major Features in V5.0**:
+- Complete modular architecture
+- Multi-event tournament management
+- Championship race simulator
+- Enhanced Monte Carlo statistics
+- Tournament result weighting (97%)
+- Diameter scaling with validation
+- Comprehensive judge education system
 
-**Last Documentation Update**: December 28, 2025
+**Last Documentation Update**: January 4, 2026
 
 ---
 

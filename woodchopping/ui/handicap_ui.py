@@ -189,6 +189,76 @@ def view_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> No
         simulate_and_assess_handicaps(results, num_simulations=sim_config.NUM_SIMULATIONS)
 
 
+def _display_live_standings(times_collected: Dict[str, float],
+                           all_competitors: List[str],
+                           num_to_advance: Optional[int] = None) -> None:
+    """
+    Display live standings as results are entered (A4 Feature).
+
+    Args:
+        times_collected: Dict mapping competitor names to times (so far)
+        all_competitors: List of all competitors in the round
+        num_to_advance: Number of competitors who advance (None for finals)
+    """
+    print("\n" + "─" * 70)
+    print("Current Standings".center(70))
+    print("┌" + "─" * 5 + "┬" + "─" * 35 + "┬" + "─" * 12 + "┬" + "─" * 10 + "┐")
+    print("│ Pos │ Competitor                        │ Time       │ Status   │")
+    print("├" + "─" * 5 + "┼" + "─" * 35 + "┼" + "─" * 12 + "┼" + "─" * 10 + "┤")
+
+    # Sort by time
+    sorted_results = sorted(times_collected.items(), key=lambda x: x[1])
+
+    # Determine statuses
+    for rank, (name, time_val) in enumerate(sorted_results, 1):
+        name_str = name[:33].ljust(33)
+        time_str = f"{time_val:.1f} sec".center(10)
+
+        # Determine status
+        if num_to_advance is None or num_to_advance == 0:
+            # Final round - no advancement
+            status = "  --  "
+        else:
+            # Not all results in yet
+            total_entered = len(times_collected)
+            total_competitors = len(all_competitors)
+
+            if total_entered < total_competitors:
+                # Still waiting for results
+                if rank <= num_to_advance:
+                    status = "   ✓   "  # Currently advancing
+                elif rank == num_to_advance + 1:
+                    status = "   ?   "  # On the bubble
+                else:
+                    status = "   ?   "  # TBD
+            else:
+                # All results in
+                if rank <= num_to_advance:
+                    status = "   ✓   "  # Advancing
+                else:
+                    status = "   ✗   "  # Eliminated
+
+        # Highlight bubble position
+        bubble_marker = " *" if (num_to_advance and rank == num_to_advance) else "  "
+
+        print(f"│ {rank:2d}{bubble_marker} │ {name_str} │ {time_str} │ {status} │")
+
+    print("└" + "─" * 5 + "┴" + "─" * 35 + "┴" + "─" * 12 + "┴" + "─" * 10 + "┘")
+
+    # Show pending results
+    pending = [c for c in all_competitors if c not in times_collected]
+    if pending:
+        print(f"Pending results: {', '.join(pending)}")
+
+    # Show advancement info
+    if num_to_advance and num_to_advance > 0:
+        print(f"\nTop {num_to_advance} advance to next round")
+        if len(times_collected) == len(all_competitors):
+            print("✓ All results entered - standings are final")
+
+    print("─" * 70 + "\n")
+
+
 def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
                            wood_selection: Optional[Dict] = None,
                            round_object: Optional[Dict] = None,
@@ -249,15 +319,21 @@ def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
     rows_to_write = []
     times_collected = {}
 
-    # STEP 1: Collect raw cutting times (for historical data)
+    # STEP 1: Collect raw cutting times (for historical data) - WITH LIVE STANDINGS (A4)
     print("\n" + "=" * 70)
-    print("STEP 1: RECORD CUTTING TIMES")
+    print("STEP 1: RECORD CUTTING TIMES (Live Standings)")
     print("=" * 70)
     print("Enter the raw cutting time for each competitor (from their mark to block severed)")
+    print("Standings will update after each entry")
     print("Press Enter to skip a competitor\n")
 
-    for name in competitors_list:
-        s = input(f"  Cutting time for {name}: ").strip()
+    # Determine advancement threshold if this is not a final
+    num_to_advance = None
+    if round_object:
+        num_to_advance = round_object.get('num_to_advance', 0)
+
+    for idx, name in enumerate(competitors_list, 1):
+        s = input(f"  [{idx}/{len(competitors_list)}] Cutting time for {name}: ").strip()
 
         if s == "":
             continue
@@ -265,6 +341,11 @@ def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
         try:
             t = float(s)
             times_collected[name] = t
+
+            # Display live standings after each entry (A4 Feature)
+            if len(times_collected) > 0:
+                _display_live_standings(times_collected, competitors_list, num_to_advance)
+
         except ValueError:
             print("    Invalid time; skipping this entry.")
             continue
@@ -513,11 +594,22 @@ def manual_adjust_handicaps(
 
                         # Show change
                         old_mark = competitor['mark']
+
+                        # Prompt for reason (A5 feature)
+                        print("\n" + "─" * 70)
+                        print("Please explain why you're adjusting this handicap (for audit trail):")
+                        reason = input("Reason: ").strip()
+                        while not reason:
+                            print("⚠ Reason is required for adjustment tracking.")
+                            reason = input("Reason: ").strip()
+
                         competitor['mark'] = new_mark
                         competitor['manual_adjustment'] = True
                         competitor['original_mark'] = old_mark
+                        competitor['adjustment_reason'] = reason  # A5: Store reason
 
                         print(f"\n✓ Updated {competitor['name']}: Mark {old_mark} → {new_mark}")
+                        print(f"  Reason: {reason}")
                         break
 
                     except ValueError:

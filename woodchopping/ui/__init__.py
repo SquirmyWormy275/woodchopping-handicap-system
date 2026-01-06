@@ -39,6 +39,24 @@ from woodchopping.ui.competitor_ui import (
     remove_from_heat
 )
 
+# Competitor Dashboard (A9 + B2 + B4)
+from woodchopping.ui.competitor_dashboard import (
+    display_competitor_dashboard
+)
+
+# Schedule Printout (A1)
+from woodchopping.ui.schedule_printout import (
+    display_and_export_schedule
+)
+
+# Adjustment Tracking (A5)
+from woodchopping.ui.adjustment_tracking import (
+    log_handicap_adjustment,
+    prompt_adjustment_reason,
+    view_adjustment_history,
+    get_adjustment_summary
+)
+
 # Personnel UI
 from woodchopping.ui.personnel_ui import (
     personnel_management_menu,
@@ -76,6 +94,34 @@ from woodchopping.ui.multi_event_ui import (
     generate_tournament_summary
 )
 
+# Championship Simulator UI
+from woodchopping.ui.championship_simulator import (
+    run_championship_simulator
+)
+
+# Payout UI
+from woodchopping.ui.payout_ui import (
+    configure_event_payouts,
+    display_payout_config,
+    display_final_results_with_payouts,
+    calculate_total_earnings,
+    display_tournament_earnings_summary,
+    display_single_event_final_results
+)
+
+# Bracket UI (NEW V5.0 - Head-to-Head Bracket Tournament)
+from woodchopping.ui.bracket_ui import (
+    initialize_bracket_tournament,
+    generate_bracket_seeds,
+    generate_bracket_with_byes,
+    generate_double_elimination_bracket,
+    render_bracket_tree_ascii,
+    render_round_section,
+    sequential_match_entry_workflow,
+    export_bracket_to_html,
+    open_bracket_in_browser
+)
+
 
 __all__ = [
     # Tournament UI
@@ -102,6 +148,18 @@ __all__ = [
     'select_competitors_for_heat',
     'view_heat_assignment',
     'remove_from_heat',
+
+    # Competitor Dashboard (A9 + B2 + B4)
+    'display_competitor_dashboard',
+
+    # Schedule Printout (A1)
+    'display_and_export_schedule',
+
+    # Adjustment Tracking (A5)
+    'log_handicap_adjustment',
+    'prompt_adjustment_reason',
+    'view_adjustment_history',
+    'get_adjustment_summary',
 
     # Personnel UI
     'personnel_management_menu',
@@ -133,4 +191,26 @@ __all__ = [
     'display_event_progress',
     'extract_event_placements',
     'generate_tournament_summary',
+
+    # Championship Simulator UI
+    'run_championship_simulator',
+
+    # Payout UI
+    'configure_event_payouts',
+    'display_payout_config',
+    'display_final_results_with_payouts',
+    'calculate_total_earnings',
+    'display_tournament_earnings_summary',
+    'display_single_event_final_results',
+
+    # Bracket UI (NEW V5.0)
+    'initialize_bracket_tournament',
+    'generate_bracket_seeds',
+    'generate_bracket_with_byes',
+    'generate_double_elimination_bracket',
+    'render_bracket_tree_ascii',
+    'render_round_section',
+    'sequential_match_entry_workflow',
+    'export_bracket_to_html',
+    'open_bracket_in_browser',
 ]

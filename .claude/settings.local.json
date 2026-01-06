@@ -4,7 +4,9 @@
       "Bash(python:*)",
       "Bash(git mv:*)",
       "Bash(timeout 3 python:*)",
-      "Bash(exit 0)"
+      "Bash(exit 0)",
+      "Bash(ls:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

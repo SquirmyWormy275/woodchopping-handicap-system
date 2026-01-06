@@ -1,7 +1,7 @@
 # Woodchopping Handicap System - Complete Status Report
 
-**Date**: January 2, 2026
-**Version**: 4.5
+**Date**: January 5, 2026
+**Version**: 5.0
 **Status**: PRODUCTION READY
 
 ---
@@ -21,6 +21,16 @@ All major prediction methods are now fully functional, consistent, and validated
 [PASSED] Handicap Calculation
 [PASSED] Fairness Validation
 [PASSED] Multi-Event Tournament Management
+[PASSED] Championship Race Simulator
+[PASSED] Monte Carlo Individual Statistics Tracking
+[PASSED] Schedule Printout Generator (NEW V5.0)
+[PASSED] Live Results Entry with Standings (NEW V5.0)
+[PASSED] Handicap Override Tracker (NEW V5.0)
+[PASSED] Competitor Performance Dashboard (NEW V5.0)
+[PASSED] Prediction Accuracy Tracker (NEW V5.0)
+[PASSED] Prize Money/Payout System (NEW V5.0)
+[PASSED] Bracket Tournaments - Single Elimination (NEW V5.0)
+[PASSED] Bracket Tournaments - Double Elimination (NEW V5.0)
 ```
 
 ---
@@ -205,7 +215,206 @@ Competitor advances from heats to finals:
 
 **Status**: Fully implemented and automatic (Dec 28, 2025)
 
-### 8. Handicap Calculation - [VALIDATED]
+### 8. Monte Carlo Simulation Enhancements - [COMPLETE] (NEW V5.0)
+
+**Individual Competitor Statistics Tracking**:
+- `run_monte_carlo_simulation()` now tracks per-competitor finish time statistics across all simulations
+- New return field: `competitor_time_stats` dict with per-competitor analysis:
+  - `mean`: Average finish time across simulations
+  - `std_dev`: Standard deviation (validates ±3s variance model)
+  - `min`/`max`: Range of finish times observed
+  - `p25`/`p50`/`p75`: Percentile distribution
+  - `consistency_rating`: Rating based on std_dev thresholds
+
+**Consistency Rating Scale**:
+- **Very High**: std_dev ≤ 2.5s (very predictable performance)
+- **High**: std_dev ≤ 3.0s (expected variance, matches ±3s model)
+- **Moderate**: std_dev ≤ 3.5s (slightly above expected variance)
+- **Low**: std_dev > 3.5s (high variability, unpredictable outcomes)
+
+**Usage**: Primarily used by Championship Simulator for detailed performance analysis
+
+**Memory Overhead**:
+- 4 competitors @ 2M simulations: ~64 MB
+- 10 competitors @ 2M simulations: ~160 MB
+
+**Status**: Fully implemented and tested
+
+### 9. Championship Race Simulator - [COMPLETE] (NEW V5.0)
+
+**Purpose**: Fun predictive tool for analyzing championship-format races (all competitors start together)
+
+**Main Menu Access**: Option 3
+
+**Workflow**:
+1. Configure wood characteristics (species, diameter, quality)
+2. Select event type (SB/UH)
+3. Select competitors (no limit enforcement)
+4. Generate predictions using existing prediction engine (baseline, ML, LLM)
+5. Assign Mark 3 to all competitors (equal start)
+6. Run 2 million Monte Carlo simulations
+7. Display championship results table with predicted times
+8. Show individual competitor statistics (time variations, consistency)
+9. Visualize win rate distribution
+10. AI-powered race analysis (sports-commentary style)
+
+**Key Features**:
+- Reuses existing prediction and simulation infrastructure
+- 2 million simulations for high statistical confidence
+- Individual performance analysis with time variations
+- AI race analysis focusing on:
+  - Race favorite identification
+  - Key competitive matchups
+  - Podium battle dynamics
+  - Dark horse/upset potential
+  - Consistency analysis
+  - Overall race excitement rating
+- View-only (no tournament state changes or Excel writes)
+
+**Differences from Handicap Mode**:
+- All competitors get Mark 3 (no handicap adjustment)
+- Predicts win probabilities for equal-start races
+- AI analysis focuses on race outcomes, not fairness
+- No tournament state management
+- No results saved to Excel
+
+**Implementation Files**:
+- `woodchopping/ui/championship_simulator.py` - Main UI workflow
+- `woodchopping/simulation/fairness.py::get_championship_race_analysis()` - AI race analysis
+- Enhanced `woodchopping/simulation/monte_carlo.py` - Individual stats tracking
+
+**Status**: Fully implemented with all features operational
+
+### 10. Bracket Tournaments - [COMPLETE] (NEW V5.0)
+
+**Purpose**: Head-to-head elimination tournaments with AI-powered seeding
+
+**Main Menu Access**: Option 1 (Single Event Tournament) → Select bracket format in Option 2
+
+**Tournament Formats**:
+1. **Single Elimination**: Traditional knockout bracket
+   - Lose once, you're eliminated
+   - Automatic bye placement for non-power-of-2 competitor counts
+   - Proper bye calculation: `first_round_matches = (num_competitors - num_byes) / 2`
+   - Top seeds receive byes (standard tournament practice)
+
+2. **Double Elimination**: Extended format with second chances
+   - **Winners Bracket**: Main progression path
+   - **Losers Bracket**: Second-chance path for first-time losers
+   - **Grand Finals**: Winners bracket winner vs. Losers bracket winner
+   - Automatic drop-in logic from winners to losers bracket
+   - Elimination tracking for losers bracket defeats
+
+**Bracket Menu (Options 1-10)**:
+1. Select Competitors for Event
+2. Configure Event Payouts (Optional)
+3. **Reconfigure Wood Characteristics** ← NEW (flexible pre-generation config)
+4. Generate Bracket & Seeds
+5. View ASCII Bracket Tree
+6. Export Bracket to HTML (opens in browser)
+7. Enter Match Result
+8. View Current Round Details
+9. Save Event State
+10. Return to Main Menu
+
+**Key Features**:
+- **AI-Powered Seeding**: Uses same prediction engine as handicap system
+  - Seed 1 = fastest predicted time (best competitor)
+  - Lowest seed = slowest predicted time (weakest competitor)
+  - Ensures top competitors don't meet until later rounds
+- **Automatic Bracket Generation**: Handles any number of competitors with proper bye placement
+- **Match Result Entry**: Sequential workflow with automatic advancement
+  - Winners advance to next round
+  - Losers drop to losers bracket (double elim) or eliminated (single elim)
+  - Auto-populates next round matchups
+- **Visual Displays**:
+  - ASCII bracket tree for CLI viewing
+  - HTML export with professional styling (opens in browser)
+  - Match boxes show seeds, times, winners, advancement paths
+- **Wood Configuration Flexibility**:
+  - Can reconfigure wood BEFORE bracket generation (Option 3)
+  - Locked AFTER bracket generation to prevent seeding inconsistencies
+- **Elimination Type Selection**: Choose single or double during tournament configuration
+- **View-Only Mode**: Bracket results are NOT saved to Excel (designed for exhibition/fun tournaments)
+
+**Bracket State Management**:
+```python
+# Single Elimination
+tournament_state = {
+    'format': 'bracket',
+    'elimination_type': 'single',
+    'rounds': [...],  # List of round objects
+    'predictions': {...},  # Seed assignments
+    'total_matches': int,
+    'champion': str,
+    'runner_up': str
+}
+
+# Double Elimination
+tournament_state = {
+    'format': 'bracket',
+    'elimination_type': 'double',
+    'winners_rounds': [...],  # Winners bracket rounds
+    'losers_rounds': [...],   # Losers bracket rounds
+    'grand_finals': {...},    # Grand finals match
+    'eliminated': [...],      # List of eliminated competitors
+    'predictions': {...},     # Seed assignments
+    'total_matches': int,
+    'champion': str,
+    'runner_up': str
+}
+```
+
+**Round Object Structure**:
+```python
+{
+    'round_number': int,
+    'round_name': str,  # "Quarterfinals", "Semifinals", "Final", etc.
+    'round_code': str,  # "QF", "SF", "F", etc.
+    'matches': [...],   # List of match objects
+    'status': str       # 'pending', 'in_progress', 'completed'
+}
+```
+
+**Match Object Structure**:
+```python
+{
+    'match_id': str,           # "R1-M1", "SF-M2", "LR3-M1", "GF-M1"
+    'match_number': int,
+    'competitor1': str,        # Competitor name
+    'competitor2': str,        # Competitor name or None (bye)
+    'seed1': int,
+    'seed2': int,
+    'winner': str,
+    'loser': str,
+    'time1': float,
+    'time2': float,
+    'finish_position1': int,   # 1 or 2 (who finished first)
+    'finish_position2': int,
+    'status': str,             # 'pending', 'in_progress', 'bye', 'completed'
+    'advances_to': str,        # Next match ID
+    'feeds_from': [str],       # Previous match IDs
+    'bracket_type': str        # 'winners', 'losers', 'grand_finals' (double elim only)
+}
+```
+
+**Implementation Files**:
+- `woodchopping/ui/bracket_ui.py` (~1,950 lines) - Core bracket logic
+  - Bracket generation with bye placement
+  - Single & double elimination support
+  - Match result entry and advancement
+  - ASCII tree rendering
+  - HTML export
+- `MainProgramV5_0.py` - Menu integration with conditional display
+
+**Bug Fixes Applied**:
+1. **Bye Calculation**: Fixed formula from `num_competitors - num_byes` to `(num_competitors - num_byes) // 2`
+2. **Prediction Selection**: Fixed `select_best_prediction()` call signature (tuple unpacking)
+3. **Wood Configuration Lock**: Allow reconfiguration before bracket generation, lock after
+
+**Status**: Fully implemented and operational for both single and double elimination formats
+
+### 11. Handicap Calculation - [VALIDATED]
 
 **Algorithm**:
 ```python
@@ -293,6 +502,30 @@ Diameter scaling applied: 1/4 competitors
 - **Tournament Weighting**: 97% same-event data applies within each event only (not cross-event)
 - **Files**: New module [woodchopping/ui/multi_event_ui.py](../woodchopping/ui/multi_event_ui.py) (~1075 lines)
 - **Status**: Ready for production use
+
+#### Prize Money/Payout System (NEW V5.0)
+- **Feature**: Comprehensive prize money tracking for both single-event and multi-event tournaments
+- **Capability**: Configure dollar payouts per placement, display earnings in results, aggregate tournament-wide earnings
+- **Implementation**: New payout_ui module with complete workflow integration
+- **Key Features**:
+  - Configure payouts during event setup (1-10 paid places, exact dollar amounts)
+  - Independent payout configuration per event in multi-event tournaments
+  - Final results display with placement, time, and payout amount
+  - Tournament earnings summary showing total winnings per competitor
+  - Handles edge cases: ties (both get same payout), DNF/DQ (no payout), fewer finishers than paid places
+  - Backward compatible (legacy tournaments load without payouts gracefully)
+- **Data Storage**: UI-only display (no Excel modifications)
+- **State Persistence**: Payout configurations save/load with tournament state JSON files
+- **Architecture**: `payout_config` dict with fields: enabled, num_places, payouts, total_purse
+- **Single Event Menu**:
+  - Option 4: Configure Event Payouts (Optional)
+  - Option 11: View Final Results (with Payouts)
+- **Multi-Event Menu**:
+  - Payout config integrated into event setup workflow
+  - Option 11: Enhanced tournament summary with per-event payouts
+  - Option 12: Standalone earnings summary (leaderboard by total winnings)
+- **Files**: New module [woodchopping/ui/payout_ui.py](../woodchopping/ui/payout_ui.py) (~400 lines)
+- **Status**: Fully implemented and production ready
 
 ### Version 4.4
 

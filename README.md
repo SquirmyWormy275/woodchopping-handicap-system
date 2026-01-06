@@ -1,8 +1,8 @@
 # Woodchopping Handicap System (STRATHEX)
 
-**Version**: 4.5
+**Version**: 5.0
 **Status**: Production Ready
-**Last Updated**: January 2, 2026
+**Last Updated**: January 5, 2026
 
 A data-driven handicap calculation system for woodchopping competitions that combines historical performance analysis, machine learning (XGBoost), and AI-enhanced predictions to create fair, competitive handicaps.
 
@@ -14,7 +14,7 @@ A data-driven handicap calculation system for woodchopping competitions that com
 
 ```bash
 # Start the main tournament management program
-python MainProgramV4_4.py
+python MainProgramV5_0.py
 ```
 
 ### Prerequisites
@@ -36,8 +36,8 @@ pip install pandas openpyxl xgboost scikit-learn requests
 ```
 woodchopping-handicap-system/
 │
-├── MainProgramV4_4.py          # Main tournament management interface
-├── FunctionsLibrary.py         # Legacy function library (being phased out)
+├── MainProgramV5_0.py          # Main tournament management interface
+├── explanation_system_functions.py  # STRATHEX educational guide for judges
 ├── config.py                   # System configuration settings
 ├── woodchopping.xlsx           # Historical results database
 ├── tournament_state.json       # Saved tournament state
@@ -47,7 +47,7 @@ woodchopping-handicap-system/
 │   ├── handicaps/              # Handicap calculation
 │   ├── predictions/            # Prediction methods (Baseline, ML, LLM)
 │   ├── simulation/             # Monte Carlo fairness validation
-│   └── ui/                     # User interface modules
+│   └── ui/                     # User interface modules (includes bracket_ui.py)
 │
 ├── docs/                       # Documentation
 │   ├── ReadMe.md               # Detailed user manual
@@ -91,9 +91,18 @@ Priority Logic:
 - **Diameter Scaling**: Physics-based scaling for cross-diameter predictions
 - **Wood Quality Adjustment**: ±2% per quality point (0-10 scale)
 - **Time-Decay Weighting**: Recent performances weighted higher than old results
-- **Monte Carlo Simulation**: Validate handicap fairness (250,000 iterations)
+- **Monte Carlo Simulation**: Validate handicap fairness with 2 million iterations, individual competitor statistics tracking
 - **Multi-Round Tournaments**: Heats → Semi-finals → Finals
 - **Multi-Event Tournaments**: Design complete tournament days with multiple independent events (e.g., "225mm SB", "300mm UH", "275mm SB"), sequential results entry, and final tournament summary
+- **Championship Race Simulator (NEW V5.0)**: Fun predictive tool for simulating equal-start championship races with AI-powered race analysis, win probability predictions, and competitive matchup insights
+- **Prize Money/Payout System (NEW V5.0)**: Comprehensive payout tracking with configurable dollar amounts per placement (1-10 places), final results display with earnings, tournament-wide earnings summary showing total winnings per competitor across all events
+- **Bracket Tournaments (NEW V5.0)**: Head-to-head elimination brackets with AI-powered seeding
+  - **Single Elimination**: Traditional knockout format with automatic bye placement for non-power-of-2 competitor counts
+  - **Double Elimination**: Winners bracket, losers bracket (second-chance), and grand finals
+  - **Smart Seeding**: AI predictions determine bracket seeds (fastest = Seed 1, slowest = lowest seed)
+  - **Automatic Advancement**: Match results automatically advance winners and drop losers to appropriate brackets
+  - **Visual Displays**: ASCII bracket tree visualization and HTML export for sharing
+  - **Flexible Configuration**: Reconfigure wood characteristics before bracket generation, locked after creation
 
 ### 4. Fairness Metrics
 

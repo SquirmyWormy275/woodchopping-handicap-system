@@ -27,6 +27,7 @@ from woodchopping.ui.tournament_ui import (
 )
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 from woodchopping.data import load_results_df, append_results_to_excel
+from woodchopping.ui.adjustment_tracking import log_handicap_adjustment
 
 
 def create_multi_event_tournament() -> Dict:
@@ -150,6 +151,10 @@ def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -
             if 'event_type' not in event:
                 event['event_type'] = 'handicap'
 
+            # Backward compatibility: add payout_config for legacy tournaments (V4.5)
+            if 'payout_config' not in event:
+                event['payout_config'] = None
+
         print(f"\n✓ Tournament state loaded from {filename}")
         print(f"✓ Tournament: {tournament_state.get('tournament_name', 'Unknown')}")
         print(f"✓ Events: {tournament_state.get('total_events', 0)}")
@@ -233,16 +238,18 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     event_name = f"{int(wood_selection['size_mm'])}mm {wood_selection['event']}"
     print(f"\n✓ Event name auto-generated: {event_name}")
 
-    # Step 2.5: Event type selection (NEW)
+    # Step 2.5: Event type selection (NEW V5.0 - includes bracket)
     print(f"\n{'='*70}")
     print(f"  EVENT TYPE FOR: {event_name}")
     print(f"{'='*70}")
     print("\n1. Handicap Event (AI-predicted marks for fair competition)")
     print("2. Championship Event (Mark 3 for all - fastest time wins)")
-    print("\nHandicap events use historical data + AI to calculate individual marks.")
-    print("Championship events give everyone Mark 3 (same start time).")
+    print("3. Bracket Event (Head-to-head single elimination)")
+    print("\nHandicap: Historical data + AI calculates individual marks for fairness")
+    print("Championship: Everyone starts together (Mark 3), fastest time wins")
+    print("Bracket: Single elimination head-to-head, AI-seeded, 2 stands only")
 
-    event_type_choice = input("\nSelect event type (1 or 2): ").strip()
+    event_type_choice = input("\nSelect event type (1, 2, or 3): ").strip()
 
     if event_type_choice == '1':
         event_type = 'handicap'
@@ -250,6 +257,9 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     elif event_type_choice == '2':
         event_type = 'championship'
         print("\n✓ Championship event - all competitors will get Mark 3")
+    elif event_type_choice == '3':
+        event_type = 'bracket'
+        print("\n✓ Bracket event - single elimination tournament with AI seeding")
     else:
         print("\n⚠ Invalid choice. Defaulting to Handicap event")
         event_type = 'handicap'
@@ -259,48 +269,69 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     print(f"  TOURNAMENT FORMAT FOR: {event_name}")
     print(f"{'='*70}")
 
-    try:
-        num_stands = int(input("\nNumber of available stands for this event: ").strip())
-        tentative = int(input("Approximate number of competitors for this event: ").strip())
-    except ValueError:
-        print("\n⚠ Invalid input. Cancelling event addition...")
-        return tournament_state
+    # BRACKET MODE: Force 2 stands, skip format selection
+    if event_type == 'bracket':
+        num_stands = 2
+        print(f"\n✓ Bracket mode requires exactly 2 stands (head-to-head matches)")
 
-    # Calculate scenarios
-    scenarios = calculate_tournament_scenarios(num_stands, tentative)
+        try:
+            tentative = int(input("Approximate number of competitors for this event: ").strip())
+        except ValueError:
+            print("\n⚠ Invalid input. Cancelling event addition...")
+            return tournament_state
 
-    # Display scenarios
-    print(f"\n{'='*70}")
-    print(f"  SCENARIO 1: Single Heat Mode")
-    print(f"{'='*70}")
-    print(scenarios['single_heat']['description'])
+        event_format = 'bracket'
+        capacity_info = {
+            'max_competitors': 999,  # No limit for brackets
+            'format_description': 'Single elimination bracket'
+        }
 
-    print(f"\n{'='*70}")
-    print(f"  SCENARIO 2: Heats → Finals")
-    print(f"{'='*70}")
-    print(scenarios['heats_to_finals']['description'])
+        print(f"✓ Bracket tournament - supports any number of competitors (auto byes)")
 
-    print(f"\n{'='*70}")
-    print(f"  SCENARIO 3: Heats → Semis → Finals")
-    print(f"{'='*70}")
-    print(scenarios['heats_to_semis_to_finals']['description'])
-
-    # User selects format
-    print(f"\n{'='*70}")
-    format_choice = input("Select format (1, 2, or 3): ").strip()
-
-    if format_choice == '1':
-        event_format = 'single_heat'
-        capacity_info = scenarios['single_heat']
-    elif format_choice == '2':
-        event_format = 'heats_to_finals'
-        capacity_info = scenarios['heats_to_finals']
-    elif format_choice == '3':
-        event_format = 'heats_to_semis_to_finals'
-        capacity_info = scenarios['heats_to_semis_to_finals']
+    # REGULAR MODES: User selects stands and format
     else:
-        print("\n⚠ Invalid choice. Cancelling event addition...")
-        return tournament_state
+        try:
+            num_stands = int(input("\nNumber of available stands for this event: ").strip())
+            tentative = int(input("Approximate number of competitors for this event: ").strip())
+        except ValueError:
+            print("\n⚠ Invalid input. Cancelling event addition...")
+            return tournament_state
+
+        # Calculate scenarios
+        scenarios = calculate_tournament_scenarios(num_stands, tentative)
+
+        # Display scenarios
+        print(f"\n{'='*70}")
+        print(f"  SCENARIO 1: Single Heat Mode")
+        print(f"{'='*70}")
+        print(scenarios['single_heat']['description'])
+
+        print(f"\n{'='*70}")
+        print(f"  SCENARIO 2: Heats → Finals")
+        print(f"{'='*70}")
+        print(scenarios['heats_to_finals']['description'])
+
+        print(f"\n{'='*70}")
+        print(f"  SCENARIO 3: Heats → Semis → Finals")
+        print(f"{'='*70}")
+        print(scenarios['heats_to_semis_to_finals']['description'])
+
+        # User selects format
+        print(f"\n{'='*70}")
+        format_choice = input("Select format (1, 2, or 3): ").strip()
+
+        if format_choice == '1':
+            event_format = 'single_heat'
+            capacity_info = scenarios['single_heat']
+        elif format_choice == '2':
+            event_format = 'heats_to_finals'
+            capacity_info = scenarios['heats_to_finals']
+        elif format_choice == '3':
+            event_format = 'heats_to_semis_to_finals'
+            capacity_info = scenarios['heats_to_semis_to_finals']
+        else:
+            print("\n⚠ Invalid choice. Cancelling event addition...")
+            return tournament_state
 
     # Step 5: Competitor selection
     print(f"\n{'='*70}")
@@ -314,7 +345,29 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         print("\n⚠ No competitors selected. Cancelling event addition...")
         return tournament_state
 
-    # Generate handicaps for Championship events immediately
+    # Step 5.5: Payout configuration (OPTIONAL) - NEW V5.0
+    print(f"\n{'='*70}")
+    print(f"  PAYOUT CONFIGURATION (OPTIONAL)")
+    print(f"{'='*70}")
+    print("\nWould you like to configure payouts for this event?")
+    print("(You can skip this if it's a non-cash event)")
+
+    configure_payouts = input("\nConfigure payouts? (y/n): ").strip().lower()
+
+    if configure_payouts == 'y':
+        from woodchopping.ui.payout_ui import configure_event_payouts
+        payout_config = configure_event_payouts()
+
+        if payout_config:
+            print(f"\n✓ Payout configuration saved for {event_name}")
+        else:
+            payout_config = {'enabled': False}
+            print(f"\n✓ Payouts skipped for {event_name}")
+    else:
+        payout_config = {'enabled': False}
+        print(f"\n✓ Payouts skipped for {event_name}")
+
+    # Generate setup for Championship and Bracket events immediately
     if event_type == 'championship':
         print(f"\n{'='*70}")
         print(f"  CHAMPIONSHIP EVENT - AUTO-GENERATING MARKS")
@@ -336,6 +389,42 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
 
         event_status = 'ready'  # Skip 'configured' status
         print("✓ Championship event ready for heat generation (skips batch calculation)")
+
+    elif event_type == 'bracket':
+        # Bracket event - generate predictions and bracket structure immediately
+        print(f"\n{'='*70}")
+        print(f"  BRACKET EVENT - GENERATING PREDICTIONS & BRACKET")
+        print(f"{'='*70}")
+
+        from woodchopping.ui.bracket_ui import generate_bracket_seeds, generate_bracket_with_byes
+
+        # Generate predictions for seeding
+        predictions = generate_bracket_seeds(
+            selected_df,
+            wood_selection['species'],
+            wood_selection['size_mm'],
+            wood_selection['quality'],
+            wood_selection['event']
+        )
+
+        # Generate bracket structure with byes
+        rounds = generate_bracket_with_byes(predictions)
+
+        # Calculate bracket info
+        num_competitors = len(predictions)
+        total_rounds = len(rounds)
+        total_matches = sum(len(r['matches']) for r in rounds)
+
+        print(f"\n✓ Bracket generated successfully!")
+        print(f"  Competitors: {num_competitors}")
+        print(f"  Total Rounds: {total_rounds}")
+        print(f"  Total Matches: {total_matches}")
+        print(f"  Seeding: Fastest predicted time = Seed 1")
+
+        # Store bracket data in event object
+        handicap_results_all = []  # Not used for brackets
+        event_status = 'ready'  # Ready for match entry
+
     else:
         # Handicap event - will calculate marks in batch later
         handicap_results_all = []
@@ -364,11 +453,11 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         'all_competitors': selected_df['competitor_name'].tolist(),
         'all_competitors_df': selected_df,
 
-        # Handicaps (populated for Championship, empty for Handicap events)
+        # Handicaps (populated for Championship, empty for Handicap/Bracket events)
         'handicap_results_all': handicap_results_all,
 
-        # Rounds (empty until heats generated)
-        'rounds': [],
+        # Rounds (empty for Handicap/Championship, populated for Bracket)
+        'rounds': rounds if event_type == 'bracket' else [],
 
         # Final results (empty until finals complete)
         'final_results': {
@@ -376,8 +465,20 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
             'second_place': None,
             'third_place': None,
             'all_placements': {}
-        }
+        },
+
+        # Payout configuration (NEW V5.0)
+        'payout_config': payout_config
     }
+
+    # Add bracket-specific fields if bracket event
+    if event_type == 'bracket':
+        event_obj['predictions'] = predictions
+        event_obj['num_competitors'] = num_competitors
+        event_obj['total_rounds'] = total_rounds
+        event_obj['total_matches'] = total_matches
+        event_obj['current_round_number'] = 1
+        event_obj['completed_matches'] = 0
 
     # Add event to tournament
     tournament_state['events'].append(event_obj)
@@ -1042,12 +1143,22 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                     print("⚠ Invalid mark. Must be >= 3.")
                     continue
 
+                # A5: Prompt for reason
+                print("\n" + "─" * 70)
+                print("Please explain why you're adjusting this handicap (for audit trail):")
+                reason = input("Reason: ").strip()
+                while not reason:
+                    print("⚠ Reason is required for adjustment tracking.")
+                    reason = input("Reason: ").strip()
+
                 old_mark = result['mark']
                 result['mark'] = int(new_mark)
                 result['manually_adjusted'] = True
                 result['original_mark'] = old_mark
+                result['adjustment_reason'] = reason  # A5: Store reason
 
                 print(f"\n✓ Mark changed from {old_mark} to {new_mark}")
+                print(f"  Reason: {reason}")
 
             # After adjustments, require approval
             print(f"\n{'='*70}")
@@ -1057,6 +1168,18 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
             initials, timestamp = judge_approval()
 
             if initials:
+                # A5: Log all manual adjustments to event state
+                for result in event['handicap_results_all']:
+                    if result.get('manually_adjusted'):
+                        log_handicap_adjustment(
+                            tournament_state=event,  # Log to event state (part of multi-event tournament)
+                            competitor_name=result['name'],
+                            original_mark=result.get('original_mark', result['mark']),
+                            adjusted_mark=result['mark'],
+                            reason=result.get('adjustment_reason', 'No reason provided'),
+                            adjustment_type='manual'
+                        )
+
                 # Mark this event as approved
                 for result in event['handicap_results_all']:
                     result['approved_by'] = initials
@@ -1102,10 +1225,11 @@ def view_wood_count(tournament_state: Dict) -> None:
     print(f"\n{'='*70}")
     print(f"  WOOD REQUIREMENTS BY EVENT")
     print(f"{'='*70}\n")
-    print(f"{'Event':<30s} {'Species':<15s} {'Diameter':<10s} {'Blocks':<10s}")
+    print(f"{'Event':<30s} {'Species':<20s} {'Diameter':<10s} {'Blocks':<10s}")
     print(f"{'-'*70}")
 
     species_totals = defaultdict(int)
+    size_species_totals = defaultdict(int)  # Track size/species combinations
     grand_total = 0
 
     for event in tournament_state['events']:
@@ -1117,15 +1241,39 @@ def view_wood_count(tournament_state: Dict) -> None:
         event_name_raw = event['event_name'][:24]
         event_name = f"{event_name_raw} ({type_indicator})"[:29]
 
-        species = event['wood_species'][:14]
+        # Convert species code to full name
+        species_code = event['wood_species']
+        species_name = get_species_name_from_code(species_code)[:19]
         diameter = f"{int(event['wood_diameter'])}mm"
         blocks = event['capacity_info'].get('total_blocks', 0)
 
-        print(f"{event_name:<30s} {species:<15s} {diameter:<10s} {blocks:<10d}")
+        print(f"{event_name:<30s} {species_name:<20s} {diameter:<10s} {blocks:<10d}")
 
-        # Track totals (use species code as key for aggregation)
-        species_totals[species] += blocks
+        # Track totals by species code (for species total section)
+        species_totals[species_code] += blocks
+
+        # Track totals by size/species combination (diameter_mm, species_code)
+        size_species_key = (int(event['wood_diameter']), species_code)
+        size_species_totals[size_species_key] += blocks
+
         grand_total += blocks
+
+    print(f"{'-'*70}")
+
+    # Breakdown by size/species combination
+    print(f"\n{'='*70}")
+    print(f"  BREAKDOWN BY SIZE & SPECIES")
+    print(f"{'='*70}\n")
+    print(f"{'Size/Species':<50s} {'Blocks':<10s}")
+    print(f"{'-'*70}")
+
+    # Sort by diameter first, then by species name
+    sorted_size_species = sorted(size_species_totals.items(), key=lambda x: (x[0][0], get_species_name_from_code(x[0][1])))
+
+    for (diameter, species_code), blocks in sorted_size_species:
+        species_name = get_species_name_from_code(species_code)
+        size_species_label = f"{diameter}mm {species_name}"
+        print(f"{size_species_label:<50s} {blocks:<10d}")
 
     print(f"{'-'*70}")
 
@@ -1136,7 +1284,7 @@ def view_wood_count(tournament_state: Dict) -> None:
     print(f"{'Species':<40s} {'Total Blocks':<10s}")
     print(f"{'-'*70}")
 
-    for species_code in sorted(species_totals.keys()):
+    for species_code in sorted(species_totals.keys(), key=lambda x: get_species_name_from_code(x)):
         # Convert species code to full name
         species_name = get_species_name_from_code(species_code)
         print(f"{species_name:<40s} {species_totals[species_code]:<10d}")
@@ -1414,13 +1562,16 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
 
         else:
             # Multi-round tournament mode
+            # Use optimal stands_per_heat from capacity calculation (may be less than total num_stands)
             from math import ceil
-            num_heats = ceil(num_competitors / num_stands)
+            capacity_info = event.get('capacity_info', {})
+            stands_per_heat = capacity_info.get('stands_per_heat', num_stands)  # Fallback to num_stands for old saved states
+            num_heats = capacity_info.get('num_heats', ceil(num_competitors / num_stands))
 
             heats = distribute_competitors_into_heats(
                 event['all_competitors_df'],
                 event['handicap_results_all'],
-                num_stands,
+                stands_per_heat,  # Use optimal stands per heat, not total available stands
                 num_heats
             )
 
@@ -1904,6 +2055,34 @@ def generate_tournament_summary(tournament_state: Dict) -> None:
             time_str = f"{time:.2f}s" if isinstance(time, (int, float)) else time
             print(f"  🥉 3rd Place: {results['third_place']} ({time_str})")
 
+        # Display payouts if configured (NEW V5.0)
+        payout_config = event.get('payout_config')
+        if payout_config and payout_config.get('enabled'):
+            print(f"\n  PAYOUTS:")
+            all_placements = results.get('all_placements', {})
+            num_places = payout_config.get('num_places', 0)
+            payouts = payout_config.get('payouts', {})
+
+            # Display payouts for top 3 (or fewer if fewer paid places)
+            for position in range(1, min(4, num_places + 1)):
+                if position == 1 and results['first_place']:
+                    name = results['first_place']
+                elif position == 2 and results['second_place']:
+                    name = results['second_place']
+                elif position == 3 and results['third_place']:
+                    name = results['third_place']
+                else:
+                    continue
+
+                payout = payouts.get(position, 0)
+                from woodchopping.ui.payout_ui import _get_ordinal
+                print(f"    {_get_ordinal(position):6s}: ${payout:,.2f}")
+
+            if num_places > 3:
+                print(f"    ... plus {num_places - 3} more paid places")
+
+            print(f"\n  Event Purse: ${payout_config['total_purse']:,.2f}")
+
     # Tournament statistics
     print(f"\n{'='*70}")
     print(f"  TOURNAMENT STATISTICS")
@@ -1916,6 +2095,15 @@ def generate_tournament_summary(tournament_state: Dict) -> None:
     print(f"Events completed: {len(completed_events)}/{tournament_state.get('total_events', 0)}")
     print(f"Total competitors: {total_competitors} (may include duplicates across events)")
     print(f"Total rounds run: {total_rounds}")
+
+    # Tournament Earnings Summary (NEW V5.0)
+    from woodchopping.ui.payout_ui import calculate_total_earnings, display_tournament_earnings_summary
+
+    competitor_earnings = calculate_total_earnings(tournament_state)
+
+    if competitor_earnings:
+        print(f"\n{'='*70}")
+        display_tournament_earnings_summary(tournament_state, competitor_earnings)
 
     print(f"\n{'='*70}")
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-STRATHEX (Woodchopping Handicap Calculator) is a data-driven system that calculates fair handicap marks for woodchopping competitions. It combines historical performance analysis, AI-enhanced prediction modeling (via Ollama), and Monte Carlo simulation validation to create handicaps that give all competitors equal probability of winning, regardless of skill level.
+STRATHEX (Woodchopping Handicap Calculator) is a data-driven system that calculates fair handicap marks for woodchopping competitions. It combines historical performance analysis, AI-enhanced prediction modeling (via Ollama), and Monte Carlo simulation validation to create handicaps that give all competitors equal probability of winning, regardless of skill level. The system also includes comprehensive prize money/payout tracking for professional tournaments.
 
 The system implements a critical innovation: absolute variance modeling (±3 seconds for all competitors) rather than proportional variance, ensuring true fairness as real-world factors affect competitors equally in absolute terms.
 
@@ -12,7 +12,7 @@ The system implements a critical innovation: absolute variance modeling (±3 sec
 
 ```bash
 # Run main program
-python MainProgramV4_4.py
+python MainProgramV5_0.py
 
 # Ensure Ollama is running locally for AI predictions
 # Model required: qwen2.5:7b (optimized for mathematical reasoning)
@@ -22,6 +22,17 @@ python MainProgramV4_4.py
 - Python 3.13.3
 - Ollama running locally with qwen2.5:7b model
 - `woodchopping.xlsx` in the same directory as scripts
+
+**Main Menu Options:**
+1. Design an Event (Single Event Tournament)
+2. Design a Tournament (Multiple Events)
+3. **Championship Race Simulator** - Fun predictive tool for race outcome analysis (Analytics section)
+4. **View Competitor Dashboard** - Performance analytics for individual competitors (Analytics section)
+5. Add/Edit/Remove Competitors from Master Roster
+6. Load Previous Event/Tournament
+7. Reload Roster from Excel
+8. How Does This System Work? (Explanation System)
+9. Exit
 
 ## ⚠️ CRITICAL DEVELOPMENT RULE - DOCUMENTATION SYNC
 
@@ -102,8 +113,8 @@ print("╚" + "═" * 68 + "╝")
 
 ### 5. Approved Banner Designs:
 Current approved banners in the codebase:
-- **Single Event Tournament Menu** ([MainProgramV4_4.py:194-205](MainProgramV4_4.py#L194-L205)) - "HANDICAP CALCULATION SYSTEM"
-- **Multi-Event Tournament Menu** ([MainProgramV4_4.py:745-753](MainProgramV4_4.py#L745-L753)) - "TOURNAMENT CONTROL SYSTEM"
+- **Single Event Tournament Menu** ([MainProgramV5_0.py:194-205](MainProgramV5_0.py#L194-L205)) - "HANDICAP CALCULATION SYSTEM"
+- **Multi-Event Tournament Menu** ([MainProgramV5_0.py:745-753](MainProgramV5_0.py#L745-L753)) - "TOURNAMENT CONTROL SYSTEM"
 
 ### 6. Why This Matters:
 **Professionalism = Attention to Detail**
@@ -116,21 +127,23 @@ This software is being considered for use at professional woodchopping competiti
 
 ### Core Components
 
-**MainProgramV4_4.py** - Tournament management interface
+**MainProgramV5_0.py** - Tournament management interface
 - Multi-round tournament system (heats → semis → finals)
-- Main menu loop with 16 options covering tournament setup, handicap calculation, heat management, and personnel management
-- **New Option 16**: Multi-event tournament mode for designing complete tournament days with multiple independent events
+- Main menu loop with 8 main options covering tournament modes, championship simulator, personnel management, and system functions
+- **Option 1**: Single Event Tournament - Design and run individual events with multi-round progression
+- **Option 2**: Multi-Event Tournament - Design complete tournament days with multiple independent events
+- **Option 3 (NEW V5.0)**: Championship Race Simulator - Fun predictive tool for analyzing race outcomes without handicaps
 - Tournament state management (`tournament_state` dict) tracks event configuration, rounds, competitors, and handicap results
 - Multi-event tournament state (`multi_event_tournament_state` dict) tracks multiple events with independent configurations
 - Legacy single-heat mode preserved for backward compatibility via `heat_assignment_df`
 
-**woodchopping/** - Modular package (V4.4 fully modular architecture)
+**woodchopping/** - Modular package (V5.0 fully modular architecture)
 - All business logic organized by domain: data loading, predictions, handicaps, simulation, UI
 - **data/**: Excel I/O, validation, preprocessing
 - **predictions/**: Baseline, ML (XGBoost), LLM (Ollama), diameter scaling, prediction aggregation
 - **handicaps/**: Handicap calculation logic
-- **simulation/**: Monte Carlo fairness validation
-- **ui/**: User interface modules for wood, competitors, handicaps, tournaments, personnel, multi-event tournaments
+- **simulation/**: Monte Carlo fairness validation with individual competitor statistics tracking (NEW V5.0)
+- **ui/**: User interface modules for wood, competitors, handicaps, tournaments, personnel, multi-event tournaments, championship simulator (NEW V5.0)
 
 **woodchopping.xlsx** - Data persistence
 - `Competitor` sheet: CompetitorID, Name, Country, State/Province, Gender
@@ -248,10 +261,41 @@ multi_event_tournament_state = {
 **AI Integration**
 - Uses Ollama API (localhost:11434) with qwen2.5:7b model
 - `call_ollama(prompt, model)` handles all AI requests
-- Two AI use cases:
+- Three AI use cases:
   1. Time prediction with quality adjustments (`predict_competitor_time_with_ai()`)
   2. Fairness assessment of Monte Carlo results (`get_ai_assessment_of_handicaps()`)
+  3. Championship race analysis for outcome predictions (`get_championship_race_analysis()`) - NEW V5.0
 - Graceful fallback if Ollama unavailable
+
+**Championship Simulator (NEW V5.0)**
+- Standalone fun predictive tool accessible via Main Menu Option 3
+- Simulates championship-format races where all competitors start together (Mark 3)
+- Workflow: wood config → event selection → competitor selection → 2M Monte Carlo simulations → AI race analysis
+- Features:
+  - Reuses existing prediction engine (baseline, ML, LLM)
+  - Runs 2 million simulations for high statistical confidence
+  - Tracks individual competitor statistics (mean, std_dev, percentiles, consistency rating)
+  - AI-powered race analysis focusing on matchups, favorites, dark horses, and competitive dynamics
+  - View-only (no tournament state changes or Excel writes)
+- Key difference from handicap mode: Predicts win probabilities for equal-start races instead of testing handicap fairness
+- Implementation: `woodchopping/ui/championship_simulator.py`, `woodchopping/simulation/fairness.py::get_championship_race_analysis()`
+
+**Monte Carlo Enhanced Statistics (NEW V5.0)**
+- `run_monte_carlo_simulation()` now tracks per-competitor finish time statistics across all simulations
+- New return fields in analysis dict:
+  - `competitor_time_stats`: Dict mapping competitor name to statistics:
+    - `mean`: Average finish time across all simulations
+    - `std_dev`: Standard deviation (validates ±3s variance model)
+    - `min`/`max`: Range of finish times observed
+    - `p25`/`p50`/`p75`: Percentile distribution
+    - `consistency_rating`: "Very High"/"High"/"Moderate"/"Low" based on std_dev
+- Consistency rating thresholds:
+  - Very High: std_dev ≤ 2.5s (very predictable performance)
+  - High: std_dev ≤ 3.0s (expected variance, matches ±3s model)
+  - Moderate: std_dev ≤ 3.5s (slightly above expected)
+  - Low: std_dev > 3.5s (high variability, unpredictable)
+- Memory overhead: ~64 MB for 4 competitors @ 2M simulations, ~160 MB for 10 competitors
+- Used by championship simulator to show individual competitor performance analysis
 
 **Championship Events vs Handicap Events (Multi-Event Tournaments)**
 

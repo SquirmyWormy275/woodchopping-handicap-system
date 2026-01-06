@@ -155,6 +155,8 @@ def run_monte_carlo_simulation(
     winner_counts = {comp['name']: 0 for comp in competitors_with_marks}
     podium_counts = {comp['name']: 0 for comp in competitors_with_marks}  # Top 3
     finish_position_sums = {comp['name']: 0 for comp in competitors_with_marks}
+    # Track individual finish times for each competitor (for per-competitor statistics)
+    competitor_finish_times = {comp['name']: [] for comp in competitors_with_marks}
 
     # Track front marker (slowest predicted, starts first)
     front_marker_name = max(competitors_with_marks, key=lambda x: x['predicted_time'])['name']
@@ -182,9 +184,28 @@ def run_monte_carlo_simulation(
         for pos, result in enumerate(race_results, 1):
             finish_position_sums[result['name']] += pos
 
+        # Track individual finish times for per-competitor statistics
+        for result in race_results:
+            competitor_finish_times[result['name']].append(result['finish_time'])
+
     # Calculate statistics
     avg_finish_positions = {name: pos_sum / num_simulations
                            for name, pos_sum in finish_position_sums.items()}
+
+    # Calculate per-competitor time statistics
+    competitor_time_stats = {}
+    for name, times in competitor_finish_times.items():
+        times_array = np.array(times)
+        competitor_time_stats[name] = {
+            'mean': np.mean(times_array),
+            'std_dev': np.std(times_array),
+            'min': np.min(times_array),
+            'max': np.max(times_array),
+            'p25': np.percentile(times_array, 25),
+            'p50': np.percentile(times_array, 50),  # median
+            'p75': np.percentile(times_array, 75),
+            'consistency_rating': _calculate_consistency_rating(np.std(times_array))
+        }
 
     analysis = {
         'num_simulations': num_simulations,
@@ -206,7 +227,57 @@ def run_monte_carlo_simulation(
         'back_marker_name': back_marker_name,
         'front_marker_wins': winner_counts[front_marker_name],
         'back_marker_wins': winner_counts[back_marker_name],
-        'competitors': competitors_with_marks
+        'competitors': competitors_with_marks,
+        'competitor_time_stats': competitor_time_stats  # Individual competitor statistics
     }
 
     return analysis
+
+
+def _calculate_consistency_rating(std_dev: float) -> str:
+    """
+    Rate competitor consistency based on finish time standard deviation.
+
+    This rating indicates how predictable a competitor's performance is across
+    thousands of simulated races. Lower standard deviation means more consistent
+    (predictable) performance.
+
+    Args:
+        std_dev: Standard deviation of finish times across simulations (seconds)
+
+    Returns:
+        Consistency rating string with interpretation
+
+    Ratings:
+        Very High: std_dev <= 2.5s (very predictable performance)
+            - Competitor consistently finishes within a narrow time window
+            - Prediction accuracy is excellent
+        High: std_dev <= 3.0s (predictable, close to ±3s variance model)
+            - Expected variance matches the simulation model
+            - Normal consistency for the sport
+        Moderate: std_dev <= 3.5s (slightly above expected variance)
+            - Slightly more variable than model predicts
+            - May indicate prediction uncertainty or technique variation
+        Low: std_dev > 3.5s (high variability, unpredictable outcomes)
+            - Wide range of possible finish times
+            - Predictions less reliable, more upset potential
+
+    Note:
+        The ±3 second variance model assumes all competitors have equal
+        absolute variance. Standard deviations close to 3.0s validate this model.
+        Deviations significantly above 3.0s may indicate prediction errors or
+        genuine performance inconsistency.
+
+    Example:
+        >>> rating = _calculate_consistency_rating(2.8)
+        >>> print(rating)
+        'High (expected variance)'
+    """
+    if std_dev <= 2.5:
+        return "Very High (low variance)"
+    elif std_dev <= 3.0:
+        return "High (expected variance)"
+    elif std_dev <= 3.5:
+        return "Moderate (above expected)"
+    else:
+        return "Low (high variance)"

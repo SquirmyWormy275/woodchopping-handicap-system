@@ -15,6 +15,98 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 
+def find_optimal_heat_configuration(num_stands: int, tentative_competitors: int, target_advancers: int) -> Dict:
+    """Find optimal stands_per_heat to create balanced heats.
+
+    Args:
+        num_stands: Total available stands
+        tentative_competitors: Expected number of competitors
+        target_advancers: Target number of total advancers needed (e.g., num_stands for finals)
+
+    Returns:
+        dict: Optimal configuration with stands_per_heat, num_heats, advancers_per_heat, etc.
+    """
+    # Can't advance more competitors than we have!
+    target_advancers = min(target_advancers, tentative_competitors)
+
+    best_config = None
+    best_score = float('inf')
+
+    # Try different stands_per_heat from num_stands down to a reasonable minimum
+    # Don't go below 50% of available stands (wasteful) or below 3 (too small)
+    min_stands_per_heat = max(3, num_stands // 2)
+
+    for stands_per_heat in range(num_stands, min_stands_per_heat - 1, -1):
+        num_heats = ceil(tentative_competitors / stands_per_heat)
+
+        # Must have at least 2 heats for a tournament format
+        if num_heats < 2:
+            continue
+
+        # Calculate heat size distribution
+        full_heats = tentative_competitors // stands_per_heat
+        partial_heat_size = tentative_competitors % stands_per_heat
+
+        # Calculate imbalance (smaller is better)
+        if partial_heat_size == 0:
+            imbalance = 0  # Perfect balance!
+            smallest_heat = stands_per_heat
+        else:
+            imbalance = stands_per_heat - partial_heat_size
+            smallest_heat = partial_heat_size
+
+        # Calculate how many should advance from each heat
+        advancers_per_heat = target_advancers // num_heats
+        total_advancers = advancers_per_heat * num_heats
+
+        # If we're not filling the target well enough, bump up advancers
+        if total_advancers < target_advancers * 0.6:
+            advancers_per_heat += 1
+            total_advancers = advancers_per_heat * num_heats
+
+        # Validation: Can't advance more people than smallest heat has
+        if advancers_per_heat > smallest_heat:
+            continue
+
+        # Validation: Can't have more advancers than target capacity
+        if total_advancers > target_advancers:
+            continue
+
+        # Score this configuration (lower is better)
+        # Heavily prioritize balance, secondarily consider how well we fill finals
+        fill_penalty = abs(target_advancers - total_advancers)
+        score = imbalance * 100 + fill_penalty
+
+        if score < best_score:
+            best_score = score
+            best_config = {
+                'stands_per_heat': stands_per_heat,
+                'num_heats': num_heats,
+                'advancers_per_heat': advancers_per_heat,
+                'max_competitors': num_heats * stands_per_heat,
+                'imbalance': imbalance,
+                'total_advancers': total_advancers
+            }
+
+    # Fallback: if no valid config found, use all stands (old behavior)
+    if best_config is None:
+        num_heats = max(ceil(tentative_competitors / num_stands), 2)
+        advancers_per_heat = target_advancers // num_heats
+        if advancers_per_heat * num_heats < target_advancers * 0.5:
+            advancers_per_heat += 1
+
+        best_config = {
+            'stands_per_heat': num_stands,
+            'num_heats': num_heats,
+            'advancers_per_heat': advancers_per_heat,
+            'max_competitors': num_heats * num_stands,
+            'imbalance': tentative_competitors % num_stands,
+            'total_advancers': advancers_per_heat * num_heats
+        }
+
+    return best_config
+
+
 def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) -> Dict:
     """Calculate three tournament format scenarios based on stands and competitor count.
 
@@ -48,60 +140,52 @@ def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) 
         )
     }
 
-    # Calculate minimum heats needed
-    min_heats = ceil(tentative_competitors / num_stands)
-
     # SCENARIO 1: Heats → Finals
-    # Strategy: Use minimum heats, take top N from each to fill finals
-    num_heats_s1 = max(min_heats, 2)  # At least 2 heats for a tournament
-    max_competitors_s1 = num_heats_s1 * num_stands
-    advancers_per_heat_s1 = num_stands // num_heats_s1
-
-    # Ensure we can fill a final
-    if advancers_per_heat_s1 * num_heats_s1 < num_stands:
-        advancers_per_heat_s1 += 1
+    # Strategy: Find optimal stands_per_heat for balanced heats, advance top N to finals
+    config_s1 = find_optimal_heat_configuration(num_stands, tentative_competitors, num_stands)
 
     total_blocks_s1 = tentative_competitors + num_stands
 
     scenario_1 = {
-        'max_competitors': max_competitors_s1,
-        'num_heats': num_heats_s1,
+        'max_competitors': config_s1['max_competitors'],
+        'num_heats': config_s1['num_heats'],
         'num_semis': 0,
         'num_finals': 1,
-        'advancers_per_heat': advancers_per_heat_s1,
+        'advancers_per_heat': config_s1['advancers_per_heat'],
+        'stands_per_heat': config_s1['stands_per_heat'],  # NEW: Track actual stands used
         'total_blocks': total_blocks_s1,
         'description': (
-            f"{num_heats_s1} heats of {num_stands} (max {max_competitors_s1} competitors)\n"
-            f"  → Top {advancers_per_heat_s1} from each heat advance\n"
-            f"  → {num_stands}-person Final"
+            f"{config_s1['num_heats']} heats of {config_s1['stands_per_heat']} "
+            f"(max {config_s1['max_competitors']} competitors)\n"
+            f"  → Top {config_s1['advancers_per_heat']} from each heat advance\n"
+            f"  → {config_s1['total_advancers']}-person Final"
         )
     }
 
     # SCENARIO 2: Heats → Semis → Finals
-    # Strategy: More heats to create semi-final round
-    num_heats_s2 = max(min_heats + 2, 4)  # Add 2 more heats for semi tier
-    max_competitors_s2 = num_heats_s2 * num_stands
-
-    # Calculate semi-finals
+    # Strategy: Find optimal stands_per_heat for balanced heats, advance to 2 semis, then finals
     num_semis = 2
-    semi_total = num_semis * num_stands
-    advancers_per_heat_s2 = ceil(semi_total / num_heats_s2)
-    advancers_per_semi = num_stands // num_semis
+    semi_total = num_semis * num_stands  # Target: fill 2 semis with num_stands each
 
+    config_s2 = find_optimal_heat_configuration(num_stands, tentative_competitors, semi_total)
+
+    advancers_per_semi = num_stands // num_semis
     total_blocks_s2 = tentative_competitors + semi_total + num_stands
 
     scenario_2 = {
-        'max_competitors': max_competitors_s2,
-        'num_heats': num_heats_s2,
+        'max_competitors': config_s2['max_competitors'],
+        'num_heats': config_s2['num_heats'],
         'num_semis': num_semis,
         'num_finals': 1,
-        'advancers_per_heat': advancers_per_heat_s2,
+        'advancers_per_heat': config_s2['advancers_per_heat'],
         'advancers_per_semi': advancers_per_semi,
-        'semi_total': semi_total,
+        'stands_per_heat': config_s2['stands_per_heat'],  # NEW: Track actual stands used
+        'semi_total': config_s2['total_advancers'],  # Actual advancers (may be less than semi_total)
         'total_blocks': total_blocks_s2,
         'description': (
-            f"{num_heats_s2} heats of {num_stands} (max {max_competitors_s2} competitors)\n"
-            f"  → Top {advancers_per_heat_s2} from each heat ({semi_total} total)\n"
+            f"{config_s2['num_heats']} heats of {config_s2['stands_per_heat']} "
+            f"(max {config_s2['max_competitors']} competitors)\n"
+            f"  → Top {config_s2['advancers_per_heat']} from each heat ({config_s2['total_advancers']} total)\n"
             f"  → {num_semis} semi-finals of {num_stands}\n"
             f"  → Top {advancers_per_semi} from each semi\n"
             f"  → {num_stands}-person Final"
@@ -425,17 +509,27 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
             tournament_state['all_competitors_df']['competitor_name'].isin(all_advancers)
         ].copy()
 
+        # Determine optimal heat configuration based on round type
         if next_round_type == 'final':
+            # Finals: Always 1 heat using all available stands
+            stands_per_heat = num_stands
             num_heats = 1
         elif next_round_type == 'semi':
-            num_heats = ceil(len(all_advancers) / num_stands)
+            # Semi-finals: Optimize stands per heat for balanced heats
+            # Target: Fill finals (num_stands competitors)
+            optimal_config = find_optimal_heat_configuration(num_stands, len(all_advancers), num_stands)
+            stands_per_heat = optimal_config['stands_per_heat']
+            num_heats = optimal_config['num_heats']
         else:
-            num_heats = ceil(len(all_advancers) / num_stands)
+            # Other rounds: Use basic calculation with optimization
+            optimal_config = find_optimal_heat_configuration(num_stands, len(all_advancers), num_stands)
+            stands_per_heat = optimal_config['stands_per_heat']
+            num_heats = optimal_config['num_heats']
 
         next_rounds = distribute_competitors_into_heats(
             all_advancers_df,
             advancer_results,
-            num_stands,
+            stands_per_heat,  # Use optimal stands per heat
             num_heats
         )
 
@@ -506,23 +600,31 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     print(f"\n✓ Handicaps recalculated using tournament performance data")
     print(f"{'='*70}\n")
 
-    # Determine number of heats for next round
+    # Determine optimal heat configuration for next round
     num_stands = tournament_state['num_stands']
 
+    # Determine optimal heat configuration based on round type
     if next_round_type == 'final':
-        # Single final heat
+        # Finals: Always 1 heat using all available stands
+        stands_per_heat = num_stands
         num_heats = 1
     elif next_round_type == 'semi':
-        # Multiple semi-finals based on advancer count
-        num_heats = ceil(len(all_advancers) / num_stands)
+        # Semi-finals: Optimize stands per heat for balanced heats
+        # Target: Fill finals (num_stands competitors)
+        optimal_config = find_optimal_heat_configuration(num_stands, len(all_advancers), num_stands)
+        stands_per_heat = optimal_config['stands_per_heat']
+        num_heats = optimal_config['num_heats']
     else:
-        num_heats = ceil(len(all_advancers) / num_stands)
+        # Other rounds: Use basic calculation with optimization
+        optimal_config = find_optimal_heat_configuration(num_stands, len(all_advancers), num_stands)
+        stands_per_heat = optimal_config['stands_per_heat']
+        num_heats = optimal_config['num_heats']
 
     # Use same distribution algorithm (snake draft) with RECALCULATED handicaps
     next_rounds = distribute_competitors_into_heats(
         all_advancers_df,
         advancer_results,  # Now contains recalculated handicaps using tournament data
-        num_stands,
+        stands_per_heat,  # Use optimal stands per heat
         num_heats
     )
 
@@ -659,6 +761,10 @@ def load_tournament_state(filename: str = "tournament_state.json") -> Optional[D
                 round_obj['competitors_df'] = pd.DataFrame(round_obj['competitors_df'])
             else:
                 round_obj['competitors_df'] = pd.DataFrame()
+
+        # Backward compatibility: Add payout_config if missing (V4.5)
+        if 'payout_config' not in state:
+            state['payout_config'] = None
 
         print(f"Tournament state loaded from {filename}")
         return state

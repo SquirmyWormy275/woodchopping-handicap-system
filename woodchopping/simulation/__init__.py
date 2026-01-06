@@ -10,7 +10,8 @@ from woodchopping.simulation.visualization import (
 )
 from woodchopping.simulation.fairness import (
     get_ai_assessment_of_handicaps,
-    simulate_and_assess_handicaps
+    simulate_and_assess_handicaps,
+    get_championship_race_analysis
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     'visualize_simulation_results',
     'get_ai_assessment_of_handicaps',
     'simulate_and_assess_handicaps',
+    'get_championship_race_analysis',
 ]
