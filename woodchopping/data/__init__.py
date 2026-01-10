@@ -11,7 +11,11 @@ from woodchopping.data.excel_io import (
     append_results_to_excel,
 )
 
-from woodchopping.data.validation import validate_results_data, validate_heat_data
+from woodchopping.data.validation import (
+    validate_results_data,
+    validate_heat_data,
+    standardize_results_data,
+)
 
 from woodchopping.data.preprocessing import engineer_features_for_ml
 
@@ -28,6 +32,7 @@ __all__ = [
     # Validation
     "validate_results_data",
     "validate_heat_data",
+    "standardize_results_data",
     # Preprocessing
     "engineer_features_for_ml",
 ]

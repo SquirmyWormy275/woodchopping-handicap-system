@@ -13,16 +13,18 @@ Functions:
 
 from typing import Optional, Dict, Tuple
 import pandas as pd
+import numpy as np
 
 # Import config
-from config import data_req
+from config import data_req, ml_config
 
 # Import local data modules
 from woodchopping.data import (
     load_results_df,
     load_wood_data,
     validate_results_data,
-    engineer_features_for_ml
+    engineer_features_for_ml,
+    standardize_results_data,
 )
 
 # Import time-decay weighting function
@@ -31,7 +33,7 @@ from woodchopping.predictions.baseline import calculate_performance_weight
 # ML Libraries
 try:
     import xgboost as xgb
-    from sklearn.model_selection import cross_val_score
+    from sklearn.model_selection import cross_val_score, TimeSeriesSplit
     from sklearn.metrics import mean_absolute_error, r2_score
     ML_AVAILABLE = True
 except ImportError:
@@ -45,9 +47,17 @@ _cached_ml_model_uh = None
 _model_training_data_size = 0
 _feature_importance_sb = None
 _feature_importance_uh = None
+_model_cv_metrics_sb = None
+_model_cv_metrics_uh = None
 
 
-def perform_cross_validation(X, y, model_params: dict, cv_folds: int = 5) -> Optional[dict]:
+def perform_cross_validation(
+    X,
+    y,
+    model_params: dict,
+    cv_folds: int = 5,
+    dates: Optional[pd.Series] = None
+) -> Optional[dict]:
     """
     Perform k-fold cross-validation to estimate model accuracy.
 
@@ -74,6 +84,35 @@ def perform_cross_validation(X, y, model_params: dict, cv_folds: int = 5) -> Opt
 
     # Create model with same params as training
     model = xgb.XGBRegressor(**model_params)
+
+    if dates is not None and len(dates) >= cv_folds * 2:
+        # Time-aware CV to reduce leakage
+        order = np.argsort(dates.values)
+        X_sorted = X.iloc[order]
+        y_sorted = y.iloc[order]
+
+        tss = TimeSeriesSplit(n_splits=cv_folds)
+        mae_scores = []
+        r2_scores = []
+
+        for train_idx, test_idx in tss.split(X_sorted):
+            cv_model = xgb.XGBRegressor(**model_params)
+            cv_model.fit(X_sorted.iloc[train_idx], y_sorted.iloc[train_idx])
+            preds = cv_model.predict(X_sorted.iloc[test_idx])
+            mae_scores.append(mean_absolute_error(y_sorted.iloc[test_idx], preds))
+            r2_scores.append(r2_score(y_sorted.iloc[test_idx], preds))
+
+        mae_scores = np.array(mae_scores)
+        r2_scores = np.array(r2_scores)
+
+        return {
+            'mae_mean': mae_scores.mean(),
+            'mae_std': mae_scores.std(),
+            'r2_mean': r2_scores.mean(),
+            'r2_std': r2_scores.std(),
+            'mae_scores': mae_scores,
+            'r2_scores': r2_scores
+        }
 
     # Perform cross-validation for MAE
     mae_scores = cross_val_score(model, X, y, cv=cv_folds,
@@ -140,7 +179,8 @@ def train_ml_model(
     results_df: Optional[pd.DataFrame] = None,
     wood_df: Optional[pd.DataFrame] = None,
     force_retrain: bool = False,
-    event_code: Optional[str] = None
+    event_code: Optional[str] = None,
+    skip_validation: bool = False
 ) -> Optional[Dict[str, object]]:
     """
     Train separate XGBoost models for SB and UH events.
@@ -150,6 +190,7 @@ def train_ml_model(
         wood_df: Wood properties DataFrame (will load if not provided)
         force_retrain: Force retraining even if models are cached
         event_code: Specific event to train ('SB' or 'UH'), or None for both
+        skip_validation: If True, assumes results_df is already validated
 
     Returns:
         dict with 'SB' and 'UH' keys containing trained models, or None if insufficient data
@@ -162,6 +203,7 @@ def train_ml_model(
     """
     global _cached_ml_model_sb, _cached_ml_model_uh, _model_training_data_size
     global _feature_importance_sb, _feature_importance_uh
+    global _model_cv_metrics_sb, _model_cv_metrics_uh
 
     # Check if ML libraries available
     if not ML_AVAILABLE:
@@ -174,22 +216,25 @@ def train_ml_model(
     if results_df is None or results_df.empty:
         return None
 
-    # Validate and clean data
-    print("\n[DATA VALIDATION]")
-    validated_df, warnings = validate_results_data(results_df)
+    if skip_validation:
+        validated_df = results_df
+    else:
+        # Validate and clean data
+        print("\n[DATA VALIDATION]")
+        validated_df, warnings = validate_results_data(results_df)
 
-    if warnings:
-        print(f"Data validation warnings ({len(warnings)} issues):")
-        for i, warning in enumerate(warnings[:5], 1):  # Show first 5
-            print(f"  {i}. {warning}")
-        if len(warnings) > 5:
-            print(f"  ... and {len(warnings) - 5} more")
+        if warnings:
+            print(f"Data validation warnings ({len(warnings)} issues):")
+            for i, warning in enumerate(warnings[:5], 1):  # Show first 5
+                print(f"  {i}. {warning}")
+            if len(warnings) > 5:
+                print(f"  ... and {len(warnings) - 5} more")
 
-    if validated_df is None or validated_df.empty:
-        print("ERROR: No valid data after validation")
-        return None
+        if validated_df is None or validated_df.empty:
+            print("ERROR: No valid data after validation")
+            return None
 
-    print(f"Valid records: {len(validated_df)} / {len(results_df)} ({len(results_df) - len(validated_df)} removed)")
+        print(f"Valid records: {len(validated_df)} / {len(results_df)} ({len(results_df) - len(validated_df)} removed)")
 
     # Check if we can use cached models
     if not force_retrain and _cached_ml_model_sb is not None and _cached_ml_model_uh is not None:
@@ -204,14 +249,7 @@ def train_ml_model(
         return None
 
     # Define features and target
-    feature_cols = [
-        'competitor_avg_time_by_event',
-        'event_encoded',
-        'size_mm',
-        'wood_janka_hardness',
-        'wood_spec_gravity',
-        'competitor_experience'
-    ]
+    feature_cols = list(ml_config.FEATURE_NAMES)
 
     # Ensure all feature columns exist
     missing = [col for col in feature_cols if col not in df_engineered.columns]
@@ -264,19 +302,37 @@ def train_ml_model(
         print(f"  Time-decay: avg weight {avg_weight:.2f}, {recent_fraction*100:.0f}% of data from last 2 years")
 
         # Model parameters
+        # Monotonic constraints by feature name (dict form is compatible with newer XGBoost)
+        monotone_map = {
+            'competitor_avg_time_by_event': 1,
+            'event_encoded': 0,
+            'size_mm': 1,
+            'wood_janka_hardness': 1,
+            'wood_spec_gravity': 1,
+            'competitor_experience': 0,
+            'competitor_trend_slope': 1
+        }
+        monotone_constraints = {name: monotone_map.get(name, 0) for name in feature_cols}
+
         model_params = {
-            'n_estimators': 100,
-            'max_depth': 4,
-            'learning_rate': 0.1,
-            'random_state': 42,
-            'objective': 'reg:squarederror',
-            'tree_method': 'hist'
+            'n_estimators': ml_config.N_ESTIMATORS,
+            'max_depth': ml_config.MAX_DEPTH,
+            'learning_rate': ml_config.LEARNING_RATE,
+            'random_state': ml_config.RANDOM_STATE,
+            'objective': ml_config.OBJECTIVE,
+            'tree_method': ml_config.TREE_METHOD,
+            'monotone_constraints': monotone_constraints
         }
 
         # Perform cross-validation (without weights for simplicity)
         # Note: Could add weighted CV in future if needed
         print(f"Cross-validating {event} model (5-fold)...")
-        cv_results = perform_cross_validation(X, y, model_params, cv_folds=5)
+        dates = None
+        if 'date' in event_df.columns:
+            dates = pd.to_datetime(event_df['date'], errors='coerce')
+            if dates.isna().any():
+                dates = None
+        cv_results = perform_cross_validation(X, y, model_params, cv_folds=ml_config.CV_FOLDS, dates=dates)
 
         if cv_results:
             print(f"  CV MAE: {cv_results['mae_mean']:.2f}s +/- {cv_results['mae_std']:.2f}s")
@@ -301,9 +357,11 @@ def train_ml_model(
         if event == 'SB':
             _cached_ml_model_sb = model
             _feature_importance_sb = model.feature_importances_
+            _model_cv_metrics_sb = cv_results
         else:  # UH
             _cached_ml_model_uh = model
             _feature_importance_uh = model.feature_importances_
+            _model_cv_metrics_uh = cv_results
 
         models[event] = model
 
@@ -337,7 +395,7 @@ def predict_time_ml(
         competitor_name: Competitor's name
         species: Wood species code
         diameter: Diameter in mm
-        quality: Wood quality (0-10) - not used directly but for consistency
+        quality: Wood quality (1-10) - not used directly but for consistency
         event_code: Event type (SB or UH)
         results_df: Historical results (optional)
         wood_df: Wood properties (optional)
@@ -362,8 +420,11 @@ def predict_time_ml(
     if results_df is None or results_df.empty:
         return None, None, "No historical data"
 
+    # Standardize results data (shared validation + outlier filtering)
+    results_df, _ = standardize_results_data(results_df)
+
     # Train or get cached models
-    models = train_ml_model(results_df, wood_df, force_retrain=False)
+    models = train_ml_model(results_df, wood_df, force_retrain=False, skip_validation=True)
 
     if models is None:
         return None, None, "ML model training failed"
@@ -389,29 +450,63 @@ def predict_time_ml(
             wood_janka = wood_row.iloc[0].get('janka_hard', 500)
             wood_spec_grav = wood_row.iloc[0].get('spec_gravity', 0.5)
 
-    # Calculate competitor average time for this event WITH TIME-DECAY WEIGHTING
-    # Critical for consistency: same exponential decay as baseline and LLM predictions
-    # Recent performances weighted higher than old peak performances (especially for aging competitors)
+    def _compute_trend_estimate(comp_data: pd.DataFrame) -> Tuple[Optional[float], float, float]:
+        if 'date' not in comp_data.columns:
+            return None, 0.0, 0.0
+        if len(comp_data) < ml_config.TREND_MIN_SAMPLES:
+            return None, 0.0, 0.0
+        dates = pd.to_datetime(comp_data['date'], errors='coerce')
+        if dates.isna().all():
+            return None, 0.0, 0.0
+        x = (dates - dates.min()).dt.days.astype(float)
+        y = pd.to_numeric(comp_data['raw_time'], errors='coerce').astype(float)
+        valid_mask = np.isfinite(x) & np.isfinite(y)
+        x = x[valid_mask]
+        y = y[valid_mask]
+        if len(x) < 2 or x.nunique() < 2:
+            return None, 0.0, 0.0
+        try:
+            slope, intercept = np.polyfit(x, y, 1)
+        except np.linalg.LinAlgError:
+            return None, 0.0, 0.0
+        y_pred = (slope * x) + intercept
+        ss_res = float(((y - y_pred) ** 2).sum())
+        ss_tot = float(((y - y.mean()) ** 2).sum())
+        r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
+        trend_estimate = float((slope * x.max()) + intercept)
+        return trend_estimate, float(slope), float(r2)
+
+    # Calculate competitor average time for this event
+    # Use trend-based estimate when reliable; otherwise use time-decay weighting
     comp_data = results_df[
         (results_df['competitor_name'] == competitor_name) &
         (results_df['event'] == event_code)
     ]
 
     if not comp_data.empty:
-        # Apply time-decay weighting: weight = 0.5^(days_old / 730)
-        # This ensures recent performances dominate the average
-        if 'date' in comp_data.columns:
-            weights = comp_data['date'].apply(
-                lambda d: calculate_performance_weight(d, half_life_days=730)
-            )
-            # Calculate weighted average
-            competitor_avg = (comp_data['raw_time'] * weights).sum() / weights.sum()
+        trend_estimate, trend_slope, trend_r2 = _compute_trend_estimate(comp_data)
+        use_trend = (
+            trend_estimate is not None and
+            trend_r2 >= ml_config.TREND_R2_THRESHOLD and
+            abs(trend_slope) >= ml_config.TREND_SLOPE_THRESHOLD_SECONDS_PER_DAY
+        )
+        if use_trend:
+            competitor_avg = trend_estimate
         else:
-            # Fallback to simple mean if dates unavailable (backward compatibility)
-            competitor_avg = comp_data['raw_time'].mean()
+            # Apply time-decay weighting: weight = 0.5^(days_old / 730)
+            # This ensures recent performances dominate the average
+            if 'date' in comp_data.columns:
+                weights = comp_data['date'].apply(
+                    lambda d: calculate_performance_weight(d, half_life_days=730)
+                )
+                competitor_avg = (comp_data['raw_time'] * weights).sum() / weights.sum()
+            else:
+                competitor_avg = comp_data['raw_time'].mean()
 
         experience = len(comp_data)
         confidence = "HIGH" if len(comp_data) >= 5 else "MEDIUM"
+        trend_feature = trend_slope if use_trend else 0.0
+        trend_used = use_trend
     else:
         # Fallback: use all competitor data regardless of event
         comp_all_data = results_df[results_df['competitor_name'] == competitor_name]
@@ -427,6 +522,8 @@ def predict_time_ml(
 
             experience = len(comp_all_data)
             confidence = "MEDIUM"
+            trend_feature = 0.0
+            trend_used = False
         else:
             # New competitor: use event average (time-decay weighted)
             event_data = results_df[results_df['event'] == event_code]
@@ -442,6 +539,8 @@ def predict_time_ml(
 
                 experience = 1
                 confidence = "LOW"
+                trend_feature = 0.0
+                trend_used = False
             else:
                 return None, None, "No reference data for prediction"
 
@@ -454,21 +553,47 @@ def predict_time_ml(
         'size_mm': [diameter],
         'wood_janka_hardness': [wood_janka],
         'wood_spec_gravity': [wood_spec_grav],
-        'competitor_experience': [experience]
+        'competitor_experience': [experience],
+        'competitor_trend_slope': [trend_feature]
     })
 
     # Make prediction using event-specific model
     try:
         base_prediction = model.predict(features)[0]
 
+        # Per-competitor calibration (if enough history and stable residuals)
+        calibration_bias = 0.0
+        calibration_note = ""
+        try:
+            features_df = engineer_features_for_ml(results_df, wood_df)
+            if features_df is not None:
+                comp_rows = features_df[
+                    (features_df['competitor_name'] == competitor_name) &
+                    (features_df['event'] == event_code)
+                ]
+                if len(comp_rows) >= ml_config.CALIBRATION_MIN_SAMPLES:
+                    X_comp = comp_rows[list(ml_config.FEATURE_NAMES)]
+                    y_comp = comp_rows['raw_time']
+                    preds = model.predict(X_comp)
+                    residuals = y_comp - preds
+                    residual_std = float(residuals.std())
+                    if residual_std <= ml_config.CALIBRATION_MAX_STD_SECONDS:
+                        calibration_bias = float(residuals.mean())
+                        calibration_note = f", calibrated {calibration_bias:+.1f}s"
+        except Exception:
+            calibration_bias = 0.0
+
+        base_prediction = base_prediction + calibration_bias
+
         # Apply WOOD QUALITY ADJUSTMENT
-        # Quality scale: 0-10, where 5 is average
-        # Lower quality (0-4) = harder/firmer wood = slower times (positive adjustment)
-        # Higher quality (6-10) = softer/easier wood = faster times (negative adjustment)
+        # Quality scale: 1-10, where 5 is average
+        # Lower quality (1-4) = softer wood = faster times (negative adjustment)
+        # Higher quality (6-10) = harder wood = slower times (positive adjustment)
         # Adjustment: ±2% per quality point from average
         quality = int(quality) if quality is not None else 5
+        quality = max(1, min(10, quality))
         quality_offset = quality - 5  # Range: -5 to +5
-        quality_factor = 1.0 + (-quality_offset * 0.02)  # -10% to +10%
+        quality_factor = 1.0 + (quality_offset * 0.02)  # -10% to +10%
 
         predicted_time = base_prediction * quality_factor
 
@@ -477,16 +602,37 @@ def predict_time_ml(
             return None, None, f"ML prediction out of range ({predicted_time:.1f}s)"
 
         # Build explanation with quality adjustment info
-        explanation = f"{event_upper} ML model ({_model_training_data_size} training records)"
+        explanation = f"{event_upper} ML model ({_model_training_data_size} training records){calibration_note}"
+        if trend_used:
+            explanation += ", trend-based avg"
 
         if quality != 5:
             adjustment_pct = (quality_factor - 1.0) * 100
             if quality < 5:
-                explanation += f", quality {quality}/10 (firmer, {adjustment_pct:+.0f}%)"
-            else:
                 explanation += f", quality {quality}/10 (softer, {adjustment_pct:+.0f}%)"
+            else:
+                explanation += f", quality {quality}/10 (harder, {adjustment_pct:+.0f}%)"
+
+        # Calibrate confidence using model CV MAE when available
+        cv_metrics = _model_cv_metrics_sb if event_upper == 'SB' else _model_cv_metrics_uh
+        if cv_metrics and 'mae_mean' in cv_metrics:
+            mae = cv_metrics['mae_mean']
+            if mae > ml_config.ML_MAE_MEDIUM_CONFIDENCE:
+                confidence = "LOW"
+            elif mae > ml_config.ML_MAE_HIGH_CONFIDENCE and confidence == "HIGH":
+                confidence = "MEDIUM"
 
         return predicted_time, confidence, explanation
 
     except Exception as e:
         return None, None, f"ML prediction error: {str(e)}"
+
+
+def get_model_cv_metrics(event_code: str) -> Optional[dict]:
+    """Return cached CV metrics for the requested event."""
+    event_upper = event_code.upper()
+    if event_upper == 'SB':
+        return _model_cv_metrics_sb
+    if event_upper == 'UH':
+        return _model_cv_metrics_uh
+    return None

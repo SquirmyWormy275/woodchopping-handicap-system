@@ -40,7 +40,7 @@ def check_my_work(
     total_competitors = len(handicap_results)
 
     # Track issues
-    large_discrepancies = []  # Methods disagree >20%
+    large_discrepancies = []  # Methods disagree >20% or >4s
     low_confidence = []  # Confidence is LOW or VERY LOW
     scaled_predictions = []  # Cross-diameter scaling applied
     no_ml_predictions = []  # ML unavailable
@@ -84,37 +84,43 @@ def check_my_work(
         ml_time = predictions['ml']['time']
         llm_time = predictions['llm']['time']
 
-        # Calculate discrepancies
+        # Calculate discrepancies (percent and absolute seconds)
         if baseline_time and ml_time:
             diff_pct = abs((baseline_time - ml_time) / ml_time) * 100
-            if diff_pct > 20:
+            diff_abs = abs(baseline_time - ml_time)
+            if diff_pct > 20 or diff_abs >= 4.0:
                 large_discrepancies.append({
                     'name': name,
                     'baseline': baseline_time,
                     'ml': ml_time,
                     'diff_pct': diff_pct,
+                    'diff_abs': diff_abs,
                     'methods': 'Baseline vs ML'
                 })
 
         if baseline_time and llm_time:
             diff_pct = abs((baseline_time - llm_time) / llm_time) * 100
-            if diff_pct > 20:
+            diff_abs = abs(baseline_time - llm_time)
+            if diff_pct > 20 or diff_abs >= 4.0:
                 large_discrepancies.append({
                     'name': name,
                     'baseline': baseline_time,
                     'llm': llm_time,
                     'diff_pct': diff_pct,
+                    'diff_abs': diff_abs,
                     'methods': 'Baseline vs LLM'
                 })
 
         if ml_time and llm_time:
             diff_pct = abs((ml_time - llm_time) / llm_time) * 100
-            if diff_pct > 20:
+            diff_abs = abs(ml_time - llm_time)
+            if diff_pct > 20 or diff_abs >= 4.0:
                 large_discrepancies.append({
                     'name': name,
                     'ml': ml_time,
                     'llm': llm_time,
                     'diff_pct': diff_pct,
+                    'diff_abs': diff_abs,
                     'methods': 'ML vs LLM'
                 })
 
@@ -136,7 +142,6 @@ def check_my_work(
                 })
 
     # Calculate fairness metric (mark spread)
-    marks = [r['mark'] for r in handicap_results]
     predicted_times = [r['predicted_time'] for r in handicap_results]
 
     # Theoretical finish time spread (should be near zero for perfect handicaps)
@@ -151,7 +156,7 @@ def check_my_work(
 
     # Critical issues (recommend review)
     if len(large_discrepancies) > total_competitors * 0.3:  # >30% have large discrepancies
-        critical_issues.append(f"{len(large_discrepancies)} competitors have prediction methods disagreeing >20%")
+        critical_issues.append(f"{len(large_discrepancies)} competitors have prediction methods disagreeing >20% or >4s")
 
     if len(low_confidence) > total_competitors * 0.4:  # >40% low confidence
         critical_issues.append(f"{len(low_confidence)} competitors have LOW confidence predictions")
@@ -167,7 +172,7 @@ def check_my_work(
         warnings.append("ML predictions unavailable for all competitors (insufficient training data)")
 
     if len(large_discrepancies) > 0 and len(large_discrepancies) <= total_competitors * 0.3:
-        warnings.append(f"{len(large_discrepancies)} competitors have prediction discrepancies >20%")
+        warnings.append(f"{len(large_discrepancies)} competitors have prediction discrepancies >20% or >4s")
 
     # Info (normal operation notes)
     if finish_spread < 1.0:
@@ -177,6 +182,14 @@ def check_my_work(
 
     primary_method = max(methods_used, key=methods_used.get)
     info.append(f"Primary prediction method: {primary_method} ({methods_used[primary_method]}/{total_competitors})")
+    info.append("Selection uses lowest expected error (confidence, scaling penalties, CV MAE)")
+
+    # Assumptions snapshot (judge awareness)
+    assumptions = {
+        'quality_scale': "1=softest, 10=hardest (higher = slower)",
+        'variance_model': "Per-competitor std-dev when available, otherwise +/-3s",
+        'heat_variance': "Shared heat variance included in Monte Carlo"
+    }
 
     # Determine overall status
     if len(critical_issues) > 0:
@@ -203,7 +216,8 @@ def check_my_work(
             'no_ml_count': len(no_ml_predictions),
             'high_variance_risk': high_variance_risk,
             'finish_spread': finish_spread,
-            'methods_used': methods_used
+            'methods_used': methods_used,
+            'assumptions': assumptions
         }
     }
 
@@ -270,11 +284,15 @@ def display_check_my_work(
 
     if details['large_discrepancies']:
         print(f"\n{'-'*70}")
-        print(f"PREDICTION DISCREPANCIES (>{20}%):")
+        print("PREDICTION DISCREPANCIES (>20% or >4s):")
         print(f"{'Competitor':<25} {'Methods':<20} {'Difference'}")
         print("-"*70)
         for disc in details['large_discrepancies'][:10]:  # Limit to first 10
-            print(f"{disc['name']:<25} {disc['methods']:<20} {disc['diff_pct']:>6.1f}%")
+            if disc.get('diff_abs') is not None and disc['diff_abs'] >= 4.0:
+                diff_str = f"{disc['diff_abs']:>4.1f}s"
+            else:
+                diff_str = f"{disc['diff_pct']:>6.1f}%"
+            print(f"{disc['name']:<25} {disc['methods']:<20} {diff_str}")
 
         if len(details['large_discrepancies']) > 10:
             print(f"\n...and {len(details['large_discrepancies']) - 10} more")
@@ -301,6 +319,14 @@ def display_check_my_work(
 
         if len(details['scaled_predictions']) > 10:
             print(f"\n...and {len(details['scaled_predictions']) - 10} more (scaling applied)")
+
+    # Show assumption snapshot
+    if details.get('assumptions'):
+        print(f"\n{'-'*70}")
+        print("ASSUMPTIONS SNAPSHOT:")
+        print(f"  Quality scale: {details['assumptions']['quality_scale']}")
+        print(f"  Variance model: {details['assumptions']['variance_model']}")
+        print(f"  Heat effect: {details['assumptions']['heat_variance']}")
 
     # Final recommendation
     print(f"\n{'='*70}")

@@ -184,29 +184,31 @@ def calculate_effective_janka_hardness(
     Calculate EFFECTIVE Janka hardness accounting for BOTH species AND block quality.
 
     This is critical because:
-    - Firm White Pine (quality 2) can be as hard as average Ponderosa Pine
-    - Rotten Rock Maple (quality 9) can be softer than average White Pine
+    - Hard White Pine (quality 9) can be as hard as average Ponderosa Pine
+    - Soft Rock Maple (quality 2) can be softer than average White Pine
     - The quality scale captures block-specific firmness variations
 
     Args:
         species_code: Species code (e.g., 'WP', 'YP', 'RM')
-        quality: Wood quality 0-10 (0=very firm, 5=average, 10=very soft/rotten)
+        quality: Wood quality 1-10 (1=very soft, 5=average, 10=very hard)
         wood_df: Wood database with janka_hardness_lbf column
 
     Returns:
         Effective Janka hardness in lbf (adjusted for quality)
 
-    Quality Adjustment:
-        Quality 0 (very hard/firm): 1.5x base Janka (green wood, knots)
+    Quality Adjustment (1 = softest, 10 = hardest):
+        Quality 1 (very soft/rotten): 0.6x base Janka (punky, decomposed)
         Quality 5 (average): 1.0x base Janka (normal for species)
-        Quality 10 (very soft/rotten): 0.5x base Janka (punky, decomposed)
+        Quality 10 (very hard/firm): 1.5x base Janka (green wood, knots)
 
     Example:
         White Pine base: 420 Janka
-        - Quality 2 (firm): 420 × 1.3 = 546 Janka (approaching Yellow Pine at 690)
-        - Quality 5 (avg):  420 × 1.0 = 420 Janka (species baseline)
-        - Quality 8 (soft): 420 × 0.7 = 294 Janka (very soft)
+        - Quality 2 (soft): 420 x 0.8 = 336 Janka (softer than average)
+        - Quality 5 (avg):  420 x 1.0 = 420 Janka (species baseline)
+        - Quality 9 (hard): 420 x 1.4 = 588 Janka (approaching Yellow Pine at 690)
     """
+    quality = max(1, min(10, int(quality)))
+
     # Get base Janka from wood database
     # Match by speciesID (e.g., 'WP', 'YP', 'RM')
     wood_row = wood_df[wood_df['speciesID'].str.upper() == species_code.upper()]
@@ -217,12 +219,12 @@ def calculate_effective_janka_hardness(
     else:
         base_janka = float(wood_row['janka_hard'].values[0])
 
-    # Quality adjustment factor
-    # Linear interpolation: factor = 1.5 - (quality × 0.1)
-    # Quality 0: 1.5x (very firm)
+    # Quality adjustment factor (1 softest -> 10 hardest)
+    # Linear interpolation: factor = 1.0 + ((quality - 5) * 0.1)
+    # Quality 1: 0.6x (very soft)
     # Quality 5: 1.0x (average)
-    # Quality 10: 0.5x (very soft)
-    quality_factor = 1.5 - (quality * 0.1)
+    # Quality 10: 1.5x (very hard)
+    quality_factor = 1.0 + ((quality - 5) * 0.1)
 
     # Clamp quality factor to reasonable bounds (0.3 to 2.0)
     quality_factor = max(0.3, min(2.0, quality_factor))
@@ -418,7 +420,8 @@ def scale_time_qaa(
     historical_diameter: float,
     target_diameter: float,
     species_code: str,
-    quality: int = 5
+    quality: int = 5,
+    wood_df: Optional[pd.DataFrame] = None
 ) -> Tuple[float, str]:
     """
     Scale a historical TIME (not mark) to different diameter using QAA tables.
@@ -432,7 +435,7 @@ def scale_time_qaa(
         historical_diameter: Diameter of historical performance (mm)
         target_diameter: Target diameter for prediction (mm)
         species_code: Wood species code
-        quality: Wood quality 0-10 (0=very firm, 5=average, 10=very soft/rotten)
+        quality: Wood quality 1-10 (1=very soft, 5=average, 10=very hard)
 
     Returns:
         Tuple of (scaled_time, explanation)
@@ -446,12 +449,13 @@ def scale_time_qaa(
         based on effective Janka hardness (species baseline + quality adjustment).
 
         Quality adjustment examples:
-        - Firm White Pine (quality=2): Scales more like Yellow Pine
-        - Soft Rock Maple (quality=8): Scales more like White Pine
+        - Hard White Pine (quality=9): Scales more like Yellow Pine
+        - Soft Rock Maple (quality=2): Scales more like White Pine
     """
     # Load wood database to get Janka hardness
-    from woodchopping.data import load_wood_data
-    wood_df = load_wood_data()
+    if wood_df is None:
+        from woodchopping.data import load_wood_data
+        wood_df = load_wood_data()
 
     if wood_df is None or wood_df.empty:
         # Fallback: use medium table if database unavailable

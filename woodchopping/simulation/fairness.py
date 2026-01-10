@@ -114,7 +114,7 @@ HANDICAPPING MECHANISM:
 QUALITY FACTORS IN PREDICTIONS:
 - Wood species (hardness variations)
 - Block diameter (volume to cut)
-- Wood quality rating (0-10 scale, affects cutting speed)
+- Wood quality rating (1-10 scale, higher = harder, affects cutting speed)
 - Historical competitor performance
 
 SIMULATION METHODOLOGY

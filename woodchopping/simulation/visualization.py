@@ -47,7 +47,9 @@ def generate_simulation_summary(analysis: Dict[str, Any]) -> str:
     summary.append("\n" + "="*70)
     summary.append("MONTE CARLO SIMULATION RESULTS")
     summary.append("="*70)
-    summary.append(f"Simulated {analysis['num_simulations']} races with �3s absolute performance variation")
+    summary.append(f"Simulated {analysis['num_simulations']} races with +/- 3s absolute performance variation")
+    if analysis.get('heat_variance_seconds') is not None:
+        summary.append(f"Heat variance: +/-{analysis['heat_variance_seconds']:.1f}s shared effect")
     summary.append("")
 
     summary.append("FINISH TIME SPREADS:")

@@ -13,6 +13,7 @@ from math import ceil
 from openpyxl import load_workbook
 import time
 import os
+from datetime import datetime
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == 'win32':
@@ -71,6 +72,8 @@ from woodchopping.ui.multi_event_ui import (
     save_multi_event_tournament,
     load_multi_event_tournament,
     add_event_to_tournament,
+    setup_tournament_roster,           # NEW V5.1
+    assign_competitors_to_events,      # NEW V5.1
     view_wood_count,
     view_tournament_schedule,
     remove_event_from_tournament,
@@ -81,8 +84,30 @@ from woodchopping.ui.multi_event_ui import (
     sequential_results_workflow,
     generate_tournament_summary
 )
+from woodchopping.ui.v51_helpers import (    # NEW V5.1
+    view_tournament_entries,
+    edit_event_entries,
+    manage_scratches
+)
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 from woodchopping.simulation import simulate_and_assess_handicaps
+from woodchopping.ui.tournament_status import (
+    display_tournament_progress_tracker,
+    check_can_calculate_handicaps,
+    check_can_generate_schedule,
+)
+from woodchopping.ui.error_display import (
+    display_actionable_error,
+    display_blocking_error,
+    display_warning,
+    display_success,
+)
+from woodchopping.ui.entry_fee_tracker import (
+    view_entry_fee_status,
+)
+from woodchopping.ui.scratch_management import (
+    manage_tournament_scratches,
+)
 
 # Keep explanation system (educational tool)
 import explanation_system_functions as explain
@@ -1417,81 +1442,237 @@ def multi_event_tournament_menu():
     global multi_event_tournament_state, comp_df
 
     while True:
-        print("\n╔════════════════════════════════════════════════════════════════════╗")
-        print("║" + " " * 68 + "║")
-        print("║" + "──────────────────────────────".center(68) + "║")
-        print("║" + "TOURNAMENT MANAGEMENT SYSTEM".center(68) + "║")
-        print("║" + "Multi-Event Handicapping".center(68) + "║")
-        print("║" + "──────────────────────────────".center(68) + "║")
-        print("║" + "⚒ STRATHEX ⚒".center(68) + "║")
-        print("║" + " " * 68 + "║")
-        print("╚════════════════════════════════════════════════════════════════════╝")
-        print("\nTOURNAMENT SETUP:")
-        print("  1. Create New Tournament")
-        print("  2. Add Event to Tournament")
-        print("  3. Wood Count")
-        print("  4. Remove Event from Tournament")
-        print("\nHANDICAP CALCULATION:")
-        print("  5. Calculate Handicaps for All Events")
-        print("  6. View & Analyze Handicaps")
-        print("  7. Approve Event Handicaps")
-        print("\nTOURNAMENT EXECUTION:")
-        print("  8. Generate Complete Day Schedule")
-        print("  9. Begin Sequential Results Entry")
-        print(" 10. View Tournament Status")
-        print(" 11. Print Schedule (Export to File)")
-        print("\nTOURNAMENT COMPLETION:")
-        print(" 12. Generate Final Tournament Summary")
-        print(" 13. View Tournament Earnings Summary")
-        print(" 14. Save Tournament State")
-        print(" 15. Return to Main Menu")
-        print("=" * 70)
+        # Display progress tracker if tournament exists
+        if multi_event_tournament_state.get('tournament_name'):
+            display_tournament_progress_tracker(multi_event_tournament_state)
+        else:
+            # Show banner only if no tournament
+            print("\n╔════════════════════════════════════════════════════════════════════╗")
+            print("║" + " " * 68 + "║")
+            print("║" + "──────────────────────────────".center(68) + "║")
+            print("║" + "TOURNAMENT MANAGEMENT SYSTEM".center(68) + "║")
+            print("║" + "Multi-Event Handicapping".center(68) + "║")
+            print("║" + "──────────────────────────────".center(68) + "║")
+            print("║" + "⚒ STRATHEX ⚒".center(68) + "║")
+            print("║" + " " * 68 + "║")
+            print("╚════════════════════════════════════════════════════════════════════╝")
 
-        menu_choice = input("\nEnter your choice (1-15): ").strip()
+        print("\nSETUP PHASE:")
+        print("  1. Create New Tournament")
+        print("  2. Define All Events (Add/Remove/View)")
+        print("  3. Setup Tournament Roster (All Competitors)")
+        print("  4. Assign Competitors to Events")
+        print("  5. Manage Entry Fees & Payouts")
+        print("\nPRE-COMPETITION:")
+        print("  6. Calculate All Handicaps (Batch)")
+        print("  7. Review & Analyze Handicaps")
+        print("  8. Approve Handicaps (by Event)")
+        print("  9. Generate Complete Day Schedule")
+        print("\nDAY-OF OPERATIONS:")
+        print(" 10. Manage Scratches/Withdrawals")
+        print(" 11. Begin Competition (Results Entry)")
+        print(" 12. View Live Tournament Status")
+        print(" 13. Print/Export Schedules")
+        print("\nCOMPLETION:")
+        print(" 14. Generate Final Summary")
+        print(" 15. View Earnings Report")
+        print("\nSYSTEM:")
+        print(" 16. Save Tournament")
+        print(" 17. Return to Main Menu")
+        print("=" * 70)
+        print("\nQuick shortcuts: 's' = save, 'q' = quit, 'h' = help")
+
+        menu_choice = input("\nEnter your choice (1-17 or shortcut): ").strip().lower()
+
+        # Handle keyboard shortcuts
+        if menu_choice == 's':
+            # Quick save
+            if multi_event_tournament_state.get('tournament_name'):
+                from woodchopping.ui.multi_event_ui import auto_save_multi_event
+                auto_save_multi_event(multi_event_tournament_state)
+                display_success("Tournament saved successfully")
+            else:
+                print("\n⚠ No tournament to save")
+                input("\nPress Enter to continue...")
+            continue
+
+        elif menu_choice == 'q' or menu_choice == 'x':
+            # Quick exit to main menu
+            if display_warning("Exit Tournament Menu", "Return to main menu?", confirmation=True):
+                break
+            continue
+
+        elif menu_choice == 'h':
+            # Help - show what each option does
+            print("\n╔" + "═" * 68 + "╗")
+            print("║" + "HELP - Tournament Workflow".center(68) + "║")
+            print("╠" + "═" * 68 + "╣")
+            print("║" + "1. Start by creating a new tournament".ljust(68) + "║")
+            print("║" + "2. Define all events (wood, format, etc.)".ljust(68) + "║")
+            print("║" + "3. Select all competitors for the day".ljust(68) + "║")
+            print("║" + "4. Assign each competitor to their events".ljust(68) + "║")
+            print("║" + "5. (Optional) Configure prize money/payouts".ljust(68) + "║")
+            print("║" + "6-8. Calculate and approve handicaps".ljust(68) + "║")
+            print("║" + "9. Generate the complete day schedule".ljust(68) + "║")
+            print("║" + "10. Handle day-of scratches/withdrawals".ljust(68) + "║")
+            print("║" + "11-13. Run competition and track results".ljust(68) + "║")
+            print("║" + "14-15. View final summaries and earnings".ljust(68) + "║")
+            print("╚" + "═" * 68 + "╝")
+            input("\nPress Enter to continue...")
+            continue
 
         if menu_choice == '1':
             # Create New Tournament
             multi_event_tournament_state = create_multi_event_tournament()
 
         elif menu_choice == '2':
-            # Add Event to Tournament
+            # Define All Events (Add/Remove/View) - NEW SUBMENU
             if not multi_event_tournament_state.get('tournament_name'):
-                print("\nERROR: Create tournament first (Option 1)")
-                input("\nPress Enter to return to menu...")
+                choice = display_actionable_error(
+                    "CANNOT MANAGE EVENTS",
+                    "Tournament must be created first.",
+                    quick_action="create tournament now",
+                    quick_action_key="1"
+                )
+                if choice == '1':
+                    multi_event_tournament_state = create_multi_event_tournament()
                 continue
 
-            results_df = load_results_df()
-            multi_event_tournament_state = add_event_to_tournament(
-                multi_event_tournament_state,
-                comp_df,
-                results_df
-            )
+            # Event management submenu loop
+            while True:
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "EVENT MANAGEMENT".center(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "║")
+                print("║" + f"Current events: {len(multi_event_tournament_state.get('events', []))}".ljust(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + "  1. Add New Event".ljust(68) + "║")
+                print("║" + "  2. Remove Event".ljust(68) + "║")
+                print("║" + "  3. View Wood Count".ljust(68) + "║")
+                print("║" + "  4. Return to Main Menu".ljust(68) + "║")
+                print("╚" + "═" * 68 + "╝")
+
+                event_choice = input("\nChoice [1-4]: ").strip()
+
+                if event_choice == '1':
+                    results_df = load_results_df()
+                    multi_event_tournament_state = add_event_to_tournament(
+                        multi_event_tournament_state,
+                        comp_df,
+                        results_df
+                    )
+                elif event_choice == '2':
+                    if not multi_event_tournament_state.get('events'):
+                        print("\n⚠ No events to remove")
+                        input("\nPress Enter to continue...")
+                    else:
+                        multi_event_tournament_state = remove_event_from_tournament(
+                            multi_event_tournament_state
+                        )
+                elif event_choice == '3':
+                    if not multi_event_tournament_state.get('events'):
+                        print("\n⚠ No events to count")
+                        input("\nPress Enter to continue...")
+                    else:
+                        view_wood_count(multi_event_tournament_state)
+                elif event_choice == '4':
+                    break  # Exit to main menu
+                else:
+                    print("\n⚠ Invalid choice")
+                    input("\nPress Enter to continue...")
 
         elif menu_choice == '3':
-            # Wood Count
+            # Setup Tournament Roster
             if not multi_event_tournament_state.get('tournament_name'):
-                print("\nERROR: Create tournament first (Option 1)")
-                input("\nPress Enter to return to menu...")
+                choice = display_actionable_error(
+                    "CANNOT SETUP ROSTER",
+                    "Tournament must be created first.",
+                    quick_action="create tournament now",
+                    quick_action_key="1"
+                )
+                if choice == '1':
+                    multi_event_tournament_state = create_multi_event_tournament()
                 continue
 
-            view_wood_count(multi_event_tournament_state)
+            multi_event_tournament_state = setup_tournament_roster(
+                multi_event_tournament_state,
+                comp_df
+            )
 
         elif menu_choice == '4':
-            # Remove Event from Tournament
-            if not multi_event_tournament_state.get('events'):
-                print("\nERROR: No events in tournament to remove")
-                input("\nPress Enter to return to menu...")
+            # Assign Competitors to Events
+            if not multi_event_tournament_state.get('tournament_roster'):
+                choice = display_actionable_error(
+                    "CANNOT ASSIGN COMPETITORS",
+                    "Tournament roster must be configured first.",
+                    quick_action="setup roster now",
+                    quick_action_key="3"
+                )
+                if choice == '3':
+                    multi_event_tournament_state = setup_tournament_roster(
+                        multi_event_tournament_state,
+                        comp_df
+                    )
                 continue
 
-            multi_event_tournament_state = remove_event_from_tournament(
+            multi_event_tournament_state = assign_competitors_to_events(
                 multi_event_tournament_state
             )
 
         elif menu_choice == '5':
-            # Calculate Handicaps for All Events (BATCH)
-            if not multi_event_tournament_state.get('events'):
-                print("\nERROR: Add events to tournament first (Option 2)")
-                input("\nPress Enter to return to menu...")
+            # Entry Fee Management & Payouts Submenu
+            if not multi_event_tournament_state.get('tournament_name'):
+                display_actionable_error(
+                    "CANNOT MANAGE FINANCES",
+                    "Tournament must be created first.",
+                    quick_action="create tournament now",
+                    quick_action_key="1"
+                )
+                if choice == '1':
+                    multi_event_tournament_state = create_multi_event_tournament()
+                continue
+
+            # Submenu loop for entry fees and payouts
+            while True:
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "TOURNAMENT FINANCES".center(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "║")
+
+                # Show fee tracking status
+                if multi_event_tournament_state.get('entry_fee_tracking_enabled'):
+                    print("║" + "Entry Fee Tracking: ENABLED".ljust(68) + "║")
+                else:
+                    print("║" + "Entry Fee Tracking: DISABLED".ljust(68) + "║")
+
+                print("╠" + "═" * 68 + "╣")
+                print("║" + "  1. View Entry Fee Status".ljust(68) + "║")
+                print("║" + "  2. Mark Fees as Paid".ljust(68) + "║")
+                print("║" + "  3. Configure Event Payouts (Coming Soon)".ljust(68) + "║")
+                print("║" + "  4. Return to Main Menu".ljust(68) + "║")
+                print("╚" + "═" * 68 + "╝")
+
+                finance_choice = input("\nChoice [1-4]: ").strip()
+
+                if finance_choice == '1' or finance_choice == '2':
+                    view_entry_fee_status(multi_event_tournament_state)
+                elif finance_choice == '3':
+                    print("\n⚠ Payout configuration feature coming soon")
+                    print("For now, configure payouts individually when creating each event")
+                    input("\nPress Enter to continue...")
+                elif finance_choice == '4':
+                    break  # Exit to main menu
+                else:
+                    print("\n⚠ Invalid choice")
+                    input("\nPress Enter to continue...")
+
+        elif menu_choice == '6':
+            # Calculate All Handicaps (BATCH)
+            # Use validation module
+            can_proceed, errors = check_can_calculate_handicaps(multi_event_tournament_state)
+
+            if not can_proceed:
+                display_blocking_error("CANNOT CALCULATE HANDICAPS", errors)
                 continue
 
             results_df = load_results_df()
@@ -1500,39 +1681,60 @@ def multi_event_tournament_menu():
                 results_df
             )
 
-        elif menu_choice == '6':
-            # View & Analyze All Handicaps
+        elif menu_choice == '7':
+            # Review & Analyze Handicaps
             if not multi_event_tournament_state.get('events'):
-                print("\nERROR: No events in tournament")
-                input("\nPress Enter to return to menu...")
+                display_actionable_error(
+                    "CANNOT VIEW HANDICAPS",
+                    "No events in tournament. Add events first (Option 2).",
+                )
                 continue
 
             view_analyze_all_handicaps(multi_event_tournament_state)
 
-        elif menu_choice == '7':
-            # Approve Event Handicaps
+        elif menu_choice == '8':
+            # Approve Handicaps (by Event)
             if not multi_event_tournament_state.get('events'):
-                print("\nERROR: No events in tournament")
-                input("\nPress Enter to return to menu...")
+                display_actionable_error(
+                    "CANNOT APPROVE HANDICAPS",
+                    "No events in tournament. Add events first (Option 2).",
+                )
                 continue
 
             approve_event_handicaps(multi_event_tournament_state)
 
-        elif menu_choice == '8':
+        elif menu_choice == '9':
             # Generate Complete Day Schedule
-            if not multi_event_tournament_state.get('events'):
-                print("\nERROR: Add events to tournament first (Option 2)")
-                input("\nPress Enter to return to menu...")
+            # Use validation module
+            can_proceed, errors = check_can_generate_schedule(multi_event_tournament_state)
+
+            if not can_proceed:
+                display_blocking_error("CANNOT GENERATE SCHEDULE", errors)
                 continue
 
             multi_event_tournament_state = generate_complete_day_schedule(
                 multi_event_tournament_state
             )
 
-        elif menu_choice == '9':
+        elif menu_choice == '10':
+            # Manage Scratches/Withdrawals - FULLY IMPLEMENTED
+            if not multi_event_tournament_state.get('tournament_roster'):
+                display_actionable_error(
+                    "CANNOT MANAGE SCRATCHES",
+                    "Tournament roster must be configured first.",
+                    quick_action="setup roster now",
+                    quick_action_key="3"
+                )
+                continue
+
+            multi_event_tournament_state = manage_tournament_scratches(
+                multi_event_tournament_state
+            )
+
+        elif menu_choice == '11':
             # Begin Sequential Results Entry
             if not multi_event_tournament_state.get('events'):
-                print("\nERROR: Generate day schedule first (Option 8)")
+                print("\nERROR: Generate day schedule first (Option 10)")
                 input("\nPress Enter to return to menu...")
                 continue
 
@@ -1542,7 +1744,7 @@ def multi_event_tournament_menu():
                 heat_assignment_df   # Legacy parameter
             )
 
-        elif menu_choice == '10':
+        elif menu_choice == '12':
             # View Tournament Status
             if not multi_event_tournament_state.get('tournament_name'):
                 print("\nERROR: Create tournament first (Option 1)")
@@ -1551,7 +1753,7 @@ def multi_event_tournament_menu():
 
             view_tournament_schedule(multi_event_tournament_state)
 
-        elif menu_choice == '11':
+        elif menu_choice == '13':
             # Print Schedule (Export to File) - NEW V5.0
             if not multi_event_tournament_state.get('events'):
                 print("\nERROR: No events to print. Add events first (Option 2)")
@@ -1559,7 +1761,7 @@ def multi_event_tournament_menu():
             else:
                 display_and_export_schedule(multi_event_tournament_state)
 
-        elif menu_choice == '12':
+        elif menu_choice == '14':
             # Generate Final Tournament Summary
             if not multi_event_tournament_state.get('events'):
                 print("\nERROR: No events completed yet")
@@ -1568,7 +1770,7 @@ def multi_event_tournament_menu():
 
             generate_tournament_summary(multi_event_tournament_state)
 
-        elif menu_choice == '13':
+        elif menu_choice == '15':
             # View Tournament Earnings Summary
             from woodchopping.ui.payout_ui import calculate_total_earnings, display_tournament_earnings_summary
 
@@ -1586,7 +1788,7 @@ def multi_event_tournament_menu():
 
             display_tournament_earnings_summary(multi_event_tournament_state, competitor_earnings)
 
-        elif menu_choice == '14':
+        elif menu_choice == '16':
             # Save Tournament State
             if not multi_event_tournament_state.get('tournament_name'):
                 print("\nERROR: Create tournament first (Option 1)")
@@ -1599,7 +1801,7 @@ def multi_event_tournament_menu():
 
             save_multi_event_tournament(multi_event_tournament_state, filename)
 
-        elif menu_choice == '15':
+        elif menu_choice == '17':
             # Return to main menu
             print("\nReturning to main menu...")
             break

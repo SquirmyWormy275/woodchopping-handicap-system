@@ -40,7 +40,7 @@ def wood_menu(wood_selection: Dict) -> Dict:
               f"quality={wood_selection.get('quality')}")
         print("1) Select wood species")
         print("2) Enter size (mm)")
-        print("3) Enter quality (0 for poor quality, 1-3 for soft wood, 4-7 for average firmness for species, 8-10 for above average firmness for species)")
+        print("3) Enter quality (1 = softest, 4-7 = average for species, 8-10 = hardest)")
         print("4) Back to Main Menu")
         s = input("Choose an option: ").strip()
 
@@ -126,10 +126,10 @@ def enter_wood_size_mm(wood_selection: Dict) -> Dict:
 
 
 def enter_wood_quality(wood_selection: Dict) -> Dict:
-    """Enter wood quality rating (0-10 scale).
+    """Enter wood quality rating (1-10 scale).
 
     Quality scale:
-    - 0-3: Soft/rotten wood (faster times)
+    - 1-3: Soft/rotten wood (faster times)
     - 4-7: Average firmness for species
     - 8-10: Above average firmness (slower times)
 
@@ -140,7 +140,7 @@ def enter_wood_quality(wood_selection: Dict) -> Dict:
         dict: Updated wood selection with quality rating
     """
     while True:
-        s = input("Enter wood quality (integer 0–10): ").strip()
+        s = input("Enter wood quality (integer 1-10): ").strip()
 
         if s == "":
             print("No change made to wood quality.")
@@ -148,7 +148,7 @@ def enter_wood_quality(wood_selection: Dict) -> Dict:
 
         try:
             val = int(s)
-            val = max(0, min(10, val))  # Clamp between 0 and 10
+            val = max(1, min(10, val))  # Clamp between 1 and 10
             wood_selection["quality"] = val
             format_wood(wood_selection)
             break

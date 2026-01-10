@@ -167,7 +167,7 @@ def add_historical_times_for_competitor(competitor_name: str) -> None:
     - Enter the time in seconds
     - Enter wood species
     - Enter wood diameter in mm
-    - Enter wood quality (0-10)
+    - Enter wood quality (1-10)
     - Optionally enter date (defaults to current date)
 
     The program will store this data in the results sheet.
@@ -215,11 +215,11 @@ def add_historical_times_for_competitor(competitor_name: str) -> None:
                 print("Please enter a valid number.")
 
         # Get quality (optional, default to 5)
-        quality_str = input("Wood quality (0-10, press Enter for 5): ").strip()
+        quality_str = input("Wood quality (1-10, press Enter for 5): ").strip()
         if quality_str:
             try:
                 quality = int(quality_str)
-                quality = max(0, min(10, quality))
+                quality = max(1, min(10, quality))
             except:
                 quality = 5
         else:

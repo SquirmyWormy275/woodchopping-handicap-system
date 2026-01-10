@@ -43,6 +43,10 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
         warnings.append(f"Missing columns: {missing_cols}")
         return None, warnings
 
+    # Coerce quality to numeric if present (non-numeric becomes NaN)
+    if 'quality' in df.columns:
+        df['quality'] = pd.to_numeric(df['quality'], errors='coerce')
+
     # Remove invalid times (use config constants)
     invalid_times = df[
         (df['raw_time'] <= data_req.MIN_VALID_TIME_SECONDS) |
@@ -88,30 +92,55 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
         )
         df = df[df['event'].isin(events.VALID_EVENTS)]
 
-    # Detect statistical outliers using IQR method (per event type)
+    # Detect statistical outliers using IQR method (event + size bins when possible)
     outliers_removed = 0
-    for event in events.VALID_EVENTS:
-        event_data = df[df['event'] == event]['raw_time']
-        if len(event_data) > 10:  # Only check if we have enough data
-            Q1 = event_data.quantile(0.25)
-            Q3 = event_data.quantile(0.75)
-            IQR = Q3 - Q1
-            # Use config constant for IQR multiplier
-            lower_bound = Q1 - data_req.OUTLIER_IQR_MULTIPLIER * IQR
-            upper_bound = Q3 + data_req.OUTLIER_IQR_MULTIPLIER * IQR
+    if 'size_mm' in df.columns:
+        df['size_bin'] = (df['size_mm'] / 25.0).round() * 25.0
 
-            outliers = df[(df['event'] == event) &
-                         ((df['raw_time'] < lower_bound) | (df['raw_time'] > upper_bound))]
+    for event in events.VALID_EVENTS:
+        event_df = df[df['event'] == event]
+        if len(event_df) <= 10:
+            continue
+
+        # Event-level fallback bounds
+        Q1 = event_df['raw_time'].quantile(0.25)
+        Q3 = event_df['raw_time'].quantile(0.75)
+        IQR = Q3 - Q1
+        event_lower = Q1 - data_req.OUTLIER_IQR_MULTIPLIER * IQR
+        event_upper = Q3 + data_req.OUTLIER_IQR_MULTIPLIER * IQR
+
+        if 'size_bin' in df.columns:
+            for _, group in event_df.groupby('size_bin'):
+                if len(group) >= 10:
+                    gq1 = group['raw_time'].quantile(0.25)
+                    gq3 = group['raw_time'].quantile(0.75)
+                    giqr = gq3 - gq1
+                    lower = gq1 - data_req.OUTLIER_IQR_MULTIPLIER * giqr
+                    upper = gq3 + data_req.OUTLIER_IQR_MULTIPLIER * giqr
+                else:
+                    lower = event_lower
+                    upper = event_upper
+
+                outliers = group[(group['raw_time'] < lower) | (group['raw_time'] > upper)]
+                if not outliers.empty:
+                    outliers_removed += len(outliers)
+                    df = df.drop(index=outliers.index)
+        else:
+            outliers = event_df[
+                (event_df['raw_time'] < event_lower) | (event_df['raw_time'] > event_upper)
+            ]
             if not outliers.empty:
                 outliers_removed += len(outliers)
-                df = df[~((df['event'] == event) &
-                         ((df['raw_time'] < lower_bound) | (df['raw_time'] > upper_bound)))]
+                df = df.drop(index=outliers.index)
 
     if outliers_removed > 0:
         warnings.append(
             f"Removed {outliers_removed} statistical outliers "
             f"(>{data_req.OUTLIER_IQR_MULTIPLIER}x IQR from median)"
         )
+
+    if 'size_bin' in df.columns:
+        df = df.drop(columns=['size_bin'])
 
     final_count = len(df)
     if final_count < initial_count:
@@ -127,6 +156,36 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
         )
 
     return df, warnings
+
+
+def standardize_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFrame], List[str]]:
+    """
+    Standardize results data using the shared validation and outlier filtering rules.
+
+    This is a lightweight wrapper around validate_results_data() that:
+    - Returns the original DataFrame if validation fails (to avoid hard stops)
+    - Tags validated DataFrames to prevent repeated work
+
+    Args:
+        results_df: Raw results DataFrame
+
+    Returns:
+        Tuple of (cleaned_df_or_original, warnings_list)
+    """
+    if results_df is None or results_df.empty:
+        return results_df, ["No data to validate"]
+
+    # Avoid re-validating the same DataFrame repeatedly
+    if getattr(results_df, "attrs", {}).get("validated", False):
+        return results_df, []
+
+    cleaned_df, warnings = validate_results_data(results_df)
+
+    if cleaned_df is None or cleaned_df.empty:
+        return results_df, warnings
+
+    cleaned_df.attrs["validated"] = True
+    return cleaned_df, warnings
 
 
 def validate_heat_data(heat_assignment_df, wood_selection):

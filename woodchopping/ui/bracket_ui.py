@@ -513,7 +513,7 @@ def generate_bracket_seeds(
         competitors_df: DataFrame with competitor info
         wood_species: Wood species code
         wood_diameter: Diameter in mm
-        wood_quality: Quality rating 0-10
+        wood_quality: Quality rating 1-10
         event_code: 'SB' or 'UH'
 
     Returns:

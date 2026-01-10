@@ -1,6 +1,7 @@
 """Feature engineering and preprocessing for machine learning models."""
 
 import pandas as pd
+import numpy as np
 from typing import Optional
 
 # Import config
@@ -64,9 +65,88 @@ def engineer_features_for_ml(
         lambda x: ml_config.EVENT_ENCODING_SB if str(x).upper() == 'SB' else ml_config.EVENT_ENCODING_UH
     )
 
-    # Feature 2: Competitor average time by event
-    competitor_avg = df.groupby(['competitor_name', 'event'])['raw_time'].transform('mean')
-    df['competitor_avg_time_by_event'] = competitor_avg
+    # Feature 2: Competitor average time by event (trend-aware when reliable)
+    if 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+
+        def _trend_stats(group: pd.DataFrame) -> pd.Series:
+            sample_count = len(group)
+            if sample_count < ml_config.TREND_MIN_SAMPLES:
+                return pd.Series({
+                    'trend_slope': 0.0,
+                    'trend_r2': 0.0,
+                    'trend_estimate': group['raw_time'].mean(),
+                    'trend_samples': sample_count
+                })
+
+            dates = group['date']
+            if dates.isna().all():
+                return pd.Series({
+                    'trend_slope': 0.0,
+                    'trend_r2': 0.0,
+                    'trend_estimate': group['raw_time'].mean(),
+                    'trend_samples': sample_count
+                })
+
+            x = (dates - dates.min()).dt.days.astype(float)
+            y = pd.to_numeric(group['raw_time'], errors='coerce').astype(float)
+            valid_mask = np.isfinite(x) & np.isfinite(y)
+            x = x[valid_mask]
+            y = y[valid_mask]
+            if len(x) < 2 or x.nunique() < 2:
+                return pd.Series({
+                    'trend_slope': 0.0,
+                    'trend_r2': 0.0,
+                    'trend_estimate': float(pd.to_numeric(group['raw_time'], errors='coerce').mean()),
+                    'trend_samples': sample_count
+                })
+
+            try:
+                slope, intercept = np.polyfit(x, y, 1)
+            except np.linalg.LinAlgError:
+                return pd.Series({
+                    'trend_slope': 0.0,
+                    'trend_r2': 0.0,
+                    'trend_estimate': float(pd.to_numeric(group['raw_time'], errors='coerce').mean()),
+                    'trend_samples': sample_count
+                })
+            y_pred = (slope * x) + intercept
+            ss_res = float(((y - y_pred) ** 2).sum())
+            ss_tot = float(((y - y.mean()) ** 2).sum())
+            r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
+            trend_estimate = float((slope * x.max()) + intercept)
+
+            return pd.Series({
+                'trend_slope': float(slope),
+                'trend_r2': float(r2),
+                'trend_estimate': trend_estimate,
+                'trend_samples': sample_count
+            })
+
+        trend_stats = (
+            df.groupby(['competitor_name', 'event'])
+            .apply(_trend_stats)
+            .reset_index()
+        )
+
+        df = df.merge(
+            trend_stats,
+            on=['competitor_name', 'event'],
+            how='left'
+        )
+
+        competitor_avg = df.groupby(['competitor_name', 'event'])['raw_time'].transform('mean')
+        use_trend = (
+            (df['trend_samples'] >= ml_config.TREND_MIN_SAMPLES) &
+            (df['trend_r2'] >= ml_config.TREND_R2_THRESHOLD) &
+            (df['trend_slope'].abs() >= ml_config.TREND_SLOPE_THRESHOLD_SECONDS_PER_DAY)
+        )
+        df['competitor_avg_time_by_event'] = np.where(use_trend, df['trend_estimate'], competitor_avg)
+        df['competitor_trend_slope'] = df['trend_slope'].fillna(0.0)
+    else:
+        competitor_avg = df.groupby(['competitor_name', 'event'])['raw_time'].transform('mean')
+        df['competitor_avg_time_by_event'] = competitor_avg
+        df['competitor_trend_slope'] = 0.0
 
     # Feature 3: Competitor experience (count of past events)
     df['competitor_experience'] = df.groupby('competitor_name').cumcount() + 1

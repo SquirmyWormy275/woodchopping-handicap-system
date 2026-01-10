@@ -12,6 +12,18 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from config import paths
 
 
+def _resolve_sheet_name(excel_path: str, desired_name: str) -> str:
+    """Return the exact sheet name matching desired_name (case-insensitive)."""
+    try:
+        xl = pd.ExcelFile(excel_path)
+        for sheet in xl.sheet_names:
+            if sheet.strip().lower() == desired_name.strip().lower():
+                return sheet
+    except Exception:
+        pass
+    return desired_name
+
+
 def get_competitor_id_name_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
     """
     Load competitor data and return bidirectional ID/name mapping dictionaries.
@@ -20,7 +32,8 @@ def get_competitor_id_name_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
         Tuple of (id_to_name dict, name_to_id dict)
     """
     try:
-        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=paths.COMPETITOR_SHEET)
+        sheet_name = _resolve_sheet_name(paths.EXCEL_FILE, paths.COMPETITOR_SHEET)
+        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=sheet_name)
 
         if df.empty:
             return {}, {}
@@ -51,7 +64,8 @@ def load_competitors_df() -> pd.DataFrame:
         DataFrame with competitor information (name, country, ID, state, gender)
     """
     try:
-        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=paths.COMPETITOR_SHEET)
+        sheet_name = _resolve_sheet_name(paths.EXCEL_FILE, paths.COMPETITOR_SHEET)
+        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=sheet_name)
 
         # Standardize column names
         column_mapping = {
@@ -95,7 +109,25 @@ def load_wood_data() -> pd.DataFrame:
         DataFrame with wood properties (species, multiplier, janka, etc.)
     """
     try:
-        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=paths.WOOD_SHEET)
+        sheet_name = _resolve_sheet_name(paths.EXCEL_FILE, paths.WOOD_SHEET)
+        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=sheet_name)
+        # Drop unnamed columns from Excel artifacts
+        df = df.loc[:, [c for c in df.columns if not str(c).startswith('Unnamed')]].copy()
+        df.columns = [str(c).strip() for c in df.columns]
+
+        # Coerce numeric wood property columns
+        numeric_cols = ['janka_hard', 'spec_gravity', 'crush_strength', 'shear', 'MOR', 'MOE']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+                if df[col].isna().any():
+                    median_val = df[col].median()
+                    if pd.notna(median_val):
+                        df[col] = df[col].fillna(median_val)
+
+        if 'speciesID' in df.columns:
+            df['speciesID'] = df['speciesID'].astype(str).str.strip()
+
         return df
     except Exception as e:
         print(f"Error loading wood data: {e}")
@@ -122,7 +154,8 @@ def get_species_name_from_code(species_code: str) -> str:
         return _species_cache[species_code]
 
     try:
-        wood_df = pd.read_excel(paths.EXCEL_FILE, sheet_name=paths.WOOD_SHEET)
+        sheet_name = _resolve_sheet_name(paths.EXCEL_FILE, paths.WOOD_SHEET)
+        wood_df = pd.read_excel(paths.EXCEL_FILE, sheet_name=sheet_name)
 
         if 'speciesID' in wood_df.columns and 'species' in wood_df.columns:
             # Build cache for all species
@@ -156,7 +189,8 @@ def load_results_df() -> pd.DataFrame:
     """
     try:
         # Read raw results
-        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=paths.RESULTS_SHEET)
+        sheet_name = _resolve_sheet_name(paths.EXCEL_FILE, paths.RESULTS_SHEET)
+        df = pd.read_excel(paths.EXCEL_FILE, sheet_name=sheet_name)
 
         if df.empty:
             print("No results found in Excel.")
@@ -173,6 +207,7 @@ def load_results_df() -> pd.DataFrame:
             'Size (mm)': 'size_mm',
             'Species Code': 'species',
             'Date': 'date',
+            'Date (optional)': 'date',
             'Quality': 'quality',
             'HeatID': 'heat_id'
         }
@@ -189,6 +224,10 @@ def load_results_df() -> pd.DataFrame:
             df['date'] = pd.to_datetime(df['date'], errors='coerce')
             # Note: errors='coerce' converts invalid/missing dates to NaT (Not a Time)
             # This maintains backward compatibility with results that have no dates
+
+        # Coerce quality to numeric (non-numeric values become NaN)
+        if 'quality' in df.columns:
+            df['quality'] = pd.to_numeric(df['quality'], errors='coerce')
 
         return df
 
@@ -247,7 +286,7 @@ def save_time_to_results(
         name: Competitor name
         species: Wood species code
         size: Diameter in mm
-        quality: Wood quality (0-10)
+        quality: Wood quality (1-10)
         time: Time in seconds
         heat_id: Heat identifier
         timestamp: Date/time string
@@ -392,16 +431,16 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
     for name, time_val in times_collected.items():
         competitor_id = name_to_id.get(str(name).strip().lower(), name)
 
-        # Include Round and HeatID columns
+        # Include Quality and HeatID columns
         rows_to_write.append([
             competitor_id,
             event_code,
             time_val,
             size_mm,
             species,
-            timestamp,
-            round_name or "",
-            heat_id
+            quality,
+            heat_id,
+            timestamp
         ])
 
         # Store in round_object if using tournament system
@@ -428,7 +467,7 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
 
         ws = detect_results_sheet(wb)
 
-        # Ensure header exists with Excel column names (includes Round and HeatID)
+        # Ensure header exists with Excel column names
         if ws.max_row == 0:
             ws.append([
                 "CompetitorID",
@@ -436,9 +475,9 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
                 "Time (seconds)",
                 "Size (mm)",
                 "Species Code",
-                "Date",
-                "Round",
-                "HeatID"
+                "Quality",
+                "HeatID",
+                "Date"
             ])
 
         # Append rows

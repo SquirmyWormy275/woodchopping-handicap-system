@@ -122,6 +122,51 @@ from woodchopping.ui.bracket_ui import (
     open_bracket_in_browser
 )
 
+# V5.1 Helpers (NEW V5.1 - Entry-Form Workflow)
+from woodchopping.ui.v51_helpers import (
+    view_tournament_entries,
+    edit_event_entries,
+    manage_scratches
+)
+
+# Tournament Status & Validation (NEW V5.1)
+from woodchopping.ui.tournament_status import (
+    display_tournament_progress_tracker,
+    calculate_tournament_progress,
+    check_can_calculate_handicaps,
+    check_can_generate_schedule,
+    get_progress_summary
+)
+
+# Error Display (NEW V5.1 - Improved Error Handling)
+from woodchopping.ui.error_display import (
+    display_actionable_error,
+    display_blocking_error,
+    display_warning,
+    display_success,
+    display_progress_box,
+    prompt_with_options
+)
+
+# Entry Fee Tracker (NEW V5.1)
+from woodchopping.ui.entry_fee_tracker import (
+    view_entry_fee_status,
+    mark_fees_paid_by_competitor,
+    mark_fees_paid_by_event,
+    display_payment_grid
+)
+
+# Scratch Management (NEW V5.1)
+from woodchopping.ui.scratch_management import (
+    manage_tournament_scratches,
+    view_all_competitors_with_status,
+    mark_competitor_scratched,
+    view_scratch_history,
+    restore_scratched_competitor,
+    check_competitor_status,
+    get_scratch_count
+)
+
 
 __all__ = [
     # Tournament UI
@@ -213,4 +258,39 @@ __all__ = [
     'sequential_match_entry_workflow',
     'export_bracket_to_html',
     'open_bracket_in_browser',
+
+    # V5.1 Helpers (NEW V5.1)
+    'view_tournament_entries',
+    'edit_event_entries',
+    'manage_scratches',
+
+    # Tournament Status & Validation (NEW V5.1)
+    'display_tournament_progress_tracker',
+    'calculate_tournament_progress',
+    'check_can_calculate_handicaps',
+    'check_can_generate_schedule',
+    'get_progress_summary',
+
+    # Error Display (NEW V5.1)
+    'display_actionable_error',
+    'display_blocking_error',
+    'display_warning',
+    'display_success',
+    'display_progress_box',
+    'prompt_with_options',
+
+    # Entry Fee Tracker (NEW V5.1)
+    'view_entry_fee_status',
+    'mark_fees_paid_by_competitor',
+    'mark_fees_paid_by_event',
+    'display_payment_grid',
+
+    # Scratch Management (NEW V5.1)
+    'manage_tournament_scratches',
+    'view_all_competitors_with_status',
+    'mark_competitor_scratched',
+    'view_scratch_history',
+    'restore_scratched_competitor',
+    'check_competitor_status',
+    'get_scratch_count',
 ]

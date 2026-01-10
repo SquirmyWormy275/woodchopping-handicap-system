@@ -117,7 +117,8 @@ class MLConfig:
         'size_mm',
         'wood_janka_hardness',
         'wood_spec_gravity',
-        'competitor_experience'
+        'competitor_experience',
+        'competitor_trend_slope'
     )
 
     # Event encoding
@@ -135,6 +136,30 @@ class MLConfig:
     DEFAULT_SPECIFIC_GRAVITY: float = 0.34
     """Default specific gravity if species not found (Eastern White Pine)"""
 
+    # Trend-based weighting (performance-driven)
+    TREND_MIN_SAMPLES: int = 5
+    """Minimum samples to estimate a reliable trend slope"""
+
+    TREND_R2_THRESHOLD: float = 0.30
+    """Minimum R2 to trust trend-based estimate"""
+
+    TREND_SLOPE_THRESHOLD_SECONDS_PER_DAY: float = 0.005
+    """Minimum absolute slope to prefer trend over time-decay weighting"""
+
+    # Per-competitor calibration
+    CALIBRATION_MIN_SAMPLES: int = 5
+    """Minimum samples to apply per-competitor calibration"""
+
+    CALIBRATION_MAX_STD_SECONDS: float = 4.0
+    """Maximum residual std-dev to trust per-competitor calibration"""
+
+    # ML confidence calibration (based on CV MAE)
+    ML_MAE_HIGH_CONFIDENCE: float = 3.0
+    """Max MAE for HIGH confidence calibration"""
+
+    ML_MAE_MEDIUM_CONFIDENCE: float = 5.0
+    """Max MAE for MEDIUM confidence calibration"""
+
 
 # =============================================================================
 # Monte Carlo Simulation Configuration
@@ -146,6 +171,15 @@ class SimulationConfig:
 
     NUM_SIMULATIONS: int = 2_000_000
     """Number of race simulations to run for maximum statistical precision"""
+
+    HEAT_VARIANCE_SECONDS: float = 1.0
+    """Shared heat-level variance applied to all competitors (wind, grain, conditions)"""
+
+    MIN_COMPETITOR_STD_SECONDS: float = 1.5
+    """Minimum per-competitor performance std-dev when historical data is used"""
+
+    MAX_COMPETITOR_STD_SECONDS: float = 6.0
+    """Maximum per-competitor performance std-dev when historical data is used"""
 
     # Fairness assessment thresholds
     FAIRNESS_THRESHOLD_EXCELLENT: float = 0.02

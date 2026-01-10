@@ -17,21 +17,25 @@ from typing import Dict, List, Tuple, Optional
 import pandas as pd
 
 # Import local modules
-from woodchopping.data import load_results_df
+from woodchopping.data import load_results_df, standardize_results_data
 from woodchopping.predictions.baseline import (
-    get_competitor_historical_times_flexible,
-    get_event_baseline_flexible
+    get_competitor_historical_times_normalized,
+    get_event_baseline_flexible,
+    compute_robust_weighted_mean,
+    apply_shrinkage,
 )
-from woodchopping.predictions.ml_model import predict_time_ml, _model_training_data_size
+from woodchopping.predictions.ml_model import (
+    predict_time_ml,
+    _model_training_data_size,
+    get_model_cv_metrics,
+)
 from woodchopping.predictions.ai_predictor import predict_competitor_time_with_ai
 from woodchopping.predictions.llm import call_ollama
 from woodchopping.predictions.diameter_scaling import (
     get_diameter_info_from_historical_data,
-    adjust_confidence_for_scaling,
-    calibrate_scaling_exponent
+    adjust_confidence_for_scaling
 )
 # QAA empirical scaling tables (replaces power-law formula)
-from woodchopping.predictions.qaa_scaling import scale_time_qaa
 
 
 def get_all_predictions(
@@ -54,7 +58,7 @@ def get_all_predictions(
         competitor_name: Competitor's name
         species: Wood species code
         diameter: Diameter in mm
-        quality: Wood quality (0-10)
+        quality: Wood quality (1-10)
         event_code: Event type (SB or UH)
         results_df: Historical results DataFrame (optional)
         tournament_results: Optional dict of {competitor_name: actual_time} from THIS tournament
@@ -98,7 +102,10 @@ def get_all_predictions(
     if results_df is None:
         results_df = load_results_df()
 
-    # Get historical diameter info for scaling
+    # Standardize results data (shared validation + outlier filtering)
+    results_df, _ = standardize_results_data(results_df)
+
+    # Get historical diameter info (used for ML/LLM warnings)
     hist_diameter = get_diameter_info_from_historical_data(
         results_df, competitor_name, event_code
     )
@@ -111,51 +118,47 @@ def get_all_predictions(
     # 1. Get baseline prediction with TIME-DECAY WEIGHTING (critical for aging competitors)
     # ENHANCED: If tournament result exists, weight it at 97% vs historical (3%)
     # Get historical data WITH weights (based on age of result)
-    historical_data, data_source = get_competitor_historical_times_flexible(
-        competitor_name, species, event_code, results_df, return_weights=True
+    historical_data, data_source, normalization_meta = get_competitor_historical_times_normalized(
+        competitor_name, species, diameter, event_code, results_df, return_weights=True
     )
 
     if len(historical_data) >= 3:
-        # Calculate weighted average using time-decay weights
-        # Each item is (time, date, weight) where weight = 0.5^(days_old/730)
-        weighted_sum = sum(time * weight for time, date, weight in historical_data)
-        weight_sum = sum(weight for time, date, weight in historical_data)
-        historical_baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
+        # Calculate robust weighted mean using time-decay weights
+        historical_baseline, avg_weight, effective_n = compute_robust_weighted_mean(historical_data)
+        event_baseline, event_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
+        if event_baseline is not None and historical_baseline is not None:
+            historical_baseline = apply_shrinkage(historical_baseline, effective_n, event_baseline)
 
         # TOURNAMENT RESULT WEIGHTING: Apply 97% to same-tournament time, 3% to historical
         if tournament_time is not None:
             baseline = (tournament_time * 0.97) + (historical_baseline * 0.03)
             confidence = "VERY HIGH"
-            avg_weight = weight_sum / len(historical_data)
-            explanation = f"Tournament result ({tournament_time:.2f}s @ 97%) + historical ({data_source}, {len(historical_data)} results @ 3%)"
+            explanation = f"Tournament result ({tournament_time:.2f}s @ 97%) + robust history ({data_source}, {len(historical_data)} results @ 3%)"
             predictions['baseline']['tournament_weighted'] = True
         else:
             baseline = historical_baseline
             confidence = "HIGH"
             # Calculate effective sample size (accounting for weights)
             # Results from 10+ years ago contribute almost nothing
-            effective_n = weight_sum
-            avg_weight = weight_sum / len(historical_data)
-            explanation = f"Time-weighted baseline ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
+            explanation = f"Robust time-weighted baseline ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
 
     elif len(historical_data) > 0:
-        # Limited history - still use weights but note low confidence
-        weighted_sum = sum(time * weight for time, date, weight in historical_data)
-        weight_sum = sum(weight for time, date, weight in historical_data)
-        historical_baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
+        # Limited history - still use robust weighting but note low confidence
+        historical_baseline, avg_weight, effective_n = compute_robust_weighted_mean(historical_data)
+        event_baseline, event_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
+        if event_baseline is not None and historical_baseline is not None:
+            historical_baseline = apply_shrinkage(historical_baseline, effective_n, event_baseline)
 
         # TOURNAMENT RESULT WEIGHTING even with limited history
         if tournament_time is not None:
             baseline = (tournament_time * 0.97) + (historical_baseline * 0.03)
             confidence = "HIGH"  # Upgraded from MEDIUM because of tournament data
-            avg_weight = weight_sum / len(historical_data)
-            explanation = f"Tournament result ({tournament_time:.2f}s @ 97%) + limited history ({data_source}, {len(historical_data)} results @ 3%)"
+            explanation = f"Tournament result ({tournament_time:.2f}s @ 97%) + limited robust history ({data_source}, {len(historical_data)} results @ 3%)"
             predictions['baseline']['tournament_weighted'] = True
         else:
             baseline = historical_baseline
             confidence = "MEDIUM"
-            avg_weight = weight_sum / len(historical_data)
-            explanation = f"Limited time-weighted history ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
+            explanation = f"Limited robust history ({data_source}, {len(historical_data)} results, avg weight {avg_weight:.2f})"
     else:
         # NO historical data - use tournament time if available, otherwise event baseline
         if tournament_time is not None:
@@ -181,48 +184,43 @@ def get_all_predictions(
                 confidence = "LOW"
                 explanation = "Default estimate (no history)"
 
-    # Determine quality value (needed for QAA scaling and quality adjustment)
+    # Determine quality value (needed for quality adjustment)
     quality_val = int(quality) if quality is not None else 5
+    quality_val = max(1, min(10, quality_val))
 
-    # Apply QAA diameter scaling to baseline if needed
-    if hist_diameter and hist_diameter != diameter:
-        # Use QAA empirical tables (150+ years of Australian data)
-        # CRITICAL: Pass quality to enable interpolation between hardwood/medium/softwood tables
-        scaled_baseline, scaling_explanation = scale_time_qaa(
-            baseline, hist_diameter, diameter, species, quality=quality_val
-        )
-        baseline = scaled_baseline
+    # Adjust confidence if normalization required large jumps
+    if normalization_meta.get('max_diameter_diff', 0.0) > 25 or normalization_meta.get('species_normalized', False):
+        if confidence == "VERY HIGH":
+            confidence = "HIGH"
+        elif confidence == "HIGH":
+            confidence = "MEDIUM"
+        elif confidence == "MEDIUM":
+            confidence = "LOW"
 
-        # Adjust confidence if significant scaling was applied
-        diameter_diff = abs(hist_diameter - diameter)
-        if diameter_diff > 25:
-            # Downgrade confidence for large scaling jumps
-            if confidence == "VERY HIGH":
-                confidence = "HIGH"
-            elif confidence == "HIGH":
-                confidence = "MEDIUM"
-
-        explanation = f"{explanation} [{scaling_explanation}]"
-
+        explanation = f"{explanation} [Normalized across sizes/species]"
         predictions['baseline']['scaled'] = True
         predictions['baseline']['original_diameter'] = hist_diameter
-        predictions['baseline']['scaling_warning'] = f"QAA scaling: {hist_diameter:.0f}mm to {diameter:.0f}mm"
+        max_diff = normalization_meta.get('max_diameter_diff', 0.0)
+        if max_diff:
+            predictions['baseline']['scaling_warning'] = f"Normalized by size/species (max diff {max_diff:.0f}mm)"
+        else:
+            predictions['baseline']['scaling_warning'] = "Normalized by size/species"
 
     # Apply WOOD QUALITY ADJUSTMENT to baseline
-    # Quality scale: 0-10, where 5 is average
-    # Lower quality (0-4) = harder/firmer wood = slower times (positive adjustment)
-    # Higher quality (6-10) = softer/easier wood = faster times (negative adjustment)
+    # Quality scale: 1-10, where 5 is average
+    # Lower quality (1-4) = softer wood = faster times (negative adjustment)
+    # Higher quality (6-10) = harder wood = slower times (positive adjustment)
     # Adjustment: ±2% per quality point from average
     if quality_val != 5:
         quality_offset = quality_val - 5  # Range: -5 to +5
-        quality_factor = 1.0 + (-quality_offset * 0.02)  # -10% to +10%
+        quality_factor = 1.0 + (quality_offset * 0.02)  # -10% to +10%
         baseline = baseline * quality_factor
 
         adjustment_pct = (quality_factor - 1.0) * 100
         if quality_val < 5:
-            explanation += f" [Quality {quality_val}/10: firmer, {adjustment_pct:+.0f}%]"
-        else:
             explanation += f" [Quality {quality_val}/10: softer, {adjustment_pct:+.0f}%]"
+        else:
+            explanation += f" [Quality {quality_val}/10: harder, {adjustment_pct:+.0f}%]"
 
     predictions['baseline']['time'] = baseline
     predictions['baseline']['confidence'] = confidence
@@ -246,6 +244,7 @@ def get_all_predictions(
         predictions['ml']['time'] = ml_time
         predictions['ml']['confidence'] = ml_conf
         predictions['ml']['explanation'] = ml_expl
+        predictions['ml']['event_code'] = event_code
     else:
         predictions['ml']['error'] = ml_expl if ml_expl else "ML prediction unavailable"
 
@@ -279,12 +278,11 @@ def select_best_prediction(
     """
     Select the best prediction from available methods.
 
-    Priority logic:
-    1. If baseline applied significant diameter scaling with MEDIUM+ confidence → Use Baseline
-    2. Otherwise: ML > LLM > Baseline
-
-    Rationale: Direct scaling of historical times is more accurate than ML extrapolation
-    when predicting across different wood diameters with limited cross-diameter training data.
+    Selection logic:
+    - Choose the method with the lowest expected error
+    - Expected error uses confidence, scaling penalties, and ML CV MAE when available
+    - Tournament-weighted predictions reduce expected error
+    - Overall confidence accounts for expected error and method disagreement
 
     Args:
         all_predictions: dict from get_all_predictions()
@@ -301,48 +299,97 @@ def select_best_prediction(
     ml_pred = all_predictions.get('ml', {})
     llm_pred = all_predictions.get('llm', {})
 
-    # Check if baseline used significant diameter scaling
-    baseline_scaled = baseline_pred.get('scaled', False)
-    baseline_conf = baseline_pred.get('confidence')
-    baseline_time = baseline_pred.get('time')
+    def _expected_error(confidence: Optional[str], method: str, pred: dict) -> float:
+        base_map = {
+            'VERY HIGH': 2.0,
+            'HIGH': 3.0,
+            'MEDIUM': 5.0,
+            'LOW': 7.0,
+            'VERY LOW': 9.0
+        }
+        base = base_map.get(confidence or 'LOW', 7.0)
 
-    # If baseline applied scaling with decent confidence, prefer it over ML
-    # Scaling is more reliable than ML extrapolation across diameters
-    if baseline_scaled and baseline_time is not None:
-        if baseline_conf in ['HIGH', 'MEDIUM']:
-            return (
-                baseline_time,
-                'Baseline (scaled)',
-                baseline_conf,
-                baseline_pred.get('explanation', '')
-            )
+        if method == 'ML':
+            # Prefer using CV MAE if available
+            event_code = pred.get('event_code')
+            cv_metrics = get_model_cv_metrics(event_code) if event_code else None
+            if cv_metrics and 'mae_mean' in cv_metrics:
+                base = max(base, float(cv_metrics['mae_mean']))
 
-    # Otherwise, use standard priority: ML > LLM > Baseline
-    # Priority 1: ML (if available and valid)
+        if method == 'LLM':
+            base += 0.5  # Slight penalty for variance
+
+        if pred.get('scaled'):
+            base += 1.5
+
+        if pred.get('tournament_weighted'):
+            base = max(0.5, base - 1.0)
+
+        return base
+
+    def _confidence_from_error(err: float) -> str:
+        if err <= 2.5:
+            return 'VERY HIGH'
+        if err <= 3.5:
+            return 'HIGH'
+        if err <= 5.5:
+            return 'MEDIUM'
+        if err <= 7.5:
+            return 'LOW'
+        return 'VERY LOW'
+
+    def _downgrade_confidence(conf: str, steps: int) -> str:
+        order = ['VERY HIGH', 'HIGH', 'MEDIUM', 'LOW', 'VERY LOW']
+        if conf not in order:
+            return conf
+        idx = min(len(order) - 1, order.index(conf) + steps)
+        return order[idx]
+
+    candidates = []
     if ml_pred.get('time') is not None:
-        return (
-            ml_pred['time'],
-            'ML',
-            ml_pred['confidence'],
-            ml_pred['explanation']
-        )
-
-    # Priority 2: LLM (if available and valid)
+        ml_pred = dict(ml_pred)
+        ml_pred['event_code'] = ml_pred.get('event_code')
+        candidates.append((
+            ml_pred['time'], 'ML', ml_pred.get('confidence'), ml_pred.get('explanation'), _expected_error(ml_pred.get('confidence'), 'ML', ml_pred)
+        ))
     if llm_pred.get('time') is not None:
-        return (
-            llm_pred['time'],
-            'LLM',
-            llm_pred['confidence'],
-            llm_pred['explanation']
-        )
+        candidates.append((
+            llm_pred['time'], 'LLM', llm_pred.get('confidence'), llm_pred.get('explanation'), _expected_error(llm_pred.get('confidence'), 'LLM', llm_pred)
+        ))
+    if baseline_pred.get('time') is not None:
+        candidates.append((
+            baseline_pred['time'], 'Baseline', baseline_pred.get('confidence'), baseline_pred.get('explanation'), _expected_error(baseline_pred.get('confidence'), 'Baseline', baseline_pred)
+        ))
 
-    # Priority 3: Baseline (always available)
-    return (
-        baseline_time if baseline_time is not None else 0.0,
-        'Baseline',
-        baseline_conf if baseline_conf else 'LOW',
-        baseline_pred.get('explanation', 'Default baseline')
-    )
+    if not candidates:
+        return (0.0, 'Baseline', 'LOW', 'Default baseline')
+
+    # Choose method with lowest expected error
+    best = min(candidates, key=lambda x: x[4])
+
+    # Overall confidence: expected error + disagreement penalty
+    candidate_times = [c[0] for c in candidates if c[0] is not None]
+    spread_penalty = 0
+    if len(candidate_times) >= 2:
+        mean_time = sum(candidate_times) / len(candidate_times)
+        max_diff = max(candidate_times) - min(candidate_times)
+        pct_diff = max_diff / mean_time if mean_time else 0.0
+        if max_diff >= 6.0 or pct_diff >= 0.25:
+            spread_penalty = 2
+        elif max_diff >= 4.0 or pct_diff >= 0.12:
+            spread_penalty = 1
+
+    selection_conf = _confidence_from_error(best[4])
+    if spread_penalty:
+        selection_conf = _downgrade_confidence(selection_conf, spread_penalty)
+
+    # Preserve method-level confidence detail in explanation when it differs
+    method_conf = best[2] or "LOW"
+    explanation = best[3]
+    if method_conf != selection_conf and explanation:
+        explanation = f"{explanation} [Method conf: {method_conf}, overall conf: {selection_conf}]"
+
+    return best[0], best[1], selection_conf, explanation
 
 
 def generate_prediction_analysis_llm(
@@ -588,9 +635,10 @@ def display_methods_explanation(ml_training_info: Dict = None) -> None:
 
     print("\nBASELINE (Statistical):")
     print("  • Time-decay weighted historical average (730-day half-life)")
-    print("  • Cascading fallback: competitor exact match → any species → event average")
+    print("  • Normalizes historical times to target size/species")
+    print("  • Cascading fallback: competitor exact match → mixed species → event average")
     print("  • Strengths: Always available, uses actual performance data")
-    print("  • Limitations: Doesn't account for wood quality variations")
+    print("  • Limitations: Quality data is sparse; normalization assumes quality=5 when missing")
 
     print("\nML MODEL (XGBoost):")
     if ml_training_info:
@@ -608,10 +656,10 @@ def display_methods_explanation(ml_training_info: Dict = None) -> None:
     print("  • Strengths: Considers wood quality nuances, flexible reasoning")
     print("  • Limitations: Requires Ollama running, may vary from historical patterns")
 
-    print("\nSELECTION PRIORITY: ML > LLM > Baseline")
-    print("  → ML preferred when available (most accurate with sufficient data)")
-    print("  → LLM used if ML unavailable (good quality adjustments)")
-    print("  → Baseline as fallback (always available)")
+    print("\nSELECTION LOGIC: Lowest expected error wins")
+    print("  ?+' Uses confidence, scaling penalties, and CV MAE (ML) when available")
+    print("  ?+' Methods can change per competitor based on data quality")
+    print("  ?+' Baseline remains a safe fallback when data are sparse")
     print("="*70)
     print()
 
@@ -672,7 +720,7 @@ def display_selection_reasoning(handicap_results: List[Dict], differences: List[
             else:
                 if base_time and abs((ml_time - base_time) / base_time * 100) < 15:
                     print(f"  ✓ All methods agree within 15% (good data quality)")
-                print(f"  → ML chosen per standard priority (ML > LLM > Baseline)")
+                print(f"  → ML chosen (lowest expected error)")
 
         elif method_used == "LLM":
             print(f"  ✓ LLM available with {confidence} confidence")
@@ -683,7 +731,7 @@ def display_selection_reasoning(handicap_results: List[Dict], differences: List[
                 print(f"  ⚠ Large discrepancy detected:")
                 for detail in discrepancy_details:
                     print(f"    - {detail}")
-            print(f"  → LLM chosen (ML unavailable or less reliable)")
+            print(f"  → LLM chosen (lowest expected error)")
 
         elif method_used == "Baseline":
             print(f"  ✓ Baseline available with {confidence} confidence")
@@ -692,7 +740,7 @@ def display_selection_reasoning(handicap_results: List[Dict], differences: List[
                 print(f"  ✗ ML and LLM not available")
             if has_large_discrepancy:
                 print(f"  ⚠ Large discrepancy among predictions")
-            print(f"  → Baseline chosen as fallback (most reliable option available)")
+            print(f"  → Baseline chosen (lowest expected error)")
 
         print()
 
@@ -863,8 +911,8 @@ def display_handicap_calculation_explanation() -> None:
     print("  Back markers (high marks) start later to compensate for skill")
 
     print("\nPREDICTION METHOD SELECTION:")
-    print("  Priority: ML Model > LLM Model > Baseline")
-    print("  Best available method is used for each competitor")
+    print("  The method with the lowest expected error is used")
+    print("  Confidence, scaling penalties, and CV MAE influence the choice")
     print("  Different competitors may use different methods")
 
     print("="*70)
@@ -974,7 +1022,7 @@ def display_dual_predictions(
     # Show which method was primarily used
     primary_method = max(method_counts, key=method_counts.get)
     print(f"\nMarks calculated using: {primary_method} predictions")
-    print(f"(Priority: ML > LLM > Baseline - most accurate method available)")
+    print("(Selection uses lowest expected error, not a fixed priority)")
 
     # Offer AI analysis
     print("\n" + "=" * 110)

@@ -16,7 +16,10 @@ from woodchopping.predictions.llm import call_ollama
 # Baseline Predictions
 from woodchopping.predictions.baseline import (
     get_competitor_historical_times_flexible,
+    get_competitor_historical_times_normalized,
     get_event_baseline_flexible,
+    predict_baseline_time,
+    backtest_baseline_predictions,
 )
 
 # ML Model
@@ -51,7 +54,10 @@ __all__ = [
     "call_ollama",
     # Baseline Predictions
     "get_competitor_historical_times_flexible",
+    "get_competitor_historical_times_normalized",
     "get_event_baseline_flexible",
+    "predict_baseline_time",
+    "backtest_baseline_predictions",
     # ML Model
     "train_ml_model",
     "predict_time_ml",

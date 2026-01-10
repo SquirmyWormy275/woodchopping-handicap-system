@@ -16,6 +16,7 @@ from woodchopping.predictions.prediction_aggregator import (
     get_all_predictions,
     select_best_prediction
 )
+from woodchopping.data import standardize_results_data
 
 
 def calculate_ai_enhanced_handicaps(
@@ -43,7 +44,7 @@ def calculate_ai_enhanced_handicaps(
         heat_assignment_df: DataFrame containing competitors in heat with 'competitor_name' column
         species: Wood species (e.g., 'Pine', 'Oak')
         diameter: Block diameter in millimeters
-        quality: Wood quality rating (0-10 scale, 0=soft/rotten, 10=very hard)
+        quality: Wood quality rating (1-10 scale, 1=soft/rotten, 10=very hard)
         event_code: Event type ('SB' for Standing Block, 'UH' for Underhand)
         results_df: Historical results DataFrame with competitor performance data
         progress_callback: Optional callback function(current, total, competitor_name)
@@ -90,6 +91,9 @@ def calculate_ai_enhanced_handicaps(
         quality = 5
     quality = int(quality)
 
+    # Standardize results for consistent stats and outlier handling
+    results_df, _ = standardize_results_data(results_df)
+
     total_competitors = len(heat_assignment_df)
 
     # Run predictions with progress tracking
@@ -98,6 +102,18 @@ def calculate_ai_enhanced_handicaps(
 
         if progress_callback:
             progress_callback(idx, total_competitors, comp_name)
+
+        # Estimate per-competitor performance variance from historical data (if available)
+        comp_history = results_df[
+            (results_df['competitor_name'] == comp_name) &
+            (results_df['event'] == event_code)
+        ]
+        performance_std_dev = None
+        if not comp_history.empty and comp_history['raw_time'].count() >= 3:
+            try:
+                performance_std_dev = float(comp_history['raw_time'].std())
+            except Exception:
+                performance_std_dev = None
 
         # Get ALL predictions (baseline, ML, LLM) with tournament result weighting
         all_preds = get_all_predictions(
@@ -117,7 +133,8 @@ def calculate_ai_enhanced_handicaps(
             'method_used': method_used,        # Which method was used
             'confidence': confidence,
             'explanation': explanation,
-            'predictions': all_preds           # Store all predictions for display
+            'predictions': all_preds,          # Store all predictions for display
+            'performance_std_dev': performance_std_dev
         })
 
     # Calculate marks

@@ -74,6 +74,90 @@ def create_multi_event_tournament() -> Dict:
     return tournament_state
 
 
+def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Dict:
+    """Setup tournament-wide competitor roster (NEW V5.1).
+
+    Allows judge to:
+    1. Select all competitors participating in tournament
+    2. Enable/disable entry fee tracking (optional)
+
+    Args:
+        tournament_state: Multi-event tournament state
+        comp_df: Full competitor roster DataFrame
+
+    Returns:
+        dict: Updated tournament_state with tournament_roster
+    """
+    # Check if roster already exists
+    if tournament_state.get('tournament_roster'):
+        print("\n⚠ Tournament roster already configured")
+        overwrite = input("Overwrite existing roster? (y/n): ").strip().lower()
+        if overwrite != 'y':
+            return tournament_state
+
+    # Display header
+    print(f"\n{'='*70}")
+    print(f"  SETUP TOURNAMENT ROSTER")
+    print(f"{'='*70}")
+    print(f"Tournament: {tournament_state['tournament_name']}")
+    print(f"Events: {tournament_state['total_events']}")
+
+    # Entry fee tracking toggle
+    print(f"\n{'='*70}")
+    print(f"  ENTRY FEE TRACKING (OPTIONAL)")
+    print(f"{'='*70}")
+    print("\nWould you like to track entry fee payment status?")
+    print("(This adds a 'Fee Paid' checkbox per competitor per event)")
+
+    fee_tracking = input("\nEnable entry fee tracking? (y/n): ").strip().lower()
+    tournament_state['entry_fee_tracking_enabled'] = (fee_tracking == 'y')
+
+    if tournament_state['entry_fee_tracking_enabled']:
+        print("\n✓ Entry fee tracking ENABLED")
+    else:
+        print("\n✓ Entry fee tracking DISABLED")
+
+    # Select all competitors for tournament
+    print(f"\n{'='*70}")
+    print(f"  SELECT ALL TOURNAMENT COMPETITORS")
+    print(f"{'='*70}")
+    print("\nSelect ALL competitors who will compete in ANY event today.")
+    print("(You'll assign specific events to each competitor in the next step)")
+
+    # Reuse existing competitor selection UI
+    from woodchopping.ui.competitor_ui import select_all_event_competitors
+    selected_df = select_all_event_competitors(comp_df, max_competitors=None)
+
+    if selected_df.empty:
+        print("\n⚠ No competitors selected. Tournament roster not configured.")
+        return tournament_state
+
+    # Build tournament roster
+    roster = []
+    for _, row in selected_df.iterrows():
+        roster.append({
+            'competitor_name': row['competitor_name'],
+            'competitor_id': row.get('CompetitorID', ''),
+            'events_entered': [],                # Will be populated in assignment phase
+            'entry_fees_paid': {}                # Will be populated in assignment phase
+        })
+
+    tournament_state['tournament_roster'] = roster
+    tournament_state['competitor_roster_df'] = selected_df
+
+    print(f"\n{'='*70}")
+    print(f"  ✓ TOURNAMENT ROSTER CONFIGURED")
+    print(f"{'='*70}")
+    print(f"Total competitors: {len(roster)}")
+    print(f"Entry fee tracking: {'ENABLED' if tournament_state['entry_fee_tracking_enabled'] else 'DISABLED'}")
+    print(f"\nNext step: Assign competitors to events")
+
+    # Auto-save
+    auto_save_multi_event(tournament_state)
+
+    return tournament_state
+
+
 def save_multi_event_tournament(tournament_state: Dict, filename: str = "multi_tournament_state.json") -> None:
     """Save multi-event tournament state to JSON file.
 
@@ -154,6 +238,33 @@ def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -
             # Backward compatibility: add payout_config for legacy tournaments (V4.5)
             if 'payout_config' not in event:
                 event['payout_config'] = None
+
+            # Backward compatibility: add competitor_status to events (V5.1)
+            if 'competitor_status' not in event:
+                event['competitor_status'] = {
+                    name: 'active'
+                    for name in event.get('all_competitors', [])
+                }
+
+        # Backward compatibility: add tournament_roster for legacy tournaments (V5.1)
+        if 'tournament_roster' not in tournament_state:
+            # Legacy tournament - build minimal roster from event assignments
+            all_comp_names = set()
+            for event in tournament_state.get('events', []):
+                all_comp_names.update(event.get('all_competitors', []))
+
+            # Build minimal roster
+            tournament_state['tournament_roster'] = [
+                {
+                    'competitor_name': name,
+                    'competitor_id': '',
+                    'events_entered': [],  # Empty - legacy tournaments already have events populated
+                    'entry_fees_paid': {}
+                }
+                for name in sorted(all_comp_names)
+            ]
+            tournament_state['entry_fee_tracking_enabled'] = False
+            tournament_state['competitor_roster_df'] = pd.DataFrame()
 
         print(f"\n✓ Tournament state loaded from {filename}")
         print(f"✓ Tournament: {tournament_state.get('tournament_name', 'Unknown')}")
@@ -333,19 +444,8 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
             print("\n⚠ Invalid choice. Cancelling event addition...")
             return tournament_state
 
-    # Step 5: Competitor selection
-    print(f"\n{'='*70}")
-    print(f"  SELECT COMPETITORS FOR: {event_name}")
-    print(f"{'='*70}")
-
-    max_comp = capacity_info.get('max_competitors')
-    selected_df = select_all_event_competitors(comp_df, max_comp)
-
-    if selected_df.empty:
-        print("\n⚠ No competitors selected. Cancelling event addition...")
-        return tournament_state
-
-    # Step 5.5: Payout configuration (OPTIONAL) - NEW V5.0
+    # Step 5: Payout configuration (OPTIONAL) - NEW V5.0
+    # NOTE: Competitor selection moved to tournament-wide roster assignment (V5.1)
     print(f"\n{'='*70}")
     print(f"  PAYOUT CONFIGURATION (OPTIONAL)")
     print(f"{'='*70}")
@@ -367,68 +467,23 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         payout_config = {'enabled': False}
         print(f"\n✓ Payouts skipped for {event_name}")
 
-    # Generate setup for Championship and Bracket events immediately
-    if event_type == 'championship':
-        print(f"\n{'='*70}")
-        print(f"  CHAMPIONSHIP EVENT - AUTO-GENERATING MARKS")
-        print(f"{'='*70}")
-        print(f"\nAll {len(selected_df)} competitors assigned Mark 3")
+    # V5.1 CHANGE: All events start with 'pending' status (no competitors yet)
+    # Competitors will be assigned via tournament roster workflow
+    # Championship/Bracket setup deferred until after competitor assignment
 
-        # Create handicap results with Mark 3 for everyone
-        handicap_results_all = []
-        for comp_name in selected_df['competitor_name'].tolist():
-            handicap_results_all.append({
-                'name': comp_name,
-                'predicted_time': 0.0,  # Not used for championship
-                'method_used': 'Championship',
-                'confidence': 'N/A',
-                'explanation': 'Championship event: fastest time wins',
-                'predictions': {},
-                'mark': 3
-            })
+    event_status = 'pending'
+    handicap_results_all = []
 
-        event_status = 'ready'  # Skip 'configured' status
-        print("✓ Championship event ready for heat generation (skips batch calculation)")
-
-    elif event_type == 'bracket':
-        # Bracket event - generate predictions and bracket structure immediately
-        print(f"\n{'='*70}")
-        print(f"  BRACKET EVENT - GENERATING PREDICTIONS & BRACKET")
-        print(f"{'='*70}")
-
-        from woodchopping.ui.bracket_ui import generate_bracket_seeds, generate_bracket_with_byes
-
-        # Generate predictions for seeding
-        predictions = generate_bracket_seeds(
-            selected_df,
-            wood_selection['species'],
-            wood_selection['size_mm'],
-            wood_selection['quality'],
-            wood_selection['event']
-        )
-
-        # Generate bracket structure with byes
-        rounds = generate_bracket_with_byes(predictions)
-
-        # Calculate bracket info
-        num_competitors = len(predictions)
-        total_rounds = len(rounds)
-        total_matches = sum(len(r['matches']) for r in rounds)
-
-        print(f"\n✓ Bracket generated successfully!")
-        print(f"  Competitors: {num_competitors}")
-        print(f"  Total Rounds: {total_rounds}")
-        print(f"  Total Matches: {total_matches}")
-        print(f"  Seeding: Fastest predicted time = Seed 1")
-
-        # Store bracket data in event object
-        handicap_results_all = []  # Not used for brackets
-        event_status = 'ready'  # Ready for match entry
-
-    else:
-        # Handicap event - will calculate marks in batch later
-        handicap_results_all = []
-        event_status = 'configured'
+    print(f"\n{'='*70}")
+    print(f"  EVENT CONFIGURATION COMPLETE")
+    print(f"{'='*70}")
+    print(f"\nEvent '{event_name}' configured successfully")
+    print(f"Type: {event_type.upper()}")
+    print(f"Status: PENDING (competitors not yet assigned)")
+    print(f"\nNext steps:")
+    print(f"  1. Add all events for the tournament")
+    print(f"  2. Setup tournament roster (all competitors)")
+    print(f"  3. Assign competitors to events")
 
     # Create event object
     event_obj = {
@@ -449,15 +504,16 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         'format': event_format,
         'capacity_info': capacity_info,
 
-        # Competitors
-        'all_competitors': selected_df['competitor_name'].tolist(),
-        'all_competitors_df': selected_df,
+        # Competitors (V5.1: Empty until assigned via tournament roster)
+        'all_competitors': [],
+        'all_competitors_df': pd.DataFrame(),
+        'competitor_status': {},  # NEW V5.1: Track active/withdrawn/disqualified
 
-        # Handicaps (populated for Championship, empty for Handicap/Bracket events)
+        # Handicaps (empty until competitors assigned)
         'handicap_results_all': handicap_results_all,
 
-        # Rounds (empty for Handicap/Championship, populated for Bracket)
-        'rounds': rounds if event_type == 'bracket' else [],
+        # Rounds (empty until competitors assigned)
+        'rounds': [],
 
         # Final results (empty until finals complete)
         'final_results': {
@@ -471,14 +527,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         'payout_config': payout_config
     }
 
-    # Add bracket-specific fields if bracket event
-    if event_type == 'bracket':
-        event_obj['predictions'] = predictions
-        event_obj['num_competitors'] = num_competitors
-        event_obj['total_rounds'] = total_rounds
-        event_obj['total_matches'] = total_matches
-        event_obj['current_round_number'] = 1
-        event_obj['completed_matches'] = 0
+    # V5.1: Bracket-specific fields deferred until competitors assigned
 
     # Add event to tournament
     tournament_state['events'].append(event_obj)
@@ -493,13 +542,8 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     print(f"Wood: {wood_selection['size_mm']}mm {wood_selection['species']} (Quality {wood_selection['quality']})")
     print(f"Event code: {wood_selection['event']}")
     print(f"Format: {event_format}")
-    print(f"Competitors: {len(selected_df)}")
-    if event_type == 'championship':
-        print(f"Marks: All competitors have Mark 3")
-        print(f"Status: Ready (Championship events skip handicap calculation)")
-    else:
-        print(f"Handicaps: NOT YET CALCULATED (use batch calculation)")
-        print(f"Status: Configured (ready for handicap calculation)")
+    print(f"Competitors: 0 (not yet assigned)")
+    print(f"Status: PENDING (awaiting competitor assignment)")
     print(f"{'='*70}")
 
     # Auto-save
@@ -545,6 +589,24 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
         for event in not_configured:
             print(f"  - {event['event_name']}: {event['status']}")
         print("\nPlease configure all events before calculating handicaps.")
+        input("\nPress Enter to continue...")
+        return tournament_state
+
+    # V5.1 VALIDATION: Ensure all handicap events have competitors assigned
+    events_without_competitors = [
+        event for event in tournament_state['events']
+        if not event.get('all_competitors') and event.get('event_type') == 'handicap'
+    ]
+
+    if events_without_competitors:
+        print(f"\n{'='*70}")
+        print(f"  ⚠ ERROR: EVENTS WITHOUT COMPETITORS")
+        print(f"{'='*70}")
+        print(f"\nThe following events have no competitors assigned:")
+        for event in events_without_competitors:
+            print(f"  - {event['event_name']}")
+        print(f"\nPlease use 'Assign Competitors to Events' first.")
+        print(f"{'='*70}")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -1456,6 +1518,179 @@ def remove_event_from_tournament(tournament_state: Dict) -> Dict:
         print("⚠ Invalid input.")
 
     input("\nPress Enter to continue...")
+    return tournament_state
+
+
+def assign_competitors_to_events(tournament_state: Dict) -> Dict:
+    """Assign each competitor to their events (competitor-by-competitor workflow) (NEW V5.1).
+
+    Workflow:
+    1. For each competitor in tournament_roster:
+       - Display all available events
+       - Allow multi-select which events they compete in
+       - Optionally track entry fee payment per event
+    2. Auto-save after completion
+    3. Populate event.all_competitors from assignments
+
+    Args:
+        tournament_state: Multi-event tournament state with tournament_roster
+
+    Returns:
+        dict: Updated tournament_state with event assignments complete
+    """
+    # Validation
+    if not tournament_state.get('tournament_roster'):
+        print("\n⚠ ERROR: Tournament roster not configured.")
+        print("Please use 'Setup Tournament Roster' first.")
+        input("\nPress Enter to continue...")
+        return tournament_state
+
+    if not tournament_state.get('events'):
+        print("\n⚠ ERROR: No events configured.")
+        print("Please add events first.")
+        input("\nPress Enter to continue...")
+        return tournament_state
+
+    roster = tournament_state['tournament_roster']
+    events = tournament_state['events']
+    fee_tracking = tournament_state.get('entry_fee_tracking_enabled', False)
+
+    print(f"\n{'='*70}")
+    print(f"  ASSIGN COMPETITORS TO EVENTS")
+    print(f"{'='*70}")
+    print(f"Tournament: {tournament_state['tournament_name']}")
+    print(f"Total competitors: {len(roster)}")
+    print(f"Total events: {len(events)}")
+    print(f"\nYou'll now assign each competitor to their events.")
+    print(f"{'='*70}")
+
+    # Display all events for reference
+    print(f"\n{'='*70}")
+    print(f"  AVAILABLE EVENTS")
+    print(f"{'='*70}")
+    for i, event in enumerate(events, 1):
+        print(f"{i}. {event['event_name']} ({event['event_type'].upper()})")
+        print(f"   Wood: {event['wood_diameter']}mm {event['wood_species']} (Q{event['wood_quality']})")
+    print(f"{'='*70}")
+
+    input("\nPress Enter to begin competitor assignment...")
+
+    # Process each competitor
+    for comp_idx, comp in enumerate(roster, 1):
+        comp_name = comp['competitor_name']
+
+        print(f"\n{'='*70}")
+        print(f"  COMPETITOR {comp_idx}/{len(roster)}: {comp_name}")
+        print(f"{'='*70}")
+
+        # Show current assignments if any
+        if comp['events_entered']:
+            print(f"\nCurrent assignments:")
+            for event_id in comp['events_entered']:
+                event = next((e for e in events if e['event_id'] == event_id), None)
+                if event:
+                    print(f"  - {event['event_name']}")
+        else:
+            print(f"\nNo events assigned yet.")
+
+        # Display event options
+        print(f"\nSelect which events {comp_name} will compete in:")
+        for i, event in enumerate(events, 1):
+            print(f"{i}. {event['event_name']}")
+
+        print(f"\nEnter event numbers separated by commas (e.g., '1,3,5')")
+        print(f"Or enter 'skip' to skip this competitor")
+        print(f"Or enter 'quit' to exit assignment (progress will be saved)")
+
+        selection = input("\nEvent numbers: ").strip().lower()
+
+        if selection == 'quit':
+            print(f"\n⚠ Exiting assignment. Progress saved.")
+            break
+
+        if selection == 'skip':
+            print(f"⚠ Skipped {comp_name}")
+            continue
+
+        # Parse selection
+        try:
+            event_indices = [int(x.strip()) - 1 for x in selection.split(',')]
+            selected_events = [events[i] for i in event_indices if 0 <= i < len(events)]
+        except (ValueError, IndexError):
+            print(f"⚠ Invalid input. Skipping {comp_name}")
+            continue
+
+        if not selected_events:
+            print(f"⚠ No valid events selected. Skipping {comp_name}")
+            continue
+
+        # Update competitor assignments
+        comp['events_entered'] = [e['event_id'] for e in selected_events]
+
+        # Entry fee tracking (if enabled)
+        if fee_tracking:
+            print(f"\n{'='*70}")
+            print(f"  ENTRY FEE TRACKING")
+            print(f"{'='*70}")
+
+            for event in selected_events:
+                event_name = event['event_name']
+
+                # Check if already tracked
+                current_status = comp['entry_fees_paid'].get(event['event_id'], False)
+                status_str = "PAID" if current_status else "UNPAID"
+
+                fee_paid = input(f"{event_name} - Fee paid? (y/n, currently {status_str}): ").strip().lower()
+                comp['entry_fees_paid'][event['event_id']] = (fee_paid == 'y')
+
+        print(f"\n✓ {comp_name} assigned to {len(selected_events)} event(s)")
+
+    # Populate event.all_competitors from assignments
+    print(f"\n{'='*70}")
+    print(f"  POPULATING EVENT ROSTERS")
+    print(f"{'='*70}")
+
+    comp_roster_df = tournament_state.get('competitor_roster_df')
+
+    for event in events:
+        # Find all competitors assigned to this event
+        assigned_comps = [
+            comp['competitor_name']
+            for comp in roster
+            if event['event_id'] in comp['events_entered']
+        ]
+
+        # Update event
+        event['all_competitors'] = assigned_comps
+
+        # Create DataFrame subset
+        if comp_roster_df is not None and not comp_roster_df.empty:
+            event['all_competitors_df'] = comp_roster_df[
+                comp_roster_df['competitor_name'].isin(assigned_comps)
+            ].copy()
+        else:
+            event['all_competitors_df'] = pd.DataFrame()
+
+        # Initialize competitor status
+        event['competitor_status'] = {name: 'active' for name in assigned_comps}
+
+        # Update event status
+        if assigned_comps:
+            # Event now has competitors - can move to 'configured'
+            if event['status'] == 'pending':
+                event['status'] = 'configured'
+
+        print(f"  {event['event_name']}: {len(assigned_comps)} competitors")
+
+    print(f"\n{'='*70}")
+    print(f"  ✓ COMPETITOR ASSIGNMENT COMPLETE")
+    print(f"{'='*70}")
+
+    # Auto-save
+    auto_save_multi_event(tournament_state)
+
+    input("\nPress Enter to continue...")
+
     return tournament_state
 
 

@@ -209,7 +209,7 @@ Adjustment: ±2% per quality point from average
 **Sheets Required**:
 1. `Competitor`: CompetitorID, Name, Country, State/Province, Gender
 2. `wood`: Species, Janka Hardness, Specific Gravity, etc.
-3. `Results`: CompetitorID, Event, Time, Species, Diameter, Quality, Date
+3. `Results`: CompetitorID, Event, Time (seconds), Size (mm), Species Code, Quality, HeatID, Date
 
 ### Minimum Data for Predictions
 

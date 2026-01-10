@@ -17,10 +17,12 @@ import pandas as pd
 from config import llm_config
 
 # Import local modules
-from woodchopping.data import load_wood_data
+from woodchopping.data import load_wood_data, standardize_results_data
 from woodchopping.predictions.baseline import (
-    get_competitor_historical_times_flexible,
-    get_event_baseline_flexible
+    get_competitor_historical_times_normalized,
+    get_event_baseline_flexible,
+    compute_robust_weighted_mean,
+    apply_shrinkage,
 )
 from woodchopping.predictions.llm import call_ollama
 
@@ -46,7 +48,7 @@ def predict_competitor_time_with_ai(
         competitor_name: Competitor's name
         species: Wood species code
         diameter: Diameter in mm
-        quality: Wood quality rating (0-10, where 5=average, >5=softer, <5=harder)
+        quality: Wood quality rating (1-10, where 5=average, >5=harder, <5=softer)
         event_code: Event type (SB or UH)
         results_df: Historical results DataFrame
 
@@ -63,37 +65,73 @@ def predict_competitor_time_with_ai(
         >>> print(f"Predicted {time:.1f}s (confidence: {conf})")
         >>> print(f"Based on: {exp}")
     """
+    # Normalize quality input (1-10 scale)
+    quality = int(quality) if quality is not None else 5
+    quality = max(1, min(10, quality))
+
+    # Standardize results data (shared validation + outlier filtering)
+    results_df, _ = standardize_results_data(results_df)
+
     # Step 1: Get historical data WITH TIME-DECAY WEIGHTING
     # Critical for aging competitors: recent performances weighted much higher than peak from years ago
-    historical_data, data_source = get_competitor_historical_times_flexible(
-        competitor_name, species, event_code, results_df, return_weights=True
+    wood_df = load_wood_data()
+    historical_data, data_source, _ = get_competitor_historical_times_normalized(
+        competitor_name, species, diameter, event_code, results_df, return_weights=True, wood_df=wood_df
     )
 
     # Step 2: Calculate time-weighted baseline
     if len(historical_data) >= 3:
-        # Each item is (time, date, weight) where weight = 0.5^(days_old/730)
-        # Recent results (this season) have weight ~1.0
-        # Results from 10 years ago have weight ~0.03 (essentially zero)
-        weighted_sum = sum(time * weight for time, date, weight in historical_data)
-        weight_sum = sum(weight for time, date, weight in historical_data)
-        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
-
+        # Use robust weighted mean (median/MAD clipping) to limit outlier impact
+        baseline, avg_weight, effective_n = compute_robust_weighted_mean(historical_data)
+        event_baseline, event_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
+        if event_baseline is not None and baseline is not None:
+            shrunk = apply_shrinkage(baseline, effective_n, event_baseline)
+            if shrunk != baseline:
+                baseline = shrunk
+                explanation_source = (
+                    f"robust time-weighted history {data_source} "
+                    f"({len(historical_data)} results, avg weight {avg_weight:.2f}) "
+                    f"+ shrinkage to {event_source}"
+                )
+            else:
+                explanation_source = (
+                    f"robust time-weighted history {data_source} "
+                    f"({len(historical_data)} results, avg weight {avg_weight:.2f})"
+                )
+        else:
+            explanation_source = (
+                f"robust time-weighted history {data_source} "
+                f"({len(historical_data)} results, avg weight {avg_weight:.2f})"
+            )
         confidence = "HIGH"
-        avg_weight = weight_sum / len(historical_data)
-        explanation_source = f"time-weighted history {data_source} ({len(historical_data)} results, avg weight {avg_weight:.2f})"
 
     elif len(historical_data) > 0:
-        # Limited history - still apply time-decay
-        weighted_sum = sum(time * weight for time, date, weight in historical_data)
-        weight_sum = sum(weight for time, date, weight in historical_data)
-        baseline = weighted_sum / weight_sum if weight_sum > 0 else statistics.mean([t for t,d,w in historical_data])
-
+        # Limited history - still apply robust weighting
+        baseline, avg_weight, effective_n = compute_robust_weighted_mean(historical_data)
+        event_baseline, event_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
+        if event_baseline is not None and baseline is not None:
+            shrunk = apply_shrinkage(baseline, effective_n, event_baseline)
+            if shrunk != baseline:
+                baseline = shrunk
+                explanation_source = (
+                    f"limited robust history {data_source} "
+                    f"({len(historical_data)} results, avg weight {avg_weight:.2f}) "
+                    f"+ shrinkage to {event_source}"
+                )
+            else:
+                explanation_source = (
+                    f"limited robust history {data_source} "
+                    f"({len(historical_data)} results, avg weight {avg_weight:.2f})"
+                )
+        else:
+            explanation_source = (
+                f"limited robust history {data_source} "
+                f"({len(historical_data)} results, avg weight {avg_weight:.2f})"
+            )
         confidence = "MEDIUM"
-        avg_weight = weight_sum / len(historical_data)
-        explanation_source = f"limited time-weighted history {data_source} ({len(historical_data)} results, avg weight {avg_weight:.2f})"
 
     else:
-        baseline, baseline_source = get_event_baseline_flexible(species, diameter, event_code, results_df)
+        baseline, baseline_source = get_event_baseline_flexible(species, diameter, event_code, results_df, wood_df=wood_df)
 
         if baseline:
             confidence = "LOW"
@@ -111,9 +149,6 @@ def predict_competitor_time_with_ai(
             confidence = "VERY LOW"
             explanation_source = "estimated from size (no historical data)"
 
-    # LOAD ACTUAL WOOD DATA FROM EXCEL
-    wood_df = load_wood_data()
-
     # Format wood species data for AI
     wood_data_text = ""
     if wood_df is not None and not wood_df.empty:
@@ -129,7 +164,7 @@ def predict_competitor_time_with_ai(
                 wood_data_text += f", Description: {row.get('description', '')}"
             wood_data_text += "\n"
 
-    # Step 3: AI prediction prompt
+    # Step 3: AI calibration prompt (returns multiplier)
     prompt = f"""You are a master woodchopping handicapper making precision time predictions for competition.
 
 HANDICAPPING OBJECTIVE
@@ -162,66 +197,61 @@ WOOD CHARACTERISTICS DATABASE
 
 QUALITY RATING SYSTEM - CRITICAL UNDERSTANDING
 
-Quality measures wood SOFTNESS on a 0-10 scale:
-- HIGHER number = SOFTER wood = FASTER cutting = LOWER time
-- LOWER number = HARDER wood = SLOWER cutting = HIGHER time
+Quality measures wood HARDNESS on a 1-10 scale:
+- HIGHER number = HARDER wood = SLOWER cutting = HIGHER time
+- LOWER number = SOFTER wood = FASTER cutting = LOWER time
 
-10 = Extremely soft/rotten
-   - Wood breaks apart easily, minimal resistance
-   - FASTEST possible cutting time
-   - MULTIPLY baseline by 0.85-0.90 (reduce by 10-15%)
-   - Example: 40s baseline → 34-36s predicted
+10 = Extremely hard/barely suitable
+   - Maximum difficulty
+   - SLOWEST possible cutting time
+   - MULTIPLY baseline by 1.12-1.15 (increase by 12-15%)
+   - Example: 40s baseline → 45-46s predicted
 
-9 = Very soft (ideal competition wood)
-   - Excellent cutting conditions, clean grain
-   - MULTIPLY baseline by 0.90-0.93 (reduce by 7-10%)
-   - Example: 40s baseline → 36-37s predicted
+9 = Very hard
+   - Major difficulty, knots, irregular grain
+   - MULTIPLY baseline by 1.08-1.12 (increase by 8-12%)
+   - Example: 40s baseline → 43-45s predicted
 
-8 = Soft
-   - Good cutting conditions, easy to work with
-   - MULTIPLY baseline by 0.93-0.95 (reduce by 5-7%)
-   - Example: 40s baseline → 37-38s predicted
+8 = Hard
+   - Significant resistance, green wood, tough grain
+   - MULTIPLY baseline by 1.05-1.08 (increase by 5-8%)
+   - Example: 40s baseline → 42-43s predicted
 
-7 = Moderately soft
-   - Better than average, noticeable improvement
-   - MULTIPLY baseline by 0.95-0.97 (reduce by 3-5%)
-   - Example: 40s baseline → 38-39s predicted
+7 = Moderately hard
+   - Noticeably tougher, more resistance
+   - MULTIPLY baseline by 1.03-1.05 (increase by 3-5%)
+   - Example: 40s baseline → 41-42s predicted
 
-6 = Slightly soft
-   - Marginally better than average
-   - MULTIPLY baseline by 0.97-0.99 (reduce by 1-3%)
-   - Example: 40s baseline → 39-40s predicted
+6 = Slightly hard
+   - Marginally tougher than average
+   - MULTIPLY baseline by 1.01-1.03 (increase by 1-3%)
+   - Example: 40s baseline → 40-41s predicted
 
 5 = AVERAGE HARDNESS (BASELINE REFERENCE POINT)
    - This is what the baseline time assumes
    - MULTIPLY baseline by 1.00 (NO ADJUSTMENT)
    - Example: 40s baseline → 40s predicted
 
-4 = Slightly hard
-   - Marginally tougher than average
-   - MULTIPLY baseline by 1.01-1.03 (increase by 1-3%)
-   - Example: 40s baseline → 40-41s predicted
+4 = Slightly soft
+   - Marginally easier than average
+   - MULTIPLY baseline by 0.97-0.99 (reduce by 1-3%)
+   - Example: 40s baseline → 39-40s predicted
 
-3 = Moderately hard
-   - Noticeably tougher, more resistance
-   - MULTIPLY baseline by 1.03-1.05 (increase by 3-5%)
-   - Example: 40s baseline → 41-42s predicted
+3 = Moderately soft
+   - Better cutting conditions
+   - MULTIPLY baseline by 0.95-0.97 (reduce by 3-5%)
+   - Example: 40s baseline → 38-39s predicted
 
-2 = Hard (difficult cutting)
-   - Significant resistance, green wood, tough grain
-   - MULTIPLY baseline by 1.05-1.08 (increase by 5-8%)
-   - Example: 40s baseline → 42-43s predicted
+2 = Soft
+   - Good cutting conditions, easy to work with
+   - MULTIPLY baseline by 0.93-0.95 (reduce by 5-7%)
+   - Example: 40s baseline → 37-38s predicted
 
-1 = Very hard
-   - Major difficulty, knots, irregular grain
-   - MULTIPLY baseline by 1.08-1.12 (increase by 8-12%)
-   - Example: 40s baseline → 43-45s predicted
-
-0 = Extremely hard/barely suitable
-   - Maximum difficulty
-   - SLOWEST possible cutting time
-   - MULTIPLY baseline by 1.12-1.15 (increase by 12-15%)
-   - Example: 40s baseline → 45-46s predicted
+1 = Very soft/rotten
+   - Wood breaks apart easily, minimal resistance
+   - FASTEST possible cutting time
+   - MULTIPLY baseline by 0.85-0.90 (reduce by 10-15%)
+   - Example: 40s baseline → 34-36s predicted
 
 CURRENT SITUATION ANALYSIS
 
@@ -231,11 +261,11 @@ Your wood quality: {quality}/10
 Quality deviation: {quality - 5:+d} points from baseline reference
 
 CRITICAL CALCULATION DIRECTION:
-{"⚠️ Quality " + str(quality) + " > 5 means SOFTER wood → FASTER cutting → LOWER time than baseline" if quality > 5 else "⚠️ Quality " + str(quality) + " < 5 means HARDER wood → SLOWER cutting → HIGHER time than baseline" if quality < 5 else "✓ Quality 5 = baseline assumption → NO ADJUSTMENT needed"}
+{"⚠️ Quality " + str(quality) + " > 5 means HARDER wood → SLOWER cutting → HIGHER time than baseline" if quality > 5 else "⚠️ Quality " + str(quality) + " < 5 means SOFTER wood → FASTER cutting → LOWER time than baseline" if quality < 5 else "✓ Quality 5 = baseline assumption → NO ADJUSTMENT needed"}
 
-{"Expected multiplier: 0.95-0.97 (reduce baseline by 3-5%)" if quality == 6 else "Expected multiplier: 0.93-0.95 (reduce baseline by 5-7%)" if quality == 7 else "Expected multiplier: 0.90-0.93 (reduce baseline by 7-10%)" if quality == 8 else "Expected multiplier: 0.85-0.90 (reduce baseline by 10-15%)" if quality >= 9 else "Expected multiplier: 1.01-1.03 (increase baseline by 1-3%)" if quality == 4 else "Expected multiplier: 1.03-1.05 (increase baseline by 3-5%)" if quality == 3 else "Expected multiplier: 1.05-1.08 (increase baseline by 5-8%)" if quality == 2 else "Expected multiplier: 1.08-1.12 (increase baseline by 8-12%)" if quality == 1 else "Expected multiplier: 1.12-1.15 (increase baseline by 12-15%)" if quality == 0 else "Expected multiplier: 1.00 (no change)"}
+{"Expected multiplier: 1.01-1.03 (increase baseline by 1-3%)" if quality == 6 else "Expected multiplier: 1.03-1.05 (increase baseline by 3-5%)" if quality == 7 else "Expected multiplier: 1.05-1.08 (increase baseline by 5-8%)" if quality == 8 else "Expected multiplier: 1.08-1.12 (increase baseline by 8-12%)" if quality >= 9 else "Expected multiplier: 0.97-0.99 (reduce baseline by 1-3%)" if quality == 4 else "Expected multiplier: 0.95-0.97 (reduce baseline by 3-5%)" if quality == 3 else "Expected multiplier: 0.93-0.95 (reduce baseline by 5-7%)" if quality == 2 else "Expected multiplier: 0.85-0.90 (reduce baseline by 10-15%)" if quality == 1 else "Expected multiplier: 1.00 (no change)"}
 
-{"Target range: " + str(round(baseline * 0.95, 1)) + "s - " + str(round(baseline * 0.97, 1)) + "s" if quality == 6 else "Target range: " + str(round(baseline * 0.93, 1)) + "s - " + str(round(baseline * 0.95, 1)) + "s" if quality == 7 else "Target range: " + str(round(baseline * 0.90, 1)) + "s - " + str(round(baseline * 0.93, 1)) + "s" if quality == 8 else "Target range: " + str(round(baseline * 0.85, 1)) + "s - " + str(round(baseline * 0.90, 1)) + "s" if quality >= 9 else "Target range: " + str(round(baseline * 1.01, 1)) + "s - " + str(round(baseline * 1.03, 1)) + "s" if quality == 4 else "Target range: " + str(round(baseline * 1.03, 1)) + "s - " + str(round(baseline * 1.05, 1)) + "s" if quality == 3 else "Target range: " + str(round(baseline * 1.05, 1)) + "s - " + str(round(baseline * 1.08, 1)) + "s" if quality == 2 else "Target range: " + str(round(baseline * 1.08, 1)) + "s - " + str(round(baseline * 1.12, 1)) + "s" if quality == 1 else "Target range: " + str(round(baseline * 1.12, 1)) + "s - " + str(round(baseline * 1.15, 1)) + "s" if quality == 0 else "Target: " + str(round(baseline, 1)) + "s (baseline)"}
+{"Target range: " + str(round(baseline * 1.01, 1)) + "s - " + str(round(baseline * 1.03, 1)) + "s" if quality == 6 else "Target range: " + str(round(baseline * 1.03, 1)) + "s - " + str(round(baseline * 1.05, 1)) + "s" if quality == 7 else "Target range: " + str(round(baseline * 1.05, 1)) + "s - " + str(round(baseline * 1.08, 1)) + "s" if quality == 8 else "Target range: " + str(round(baseline * 1.08, 1)) + "s - " + str(round(baseline * 1.12, 1)) + "s" if quality >= 9 else "Target range: " + str(round(baseline * 0.97, 1)) + "s - " + str(round(baseline * 0.99, 1)) + "s" if quality == 4 else "Target range: " + str(round(baseline * 0.95, 1)) + "s - " + str(round(baseline * 0.97, 1)) + "s" if quality == 3 else "Target range: " + str(round(baseline * 0.93, 1)) + "s - " + str(round(baseline * 0.95, 1)) + "s" if quality == 2 else "Target range: " + str(round(baseline * 0.85, 1)) + "s - " + str(round(baseline * 0.90, 1)) + "s" if quality == 1 else "Target: " + str(round(baseline, 1)) + "s (baseline)"}
 
 CALCULATION METHODOLOGY
 
@@ -251,8 +281,8 @@ Step 3: Apply quality adjustment
 - Use the percentage ranges provided (1.5-2.5% per point as guideline)
 
 Step 4: Consider wood physics
-- Softer wood (quality >5): Cuts faster, less resistance
-- Harder wood (quality <5): Cuts slower, more resistance
+- Softer wood (quality <5): Cuts faster, less resistance
+- Harder wood (quality >5): Cuts slower, more resistance
 - Effect is roughly linear in the middle range (3-7)
 - Effect accelerates at extremes (0-2 and 8-10)
 
@@ -266,11 +296,11 @@ Step 5: Validate against typical ranges for {diameter:.0f}mm diameter
 CRITICAL FACTORS FOR FAIR HANDICAPPING
 
 Front/Back Marker Dynamics:
-- Softer wood (quality >5) disproportionately benefits slower competitors (front markers)
+- Softer wood (quality <5) disproportionately benefits slower competitors (front markers)
   * They gain more time than expected from easier cutting
   * Risk: Front marker finishes before back marker even starts
 
-- Harder wood (quality <5) disproportionately penalizes slower competitors
+- Harder wood (quality >5) disproportionately penalizes slower competitors
   * They lose more time than expected from difficult cutting
   * Risk: Back marker wins by excessive margin
 
@@ -285,36 +315,37 @@ The {diameter:.0f}mm diameter creates a cutting area of approximately {3.14159 *
 
 RESPONSE REQUIREMENT
 
-Calculate the most accurate predicted time for {competitor_name} cutting {species} at quality {quality}.
+Return ONLY a SINGLE MULTIPLIER to apply to the baseline time.
 
-CRITICAL: Respond with ONLY the predicted time as a decimal number.
-- Example: 47.3
-- NO units (like "seconds" or "s")
-- NO explanations
-- NO additional text
-- JUST THE NUMBER
+- Use a decimal between 0.85 and 1.15 (inclusive).
+- Example: 0.96 means 4% faster than baseline.
+- Example: 1.07 means 7% slower than baseline.
+- NO units, NO explanations, NO extra text.
 
-Predicted time:"""
+Multiplier:"""
 
     response = call_ollama(prompt)
 
     if response is None:
         # Fallback: statistical quality adjustment
-        quality_adjustment = (5 - quality) * 0.02
+        quality_adjustment = (quality - 5) * 0.02
         predicted_time = baseline * (1 + quality_adjustment)
         explanation = f"Predicted {predicted_time:.1f}s ({explanation_source}, quality adjusted)"
         return predicted_time, confidence, explanation
 
     try:
-        # Parse LLM response - extract first number
+        # Parse LLM response - extract first number (multiplier)
         numbers = re.findall(r'\d+\.?\d*', response)
         if numbers:
-            predicted_time = float(numbers[0])
+            multiplier = float(numbers[0])
 
-            # Sanity check: prediction should be within 50% of baseline
-            if baseline * 0.5 <= predicted_time <= baseline * 1.5:
-                explanation = f"Predicted {predicted_time:.1f}s ({explanation_source}, AI quality adjusted)"
-                return predicted_time, confidence, explanation
+            # Sanity check: multiplier should be within strict bounds
+            if 0.85 <= multiplier <= 1.15:
+                predicted_time = baseline * multiplier
+                # Sanity check: prediction should be within 50% of baseline
+                if baseline * 0.5 <= predicted_time <= baseline * 1.5:
+                    explanation = f"Predicted {predicted_time:.1f}s ({explanation_source}, AI calibrated)"
+                    return predicted_time, confidence, explanation
     except:
         pass
 
