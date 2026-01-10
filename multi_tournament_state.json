@@ -1,21 +1,21 @@
 {
   "tournament_mode": "multi_event",
-  "tournament_name": "Gerald Youles Charity Chop for Racism Awareness",
-  "tournament_date": "2026-01-04",
-  "created_at": "2026-01-04T13:48:21.273285",
-  "total_events": 6,
+  "tournament_name": "Test 1",
+  "tournament_date": "2026-01-09",
+  "created_at": "2026-01-09T04:32:22.411621",
+  "total_events": 4,
   "events_completed": 0,
   "current_event_index": 0,
   "events": [
     {
       "event_id": "event_1",
-      "event_name": "250mm SB",
+      "event_name": "275mm SB",
       "event_order": 1,
       "status": "configured",
       "event_type": "handicap",
-      "wood_species": "S04",
-      "wood_diameter": 250.0,
-      "wood_quality": 5,
+      "wood_species": "S05",
+      "wood_diameter": 275.0,
+      "wood_quality": 7,
       "event_code": "SB",
       "num_stands": 5,
       "format": "heats_to_finals",
@@ -24,9 +24,10 @@
         "num_heats": 2,
         "num_semis": 0,
         "num_finals": 1,
-        "advancers_per_heat": 3,
+        "advancers_per_heat": 2,
+        "stands_per_heat": 5,
         "total_blocks": 15,
-        "description": "2 heats of 5 (max 10 competitors)\n  → Top 3 from each heat advance\n  → 5-person Final"
+        "description": "2 heats of 5 (max 10 competitors)\n  → Top 2 from each heat advance\n  → 4-person Final"
       },
       "all_competitors": [
         "Eric Hoberg",
@@ -112,6 +113,18 @@
           "gender": "M"
         }
       ],
+      "competitor_status": {
+        "Eric Hoberg": "active",
+        "David Moses Jr.": "active",
+        "Angus Nicholson": "active",
+        "Erin LaVoie": "active",
+        "Erin Cramsey": "active",
+        "Gillian Shannon": "active",
+        "Cody Labahn": "active",
+        "Cole Schlenker": "active",
+        "Alex Kaper": "active",
+        "Ian Wilson": "active"
+      },
       "handicap_results_all": [],
       "rounds": [],
       "final_results": {
@@ -133,12 +146,261 @@
     },
     {
       "event_id": "event_2",
-      "event_name": "375mm UH",
+      "event_name": "300mm UH",
       "event_order": 2,
-      "status": "ready",
+      "status": "configured",
+      "event_type": "handicap",
+      "wood_species": "S08",
+      "wood_diameter": 300.0,
+      "wood_quality": 3,
+      "event_code": "UH",
+      "num_stands": 8,
+      "format": "heats_to_semis_to_finals",
+      "capacity_info": {
+        "max_competitors": 10,
+        "num_heats": 2,
+        "num_semis": 2,
+        "num_finals": 1,
+        "advancers_per_heat": 5,
+        "advancers_per_semi": 4,
+        "stands_per_heat": 5,
+        "semi_total": 10,
+        "total_blocks": 34,
+        "description": "2 heats of 5 (max 10 competitors)\n  → Top 5 from each heat (10 total)\n  → 2 semi-finals of 8\n  → Top 4 from each semi\n  → 8-person Final"
+      },
+      "all_competitors": [
+        "Eric Hoberg",
+        "David Moses Jr.",
+        "Angus Nicholson",
+        "Erin LaVoie",
+        "Cody Labahn",
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Ian Wilson"
+      ],
+      "all_competitors_df": [
+        {
+          "competitor_id": "C001",
+          "competitor_name": "Eric Hoberg",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C008",
+          "competitor_name": "Cole Schlenker",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C009",
+          "competitor_name": "Alex Kaper",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "competitor_status": {
+        "Eric Hoberg": "active",
+        "David Moses Jr.": "active",
+        "Angus Nicholson": "active",
+        "Erin LaVoie": "active",
+        "Cody Labahn": "active",
+        "Cole Schlenker": "active",
+        "Alex Kaper": "active",
+        "Ian Wilson": "active"
+      },
+      "handicap_results_all": [],
+      "rounds": [],
+      "final_results": {
+        "first_place": null,
+        "second_place": null,
+        "third_place": null,
+        "all_placements": {}
+      },
+      "payout_config": {
+        "enabled": true,
+        "num_places": 3,
+        "payouts": {
+          "1": 1000.0,
+          "2": 650.0,
+          "3": 400.0
+        },
+        "total_purse": 2050.0
+      }
+    },
+    {
+      "event_id": "event_3",
+      "event_name": "250mm SB",
+      "event_order": 3,
+      "status": "configured",
+      "event_type": "handicap",
+      "wood_species": "S12",
+      "wood_diameter": 250.0,
+      "wood_quality": 6,
+      "event_code": "SB",
+      "num_stands": 5,
+      "format": "heats_to_finals",
+      "capacity_info": {
+        "max_competitors": 10,
+        "num_heats": 2,
+        "num_semis": 0,
+        "num_finals": 1,
+        "advancers_per_heat": 2,
+        "stands_per_heat": 5,
+        "total_blocks": 15,
+        "description": "2 heats of 5 (max 10 competitors)\n  → Top 2 from each heat advance\n  → 4-person Final"
+      },
+      "all_competitors": [
+        "David Moses Jr.",
+        "Angus Nicholson",
+        "Erin LaVoie",
+        "Erin Cramsey",
+        "Gillian Shannon",
+        "Cody Labahn",
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Ian Wilson"
+      ],
+      "all_competitors_df": [
+        {
+          "competitor_id": "C002",
+          "competitor_name": "David Moses Jr.",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C003",
+          "competitor_name": "Angus Nicholson",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C004",
+          "competitor_name": "Erin LaVoie",
+          "competitor_country": "USA",
+          "state_province": "WA",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C005",
+          "competitor_name": "Erin Cramsey",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C006",
+          "competitor_name": "Gillian Shannon",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "F"
+        },
+        {
+          "competitor_id": "C007",
+          "competitor_name": "Cody Labahn",
+          "competitor_country": "USA",
+          "state_province": "OR",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C008",
+          "competitor_name": "Cole Schlenker",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C009",
+          "competitor_name": "Alex Kaper",
+          "competitor_country": "USA",
+          "state_province": "MT",
+          "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
+        }
+      ],
+      "competitor_status": {
+        "David Moses Jr.": "active",
+        "Angus Nicholson": "active",
+        "Erin LaVoie": "active",
+        "Erin Cramsey": "active",
+        "Gillian Shannon": "active",
+        "Cody Labahn": "active",
+        "Cole Schlenker": "active",
+        "Alex Kaper": "active",
+        "Ian Wilson": "active"
+      },
+      "handicap_results_all": [],
+      "rounds": [],
+      "final_results": {
+        "first_place": null,
+        "second_place": null,
+        "third_place": null,
+        "all_placements": {}
+      },
+      "payout_config": {
+        "enabled": true,
+        "num_places": 3,
+        "payouts": {
+          "1": 100.0,
+          "2": 50.0,
+          "3": 20.0
+        },
+        "total_purse": 170.0
+      }
+    },
+    {
+      "event_id": "event_4",
+      "event_name": "374mm UH",
+      "event_order": 4,
+      "status": "configured",
       "event_type": "championship",
       "wood_species": "S05",
-      "wood_diameter": 375.0,
+      "wood_diameter": 374.0,
       "wood_quality": 8,
       "event_code": "UH",
       "num_stands": 8,
@@ -153,23 +415,14 @@
         "description": "Single heat with up to 8 competitors\n  → Perfect for training, testing, or casual events\n  → Results can still be saved to build historical data\n  → No advancement rounds"
       },
       "all_competitors": [
-        "Eric Hoberg",
         "David Moses Jr.",
         "Angus Nicholson",
-        "Erin LaVoie",
-        "Erin Cramsey",
-        "Gillian Shannon",
         "Cody Labahn",
-        "Cole Schlenker"
+        "Cole Schlenker",
+        "Alex Kaper",
+        "Ian Wilson"
       ],
       "all_competitors_df": [
-        {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
         {
           "competitor_id": "C002",
           "competitor_name": "David Moses Jr.",
@@ -182,179 +435,6 @@
           "competitor_name": "Angus Nicholson",
           "competitor_country": "USA",
           "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C004",
-          "competitor_name": "Erin LaVoie",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C005",
-          "competitor_name": "Erin Cramsey",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C006",
-          "competitor_name": "Gillian Shannon",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C007",
-          "competitor_name": "Cody Labahn",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C008",
-          "competitor_name": "Cole Schlenker",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        }
-      ],
-      "handicap_results_all": [
-        {
-          "name": "Eric Hoberg",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "David Moses Jr.",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Angus Nicholson",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Erin LaVoie",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Erin Cramsey",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Gillian Shannon",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Cody Labahn",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Cole Schlenker",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        }
-      ],
-      "rounds": [],
-      "final_results": {
-        "first_place": null,
-        "second_place": null,
-        "third_place": null,
-        "all_placements": {}
-      },
-      "payout_config": {
-        "enabled": true,
-        "num_places": 5,
-        "payouts": {
-          "1": 1000.0,
-          "2": 500.0,
-          "3": 300.0,
-          "4": 200.0,
-          "5": 100.0
-        },
-        "total_purse": 2100.0
-      }
-    },
-    {
-      "event_id": "event_3",
-      "event_name": "400mm SB",
-      "event_order": 3,
-      "status": "ready",
-      "event_type": "championship",
-      "wood_species": "S07",
-      "wood_diameter": 400.0,
-      "wood_quality": 6,
-      "event_code": "SB",
-      "num_stands": 5,
-      "format": "single_heat",
-      "capacity_info": {
-        "max_competitors": 5,
-        "num_heats": 1,
-        "num_semis": 0,
-        "num_finals": 0,
-        "advancers_per_heat": 0,
-        "total_blocks": 5,
-        "description": "Single heat with up to 5 competitors\n  → Perfect for training, testing, or casual events\n  → Results can still be saved to build historical data\n  → No advancement rounds"
-      },
-      "all_competitors": [
-        "Eric Hoberg",
-        "David Moses Jr.",
-        "Cody Labahn",
-        "Cole Schlenker",
-        "Alex Kaper"
-      ],
-      "all_competitors_df": [
-        {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
-          "competitor_country": "USA",
-          "state_province": "WA",
           "gender": "M"
         },
         {
@@ -377,55 +457,24 @@
           "competitor_country": "USA",
           "state_province": "MT",
           "gender": "M"
+        },
+        {
+          "competitor_id": "C010",
+          "competitor_name": "Ian Wilson",
+          "competitor_country": "USA",
+          "state_province": "CA",
+          "gender": "M"
         }
       ],
-      "handicap_results_all": [
-        {
-          "name": "Eric Hoberg",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "David Moses Jr.",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Cody Labahn",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Cole Schlenker",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        },
-        {
-          "name": "Alex Kaper",
-          "predicted_time": 0.0,
-          "method_used": "Championship",
-          "confidence": "N/A",
-          "explanation": "Championship event: fastest time wins",
-          "predictions": {},
-          "mark": 3
-        }
-      ],
+      "competitor_status": {
+        "David Moses Jr.": "active",
+        "Angus Nicholson": "active",
+        "Cody Labahn": "active",
+        "Cole Schlenker": "active",
+        "Alex Kaper": "active",
+        "Ian Wilson": "active"
+      },
+      "handicap_results_all": [],
       "rounds": [],
       "final_results": {
         "first_place": null,
@@ -437,365 +486,120 @@
         "enabled": true,
         "num_places": 5,
         "payouts": {
-          "1": 300.0,
-          "2": 200.0,
-          "3": 100.0,
-          "4": 50.0,
+          "1": 100.0,
+          "2": 80.0,
+          "3": 70.0,
+          "4": 60.0,
           "5": 50.0
         },
-        "total_purse": 700.0
-      }
-    },
-    {
-      "event_id": "event_4",
-      "event_name": "275mm UH",
-      "event_order": 4,
-      "status": "configured",
-      "event_type": "handicap",
-      "wood_species": "S06",
-      "wood_diameter": 275.0,
-      "wood_quality": 6,
-      "event_code": "UH",
-      "num_stands": 8,
-      "format": "single_heat",
-      "capacity_info": {
-        "max_competitors": 8,
-        "num_heats": 1,
-        "num_semis": 0,
-        "num_finals": 0,
-        "advancers_per_heat": 0,
-        "total_blocks": 8,
-        "description": "Single heat with up to 8 competitors\n  → Perfect for training, testing, or casual events\n  → Results can still be saved to build historical data\n  → No advancement rounds"
-      },
-      "all_competitors": [
-        "Eric Hoberg",
-        "David Moses Jr.",
-        "Angus Nicholson",
-        "Erin LaVoie",
-        "Erin Cramsey",
-        "Gillian Shannon",
-        "Cody Labahn",
-        "Cole Schlenker"
-      ],
-      "all_competitors_df": [
-        {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C003",
-          "competitor_name": "Angus Nicholson",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C004",
-          "competitor_name": "Erin LaVoie",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C005",
-          "competitor_name": "Erin Cramsey",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C006",
-          "competitor_name": "Gillian Shannon",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C007",
-          "competitor_name": "Cody Labahn",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C008",
-          "competitor_name": "Cole Schlenker",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        }
-      ],
-      "handicap_results_all": [],
-      "rounds": [],
-      "final_results": {
-        "first_place": null,
-        "second_place": null,
-        "third_place": null,
-        "all_placements": {}
-      },
-      "payout_config": {
-        "enabled": true,
-        "num_places": 3,
-        "payouts": {
-          "1": 300.0,
-          "2": 200.0,
-          "3": 100.0
-        },
-        "total_purse": 600.0
-      }
-    },
-    {
-      "event_id": "event_5",
-      "event_name": "300mm SB",
-      "event_order": 5,
-      "status": "configured",
-      "event_type": "handicap",
-      "wood_species": "S08",
-      "wood_diameter": 300.0,
-      "wood_quality": 4,
-      "event_code": "SB",
-      "num_stands": 5,
-      "format": "heats_to_finals",
-      "capacity_info": {
-        "max_competitors": 10,
-        "num_heats": 2,
-        "num_semis": 0,
-        "num_finals": 1,
-        "advancers_per_heat": 3,
-        "total_blocks": 15,
-        "description": "2 heats of 5 (max 10 competitors)\n  → Top 3 from each heat advance\n  → 5-person Final"
-      },
-      "all_competitors": [
-        "Eric Hoberg",
-        "David Moses Jr.",
-        "Angus Nicholson",
-        "Erin LaVoie",
-        "Erin Cramsey",
-        "Gillian Shannon",
-        "Cody Labahn",
-        "Cole Schlenker",
-        "Alex Kaper",
-        "Ian Wilson"
-      ],
-      "all_competitors_df": [
-        {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C003",
-          "competitor_name": "Angus Nicholson",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C004",
-          "competitor_name": "Erin LaVoie",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C005",
-          "competitor_name": "Erin Cramsey",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C006",
-          "competitor_name": "Gillian Shannon",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C007",
-          "competitor_name": "Cody Labahn",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C008",
-          "competitor_name": "Cole Schlenker",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C009",
-          "competitor_name": "Alex Kaper",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C010",
-          "competitor_name": "Ian Wilson",
-          "competitor_country": "USA",
-          "state_province": "CA",
-          "gender": "M"
-        }
-      ],
-      "handicap_results_all": [],
-      "rounds": [],
-      "final_results": {
-        "first_place": null,
-        "second_place": null,
-        "third_place": null,
-        "all_placements": {}
-      },
-      "payout_config": {
-        "enabled": false
-      }
-    },
-    {
-      "event_id": "event_6",
-      "event_name": "275mm SB",
-      "event_order": 6,
-      "status": "configured",
-      "event_type": "handicap",
-      "wood_species": "S03",
-      "wood_diameter": 275.0,
-      "wood_quality": 4,
-      "event_code": "SB",
-      "num_stands": 5,
-      "format": "heats_to_semis_to_finals",
-      "capacity_info": {
-        "max_competitors": 20,
-        "num_heats": 4,
-        "num_semis": 2,
-        "num_finals": 1,
-        "advancers_per_heat": 3,
-        "advancers_per_semi": 2,
-        "semi_total": 10,
-        "total_blocks": 25,
-        "description": "4 heats of 5 (max 20 competitors)\n  → Top 3 from each heat (10 total)\n  → 2 semi-finals of 5\n  → Top 2 from each semi\n  → 5-person Final"
-      },
-      "all_competitors": [
-        "Eric Hoberg",
-        "David Moses Jr.",
-        "Angus Nicholson",
-        "Erin LaVoie",
-        "Erin Cramsey",
-        "Gillian Shannon",
-        "Cody Labahn",
-        "Cole Schlenker",
-        "Alex Kaper",
-        "Ian Wilson"
-      ],
-      "all_competitors_df": [
-        {
-          "competitor_id": "C001",
-          "competitor_name": "Eric Hoberg",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C002",
-          "competitor_name": "David Moses Jr.",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C003",
-          "competitor_name": "Angus Nicholson",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C004",
-          "competitor_name": "Erin LaVoie",
-          "competitor_country": "USA",
-          "state_province": "WA",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C005",
-          "competitor_name": "Erin Cramsey",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C006",
-          "competitor_name": "Gillian Shannon",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "F"
-        },
-        {
-          "competitor_id": "C007",
-          "competitor_name": "Cody Labahn",
-          "competitor_country": "USA",
-          "state_province": "OR",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C008",
-          "competitor_name": "Cole Schlenker",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C009",
-          "competitor_name": "Alex Kaper",
-          "competitor_country": "USA",
-          "state_province": "MT",
-          "gender": "M"
-        },
-        {
-          "competitor_id": "C010",
-          "competitor_name": "Ian Wilson",
-          "competitor_country": "USA",
-          "state_province": "CA",
-          "gender": "M"
-        }
-      ],
-      "handicap_results_all": [],
-      "rounds": [],
-      "final_results": {
-        "first_place": null,
-        "second_place": null,
-        "third_place": null,
-        "all_placements": {}
-      },
-      "payout_config": {
-        "enabled": true,
-        "num_places": 3,
-        "payouts": {
-          "1": 400.0,
-          "2": 300.0,
-          "3": 200.0
-        },
-        "total_purse": 900.0
+        "total_purse": 360.0
       }
     }
-  ]
-}
+  ],
+  "entry_fee_tracking_enabled": false,
+  "tournament_roster": [
+    {
+      "competitor_name": "Eric Hoberg",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "David Moses Jr.",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Angus Nicholson",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Erin LaVoie",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Erin Cramsey",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_3"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Gillian Shannon",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_3"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Cody Labahn",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Cole Schlenker",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Alex Kaper",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    },
+    {
+      "competitor_name": "Ian Wilson",
+      "competitor_id": "",
+      "events_entered": [
+        "event_1",
+        "event_2",
+        "event_3",
+        "event_4"
+      ],
+      "entry_fees_paid": {}
+    }
+  ],
+  "competitor_roster_df": 
