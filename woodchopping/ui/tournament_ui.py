@@ -10,6 +10,8 @@ This module handles multi-round tournament operations including:
 
 import json
 import copy
+import random
+import time
 from math import ceil
 from typing import Dict, List, Optional
 import pandas as pd
@@ -73,9 +75,10 @@ def find_optimal_heat_configuration(num_stands: int, tentative_competitors: int,
             continue
 
         # Score this configuration (lower is better)
-        # Heavily prioritize balance, secondarily consider how well we fill finals
+        # Prioritize balance, then fewer heats to reduce schedule length
         fill_penalty = abs(target_advancers - total_advancers)
-        score = imbalance * 100 + fill_penalty
+        heat_penalty = num_heats * 10
+        score = imbalance * 100 + heat_penalty + fill_penalty
 
         if score < best_score:
             best_score = score
@@ -134,13 +137,13 @@ def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) 
         'total_blocks': num_stands,
         'description': (
             f"Single heat with up to {num_stands} competitors\n"
-            f"  → Perfect for training, testing, or casual events\n"
-            f"  → Results can still be saved to build historical data\n"
-            f"  → No advancement rounds"
+            f"  -> Perfect for training, testing, or casual events\n"
+            f"  -> Results can still be saved to build historical data\n"
+            f"  -> No advancement rounds"
         )
     }
 
-    # SCENARIO 1: Heats → Finals
+    # SCENARIO 1: Heats -> Finals
     # Strategy: Find optimal stands_per_heat for balanced heats, advance top N to finals
     config_s1 = find_optimal_heat_configuration(num_stands, tentative_competitors, num_stands)
 
@@ -157,12 +160,12 @@ def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) 
         'description': (
             f"{config_s1['num_heats']} heats of {config_s1['stands_per_heat']} "
             f"(max {config_s1['max_competitors']} competitors)\n"
-            f"  → Top {config_s1['advancers_per_heat']} from each heat advance\n"
-            f"  → {config_s1['total_advancers']}-person Final"
+            f"  -> Top {config_s1['advancers_per_heat']} from each heat advance\n"
+            f"  -> {config_s1['total_advancers']}-person Final"
         )
     }
 
-    # SCENARIO 2: Heats → Semis → Finals
+    # SCENARIO 2: Heats -> Semis -> Finals
     # Strategy: Find optimal stands_per_heat for balanced heats, advance to 2 semis, then finals
     num_semis = 2
     semi_total = num_semis * num_stands  # Target: fill 2 semis with num_stands each
@@ -185,10 +188,10 @@ def calculate_tournament_scenarios(num_stands: int, tentative_competitors: int) 
         'description': (
             f"{config_s2['num_heats']} heats of {config_s2['stands_per_heat']} "
             f"(max {config_s2['max_competitors']} competitors)\n"
-            f"  → Top {config_s2['advancers_per_heat']} from each heat ({config_s2['total_advancers']} total)\n"
-            f"  → {num_semis} semi-finals of {num_stands}\n"
-            f"  → Top {advancers_per_semi} from each semi\n"
-            f"  → {num_stands}-person Final"
+            f"  -> Top {config_s2['advancers_per_heat']} from each heat ({config_s2['total_advancers']} total)\n"
+            f"  -> {num_semis} semi-finals of {num_stands}\n"
+            f"  -> Top {advancers_per_semi} from each semi\n"
+            f"  -> {num_stands}-person Final"
         )
     }
 
@@ -271,7 +274,7 @@ def distribute_competitors_into_heats(all_competitors_df: pd.DataFrame,
         heat_capacity = num_stands
         fill_percentage = heat_size / heat_capacity
 
-        # If heat is ≤50% full, only top 1 advances (fairness for partial heats)
+        # If heat is <=50% full, only top 1 advances (fairness for partial heats)
         if fill_percentage <= 0.5:
             heat['num_to_advance'] = 1
         else:
@@ -295,6 +298,7 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
     print(f"{'='*70}")
 
     # Use FINISH ORDER to determine results (critical for handicap racing)
+
     if round_object.get('finish_order'):
         # Sort by finish order (1st, 2nd, 3rd, etc.)
         sorted_by_finish = sorted(
@@ -303,49 +307,53 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
         )
 
         # Display results table with finish position, cutting time, and advancement status
-        print("\n╔════════════════════════════════════════════════════════════════════╗")
-        print(f"║           🏆 {round_object['round_name'].upper()} - FINAL RESULTS 🏆            ║")
-        print("╠════════════════════════════════════════════════════════════════════╣")
-        print("║  Finish Position based on REAL-TIME completion (handicap included) ║")
-        print("╠════════════════════════════════════════════════════════════════════╣")
+        table_width = 74
+        print("\n" + "-" * table_width)
+        print(f"{round_object['round_name'].upper()} - FINAL RESULTS".center(table_width))
+        print("-" * table_width)
+        print("Finish position based on REAL-TIME completion (handicap included)".center(table_width))
+        print("-" * table_width)
+        print(f"{'Pos':>3} | {'Competitor':<35} | {'Time':>7} | {'Status':<10}")
+        print("-" * table_width)
 
         advancers = []  # Auto-select based on finish order
+        draw_eligible = []  # Only NEXT position is draw-eligible (position-based pool)
+        next_draw_position = round_object['num_to_advance'] + 1
 
         for name, finish_pos in sorted_by_finish:
             cutting_time = round_object['actual_results'].get(name, 0)
 
-            # Determine medal and advancement
-            medal = ""
+            # Determine advancement
             advance = ""
-            if finish_pos == 1:
-                medal = "🥇"
-            elif finish_pos == 2:
-                medal = "🥈"
-            elif finish_pos == 3:
-                medal = "🥉"
-            else:
-                medal = "  "
 
             # Auto-select top finishers for advancement
             if finish_pos <= round_object['num_to_advance']:
-                advance = "✓ ADVANCES"
+                advance = "ADVANCES"
                 advancers.append(name)
+            elif finish_pos == next_draw_position:
+                # Only the NEXT position after auto-advancers is draw-eligible
+                draw_eligible.append(name)
 
             # Format line: Position | Name | Cutting Time | Status
-            pos_part = f"{medal} {finish_pos:2d}"
+            pos_part = f"{finish_pos:>3}"
             name_part = f"{name[:35]:<35}"
-            time_part = f"{cutting_time:6.2f}s"
-            status_part = f"{advance:^12}"
+            time_part = f"{cutting_time:>6.2f}s"
+            status_part = f"{advance:<10}"
 
-            print(f"║  {pos_part} │ {name_part} │ {time_part} │ {status_part} ║")
+            print(f"{pos_part} | {name_part} | {time_part:>7} | {status_part}")
 
-        print("╚════════════════════════════════════════════════════════════════════╝\n")
+        print("-" * table_width + "\n")
 
         # Display advancers summary
-        print(f"✓ Top {round_object['num_to_advance']} finisher(s) automatically advance:")
+        print(f"Top {round_object['num_to_advance']} finisher(s) automatically advance:")
         for name in advancers:
             finish_pos = round_object['finish_order'][name]
             print(f"  {finish_pos}. {name}")
+
+        if draw_eligible:
+            # Show only the next position as draw-eligible
+            print(f"\nDraw pool (position {next_draw_position}): {', '.join(draw_eligible)}")
+            round_object['draw_eligible'] = draw_eligible
 
         # Allow judge to override if needed
         override = input("\nAccept these advancers? (y/n to manually select): ").strip().lower()
@@ -364,14 +372,16 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
                     for i, (name, pos) in enumerate(sorted_by_finish, 1):
                         print(f"  {i}) {name} (finished {pos})")
 
-                    choice = input(f"\nSelect competitor {len(advancers)+1} of {round_object['num_to_advance']} (number): ").strip()
+                    choice = input(
+                        f"\nSelect competitor {len(advancers)+1} of {round_object['num_to_advance']} (number): "
+                    ).strip()
                     idx = int(choice) - 1
 
                     if 0 <= idx < len(sorted_by_finish):
                         selected = sorted_by_finish[idx][0]
                         if selected not in advancers:
                             advancers.append(selected)
-                            print(f"  ✓ {selected} selected")
+                            print(f"  [OK] {selected} selected")
                         else:
                             print("  Already selected. Choose another competitor.")
                     else:
@@ -380,9 +390,18 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
                 except ValueError:
                     print("  Please enter a valid number.")
 
+            # Position-based draw pool: only next position after num_to_advance
+            draw_eligible = [
+                name for name, pos in sorted_by_finish
+                if name not in advancers and pos == next_draw_position
+            ]
+            if draw_eligible:
+                round_object['draw_eligible'] = draw_eligible
+
     else:
         # Fallback: No finish order recorded (legacy mode - use raw times)
-        print("⚠ WARNING: No finish order recorded. Using raw cutting times (may be inaccurate for handicap).\n")
+        print("WARNING: No finish order recorded. Using raw cutting times (may be inaccurate for handicap).
+")
 
         if round_object['actual_results']:
             sorted_results = sorted(
@@ -414,7 +433,7 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
                     selected = round_object['competitors'][idx]
                     if selected not in advancers:
                         advancers.append(selected)
-                        print(f"  ✓ {selected} selected")
+                        print(f"  [OK] {selected} selected")
                     else:
                         print("  Already selected. Choose another competitor.")
                 else:
@@ -428,6 +447,164 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
     round_object['status'] = 'completed'
 
     return advancers
+
+
+def _build_finish_positions(round_object: Dict) -> Dict[str, int]:
+    finish_order = round_object.get('finish_order') or {}
+    if finish_order:
+        return finish_order
+
+    actual_results = round_object.get('actual_results') or {}
+    if actual_results:
+        sorted_results = sorted(actual_results.items(), key=lambda x: x[1])
+        return {name: idx + 1 for idx, (name, _) in enumerate(sorted_results)}
+
+    return {}
+
+
+def _format_slot_name(name: str, width: int) -> str:
+    clean = str(name)
+    if len(clean) > width:
+        if width <= 3:
+            return clean[:width]
+        return clean[:width - 3] + "..."
+    return clean.ljust(width)
+
+
+def _run_slot_machine_animation(winners: List[str], candidates: List[str], rng: random.Random) -> None:
+    if not winners or not candidates:
+        return
+
+    width = 18
+    frames = 12
+    delay = 0.08
+
+    print("\n" + "=" * (width * 3 + 10))
+    print("  SLOT MACHINE DRAW")
+    print("=" * (width * 3 + 10))
+
+    for winner in winners:
+        for i in range(frames):
+            left = rng.choice(candidates)
+            middle = rng.choice(candidates)
+            right = rng.choice(candidates)
+            if i == frames - 1:
+                middle = winner
+            line = (
+                f"  [ {_format_slot_name(left, width)} ]"
+                f" [ {_format_slot_name(middle, width)} ]"
+                f" [ {_format_slot_name(right, width)} ]"
+            )
+            print(line, end="\r", flush=True)
+            time.sleep(delay)
+        print("")
+        print(f"  WINNER: {winner}")
+
+    print("=" * (width * 3 + 10))
+
+
+def fill_advancers_with_random_draw(rounds: List[Dict],
+                                    all_advancers: List[str],
+                                    target_count: Optional[int],
+                                    round_label: str = "next round") -> List[str]:
+    """Fill remaining advancement slots by random draw from next-place finishers."""
+    if not target_count or len(all_advancers) >= target_count:
+        return all_advancers
+
+    remaining = target_count - len(all_advancers)
+    print(f"\nNeed {remaining} more advancer(s) to fill the {round_label} ({target_count} slots).")
+
+    position_pool: Dict[int, List[str]] = {}
+    missing_finish_orders = 0
+
+    for round_obj in rounds:
+        finish_positions = _build_finish_positions(round_obj)
+        if not finish_positions:
+            missing_finish_orders += 1
+            continue
+
+        num_to_advance = round_obj.get('num_to_advance', 0)
+        for name, pos in finish_positions.items():
+            if pos <= num_to_advance:
+                continue
+            if name in all_advancers:
+                continue
+            position_pool.setdefault(pos, []).append(name)
+
+    if not position_pool:
+        print("No eligible finishers available for a random draw.")
+        return all_advancers
+
+    print("\n+-----------------------------------------------------------------+")
+    print("|  POSITION-BASED DRAW POOL                                       |")
+    print("|  (Slots filled from lowest position first, then next position)  |")
+    print("+-----------------------------------------------------------------+")
+    print("\nEligible finishers by position:")
+    for pos in sorted(position_pool):
+        names = ", ".join(position_pool[pos])
+        print(f"  Position {pos}: {len(position_pool[pos])} candidate(s) -> {names}")
+    if missing_finish_orders:
+        print(f"Note: {missing_finish_orders} heat(s) missing finish order data were skipped.")
+
+    choice = input("\nFill remaining slots with a random draw? (y/n): ").strip().lower()
+    if choice not in ('y', ''):
+        return all_advancers
+
+    seed_input = input("Optional random seed (press Enter to skip): ").strip()
+    rng = random.Random()
+    if seed_input:
+        try:
+            rng.seed(int(seed_input))
+        except ValueError:
+            rng.seed(seed_input)
+
+    print("\nDrawing", end="", flush=True)
+    for _ in range(6):
+        time.sleep(0.15)
+        print(".", end="", flush=True)
+    print("")
+
+    selected = []
+    slots_left = remaining
+    positions_used = []
+    for pos in sorted(position_pool):
+        if slots_left <= 0:
+            break
+        candidates = position_pool[pos]
+        if not candidates:
+            continue
+        if len(candidates) <= slots_left:
+            # All candidates at this position advance (no draw needed)
+            chosen = candidates[:]
+            if len(candidates) > 1:
+                print(f"\n  All {len(candidates)} competitors at position {pos} advance (no draw needed)")
+        else:
+            # Random draw required - more candidates than slots
+            print(f"\n  Drawing {slots_left} from {len(candidates)} candidates at position {pos}...")
+            chosen = rng.sample(candidates, slots_left)
+        selected.extend(chosen)
+        positions_used.append(pos)
+        slots_left -= len(chosen)
+
+    if not selected:
+        print("No additional advancers were selected.")
+        return all_advancers
+
+    flat_candidates = []
+    for pos in sorted(position_pool):
+        flat_candidates.extend(position_pool[pos])
+
+    _run_slot_machine_animation(selected, flat_candidates, rng)
+
+    all_advancers.extend(selected)
+    print("\nRandom draw selected:")
+    for name in selected:
+        print(f"  - {name}")
+
+    if slots_left > 0:
+        print(f"\nWarning: {slots_left} slot(s) remain unfilled due to limited candidates.")
+
+    return all_advancers
 
 
 def extract_tournament_results(tournament_state: Dict) -> Dict[str, float]:
@@ -459,7 +636,7 @@ def extract_tournament_results(tournament_state: Dict) -> Dict[str, float]:
 
 
 def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_round_type: str,
-                       is_championship: bool = False) -> List[Dict]:
+                       is_championship: bool = False, animate_selection: bool = False) -> List[Dict]:
     """Generate semi-final or final rounds from advancing competitors.
 
     CRITICAL ENHANCEMENT: This function now RECALCULATES handicaps using actual times
@@ -476,6 +653,10 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     Returns:
         list: List of round_object dictionaries for next stage with RECALCULATED handicaps
     """
+
+    if animate_selection and all_advancers:
+        rng = random.Random()
+        _run_slot_machine_animation(all_advancers, all_advancers, rng)
 
     # Extract actual cutting times from completed rounds (NEW - critical improvement)
     tournament_results = extract_tournament_results(tournament_state)
@@ -500,7 +681,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
                 'mark': 3
             })
 
-        print(f"✓ Championship marks assigned for next round")
+        print(f"[OK] Championship marks assigned for next round")
         print(f"{'='*70}\n")
 
         # Skip to heat distribution
@@ -552,7 +733,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     print(f"\nUsing actual times from completed rounds (97% weight):")
     for name, time in tournament_results.items():
         if name in all_advancers:
-            print(f"  • {name}: {time:.2f}s")
+            print(f"  - {name}: {time:.2f}s")
 
     # Import handicap calculation function
     from woodchopping.handicaps import calculate_ai_enhanced_handicaps
@@ -571,7 +752,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
     event_code = tournament_state.get('event_code')
 
     if not all([wood_species, wood_diameter, event_code is not None, wood_quality is not None]):
-        print("\n⚠ WARNING: Wood characteristics not found in tournament state.")
+        print("\n[WARN] WARNING: Wood characteristics not found in tournament state.")
         print("Cannot recalculate handicaps using tournament results.")
         print("Using original handicaps from initial calculation.")
 
@@ -597,7 +778,7 @@ def generate_next_round(tournament_state: Dict, all_advancers: List[str], next_r
             tournament_results=tournament_results  # NEW parameter for same-tournament weighting
         )
 
-    print(f"\n✓ Handicaps recalculated using tournament performance data")
+    print(f"\n[OK] Handicaps recalculated using tournament performance data")
     print(f"{'='*70}\n")
 
     # Determine optimal heat configuration for next round
@@ -668,33 +849,33 @@ def view_tournament_status(tournament_state: Dict) -> None:
 
     # Display heats
     if heats:
-        print(f"\n{'─'*70}")
+        print(f"\n{'-'*70}")
         print(f"INITIAL HEATS ({len(heats)} total)")
-        print(f"{'─'*70}")
+        print(f"{'-'*70}")
         for heat in heats:
-            status_icon = "✓" if heat['status'] == 'completed' else "○"
+            status_icon = "[OK]" if heat['status'] == 'completed' else "[ ]"
             print(f"{status_icon} {heat['round_name']:15s} - {len(heat['competitors'])} competitors, top {heat['num_to_advance']} advance")
             if heat['status'] == 'completed' and heat.get('advancers'):
                 print(f"    Advancers: {', '.join(heat['advancers'])}")
 
     # Display semis
     if semis:
-        print(f"\n{'─'*70}")
+        print(f"\n{'-'*70}")
         print(f"SEMI-FINALS ({len(semis)} total)")
-        print(f"{'─'*70}")
+        print(f"{'-'*70}")
         for semi in semis:
-            status_icon = "✓" if semi['status'] == 'completed' else "○"
+            status_icon = "[OK]" if semi['status'] == 'completed' else "[ ]"
             print(f"{status_icon} {semi['round_name']:15s} - {len(semi['competitors'])} competitors, top {semi['num_to_advance']} advance")
             if semi['status'] == 'completed' and semi.get('advancers'):
                 print(f"    Advancers: {', '.join(semi['advancers'])}")
 
     # Display finals
     if finals:
-        print(f"\n{'─'*70}")
+        print(f"\n{'-'*70}")
         print(f"FINAL")
-        print(f"{'─'*70}")
+        print(f"{'-'*70}")
         for final in finals:
-            status_icon = "✓" if final['status'] == 'completed' else "○"
+            status_icon = "[OK]" if final['status'] == 'completed' else "[ ]"
             print(f"{status_icon} {final['round_name']:15s} - {len(final['competitors'])} competitors")
             if final['status'] == 'completed':
                 print(f"    Tournament Complete!")

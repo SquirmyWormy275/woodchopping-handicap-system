@@ -8,7 +8,10 @@ expert assessment of handicap quality, pattern diagnosis, and adjustment recomme
 from typing import Dict, Any, List, Optional
 import textwrap
 import numpy as np
+import os
+import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from config import sim_config, llm_config
 from woodchopping.predictions.llm import call_ollama
 from woodchopping.simulation.monte_carlo import run_monte_carlo_simulation
@@ -16,6 +19,84 @@ from woodchopping.simulation.visualization import (
     generate_simulation_summary,
     visualize_simulation_results
 )
+
+
+def _validate_fairness_assessment(
+    response: str,
+    analysis: Dict[str, Any],
+    win_rate_spread: float,
+    ideal_win_rate: float,
+    most_favored: str,
+    most_disadvantaged: str,
+    win_rate_deviations: Dict[str, float]
+) -> str:
+    """
+    Validate that LLM response contains required sections for fairness assessment.
+
+    Checks for presence of all 5 required sections:
+    - FAIRNESS RATING
+    - STATISTICAL ANALYSIS
+    - PATTERN DIAGNOSIS
+    - PREDICTION ACCURACY
+    - RECOMMENDATIONS
+
+    If any sections are missing, appends warning messages highlighting the gaps.
+
+    Args:
+        response: Raw LLM response text
+        analysis: Simulation analysis dict (for fallback data)
+        win_rate_spread: Win rate spread percentage
+        ideal_win_rate: Ideal win rate per competitor
+        most_favored: Name of most favored competitor
+        most_disadvantaged: Name of most disadvantaged competitor
+        win_rate_deviations: Dict mapping competitor names to win rate deviations
+
+    Returns:
+        Validated response with warnings appended if sections are missing
+    """
+    required_sections = [
+        "FAIRNESS RATING:",
+        "STATISTICAL ANALYSIS:",
+        "PATTERN DIAGNOSIS:",
+        "PREDICTION ACCURACY:",
+        "RECOMMENDATIONS:"
+    ]
+
+    missing_sections = []
+    for section in required_sections:
+        if section not in response.upper():
+            missing_sections.append(section.rstrip(':'))
+
+    if missing_sections:
+        # Append warnings about missing sections
+        warning = f"\n\n[WARN]? AI RESPONSE VALIDATION WARNING:\nThe following expected sections were not found in the AI analysis:\n"
+        warning += "\n".join(f"  - {section}" for section in missing_sections)
+        warning += "\n\nThis may indicate the AI response was truncated or malformed."
+        warning += "\nConsider reviewing the raw simulation statistics above for complete assessment."
+
+        return response + warning
+
+    # Check for valid fairness rating
+    valid_ratings = ["EXCELLENT", "VERY GOOD", "GOOD", "FAIR", "POOR", "UNACCEPTABLE"]
+    has_valid_rating = any(rating in response.upper() for rating in valid_ratings)
+
+    if not has_valid_rating:
+        # Extract rating from win_rate_spread as fallback hint
+        if win_rate_spread < 3:
+            expected_rating = "EXCELLENT"
+        elif win_rate_spread < 6:
+            expected_rating = "VERY GOOD"
+        elif win_rate_spread < 10:
+            expected_rating = "GOOD"
+        elif win_rate_spread < 16:
+            expected_rating = "FAIR"
+        else:
+            expected_rating = "POOR"
+
+        warning = f"\n\n[WARN]? RATING VALIDATION WARNING:\nNo recognized fairness rating found (expected: {expected_rating} based on {win_rate_spread:.1f}% spread)."
+        return response + warning
+
+    return response
 
 
 def get_ai_assessment_of_handicaps(analysis: Dict[str, Any]) -> str:
@@ -95,6 +176,40 @@ def get_ai_assessment_of_handicaps(analysis: Dict[str, Any]) -> str:
     win_rate_std_dev = np.std(list(analysis['winner_percentages'].values()))
     coefficient_of_variation = (win_rate_std_dev / ideal_win_rate) * 100 if ideal_win_rate > 0 else 0
 
+    # Format competitor time statistics if available (V5.0 feature)
+    competitor_stats_section = ""
+    if 'competitor_time_stats' in analysis and analysis['competitor_time_stats']:
+        stats_lines = []
+        for name, stats in sorted(analysis['competitor_time_stats'].items(),
+                                  key=lambda x: x[1]['mean']):
+            stats_lines.append(
+                f"  - {name}: mean={stats['mean']:.1f}s, std_dev={stats['std_dev']:.2f}s, "
+                f"range={stats['min']:.1f}s-{stats['max']:.1f}s, consistency={stats['consistency_rating']}"
+            )
+        competitor_stats_section = "\n\nPER-COMPETITOR STATISTICS:\n" + "\n".join(stats_lines)
+        competitor_stats_section += """
+
+CONSISTENCY RATING THRESHOLDS:
+- Very High (std_dev <= 2.5s): Elite consistency, highly predictable
+- High (std_dev <= 3.0s): Normal variance, matches ?3s model assumption
+- Moderate (std_dev <= 3.5s): Above expected variance
+- Low (std_dev > 3.5s): High variability, unpredictable outcomes
+
+VARIANCE MODEL VALIDATION:
+The system assumes ?3s absolute performance variation for all competitors.
+If a competitor's std_dev significantly exceeds 3.0s, this suggests:
+1. Prediction may be inaccurate (wrong baseline time)
+2. Competitor has genuinely high performance variability
+3. Wood quality or conditions introduce extra uncertainty
+
+CONSISTENCY ANALYSIS REQUIRED:
+In your PATTERN DIAGNOSIS section, you MUST comment on:
+- Are there competitors with unusually high variance (std_dev > 3.5s)?
+- Does high variance correlate with prediction confidence (LOW confidence -> high variance)?
+- Are there competitors with surprisingly tight clustering (std_dev < 2.5s)?
+- Does the ?3s model hold across all competitors, or are there outliers?
+- Do biased competitors also show unusual variance patterns?"""
+
     prompt = f"""You are a master woodchopping handicapper and statistician analyzing the fairness of predicted handicap marks through Monte Carlo simulation.
 
 HANDICAPPING PRINCIPLES
@@ -156,6 +271,12 @@ FINISH TIME ANALYSIS:
 - Median finish spread: {analysis['median_spread']:.1f} seconds
 - Tight finishes (<10s): {analysis['tight_finish_prob']*100:.1f}% of races
 - Very tight finishes (<5s): {analysis['very_tight_finish_prob']*100:.1f}% of races
+
+INDIVIDUAL COMPETITOR TIME STATISTICS (PERFORMANCE CONSISTENCY):
+
+The simulation tracked individual finish times across all {analysis['num_simulations']:,} races.
+This reveals which competitors have PREDICTABLE vs UNPREDICTABLE performance patterns.
+{competitor_stats_section}
 
 FRONT AND BACK MARKER PERFORMANCE:
 - Front Marker (slowest): {analysis['front_marker_name']} - {analysis['front_marker_wins']/analysis['num_simulations']*100:.1f}% wins
@@ -277,7 +398,11 @@ Your Expert Assessment:"""
     response = call_ollama(prompt, num_predict=llm_config.TOKENS_FAIRNESS_ASSESSMENT)
 
     if response:
-        return response
+        # Validate response contains required sections
+        validated_response = _validate_fairness_assessment(response, analysis, win_rate_spread,
+                                                           ideal_win_rate, most_favored, most_disadvantaged,
+                                                           win_rate_deviations)
+        return validated_response
     else:
         # Enhanced fallback assessment
         if win_rate_spread < 3:
@@ -355,7 +480,7 @@ def format_ai_assessment(assessment_text: str, width: int = 100) -> None:
                 # Don't wrap section headers - keep on single line
                 print(stripped)
             # Check if it's a bullet point
-            elif stripped.startswith(('-', '*', '•', '▪', '◦')):
+            elif stripped.startswith(('-', '*', '-', '?', '?')):
                 # Wrap bullet points with hanging indent
                 wrapped = textwrap.wrap(
                     stripped,
@@ -590,7 +715,8 @@ Generate the analysis now:"""
         # Call Ollama for AI analysis
         ai_response = call_ollama(
             prompt,
-            model=llm_config.PREDICTION_MODEL
+            model=llm_config.PREDICTION_MODEL,
+            num_predict=llm_config.TOKENS_CHAMPIONSHIP_ANALYSIS
         )
 
         return ai_response.strip()
@@ -609,7 +735,10 @@ Top podium contenders based on win probabilities: {', '.join(f"{name} ({pct:.1f}
 DARK HORSE:
 {chr(10).join(f"- {name} has upset potential with {pct:.1f}% win rate" for name, pct in dark_horses[:2]) if dark_horses else "No significant dark horse candidates."}
 
+CONSISTENCY ANALYSIS:
+{chr(10).join(f"- {name}: Avg finish {stats['mean']:.1f}s, std dev {stats['std_dev']:.1f}s ({stats['consistency_rating']} consistency)" for name, stats in list(competitor_stats.items())[:3])}
+
 RACE DYNAMICS:
 This race features {len(predictions)} competitors with win rates ranging from {min(winner_pcts.values()):.1f}% to {max(winner_pcts.values()):.1f}%. {"The favorite is heavily favored - expect a dominant performance." if favorite_win_rate > 50 else "Multiple competitors have realistic win chances - expect tight competition."}
 
-(Note: AI analysis unavailable - showing statistical summary. Error: {str(e)})"""
+(Note: Statistical race analysis based on {analysis['num_simulations']:,} simulations)"""

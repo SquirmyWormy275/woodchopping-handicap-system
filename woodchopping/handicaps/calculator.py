@@ -16,6 +16,7 @@ from woodchopping.predictions.prediction_aggregator import (
     get_all_predictions,
     select_best_prediction
 )
+from woodchopping.predictions.baseline import estimate_competitor_std_dev
 from woodchopping.data import standardize_results_data
 
 
@@ -103,18 +104,6 @@ def calculate_ai_enhanced_handicaps(
         if progress_callback:
             progress_callback(idx, total_competitors, comp_name)
 
-        # Estimate per-competitor performance variance from historical data (if available)
-        comp_history = results_df[
-            (results_df['competitor_name'] == comp_name) &
-            (results_df['event'] == event_code)
-        ]
-        performance_std_dev = None
-        if not comp_history.empty and comp_history['raw_time'].count() >= 3:
-            try:
-                performance_std_dev = float(comp_history['raw_time'].std())
-            except Exception:
-                performance_std_dev = None
-
         # Get ALL predictions (baseline, ML, LLM) with tournament result weighting
         all_preds = get_all_predictions(
             comp_name, species, diameter, quality, event_code, results_df,
@@ -127,6 +116,21 @@ def calculate_ai_enhanced_handicaps(
         if predicted_time is None:
             continue
 
+        # Extract competitor-specific standard deviation from baseline metadata
+        # Baseline V2 provides sophisticated variance estimation with outlier-robust calculation
+        # and Empirical Bayes shrinkage. Falls back to simple historical std if V2 unavailable.
+        performance_std_dev = None
+        baseline_metadata = all_preds.get('baseline', {}).get('metadata')
+        if baseline_metadata and 'std_dev' in baseline_metadata:
+            performance_std_dev = baseline_metadata['std_dev']
+        else:
+            # Fallback: data-driven std dev using all available competitor history
+            performance_std_dev, _ = estimate_competitor_std_dev(
+                comp_name,
+                event_code,
+                results_df
+            )
+
         results.append({
             'name': comp_name,
             'predicted_time': predicted_time,  # Best prediction for marks
@@ -134,7 +138,7 @@ def calculate_ai_enhanced_handicaps(
             'confidence': confidence,
             'explanation': explanation,
             'predictions': all_preds,          # Store all predictions for display
-            'performance_std_dev': performance_std_dev
+            'performance_std_dev': performance_std_dev  # Used by Monte Carlo simulation
         })
 
     # Calculate marks

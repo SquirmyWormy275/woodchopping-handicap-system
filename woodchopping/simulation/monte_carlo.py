@@ -11,7 +11,7 @@ Key Innovation:
 
 Performance Variation Model:
     - Normal distribution centered on predicted time
-    - Per-competitor std-dev when available (clamped), otherwise 3 seconds
+    - Per-competitor std-dev when available (clamped), otherwise data-driven fallback
     - Shared heat-level variance applied to all competitors
     - Minimum time floor prevents unreasonably fast times (50% of predicted)
 """
@@ -44,7 +44,7 @@ def simulate_single_race(competitors_with_marks: List[Dict[str, Any]]) -> List[D
     Simulate a single race with performance variation.
 
     Each competitor's actual time is sampled from a normal distribution centered
-    on their predicted time with per-competitor std-dev when available (fallback +/-3s).
+    on their predicted time with per-competitor std-dev when available (data-driven fallback).
     A shared heat-level variance is applied to all competitors. The finish time
     accounts for their handicap mark (delayed start).
 
@@ -177,7 +177,7 @@ def run_monte_carlo_simulation(
     print("\n" + "=" * display.SEPARATOR_LENGTH)
     print(f"RUNNING MONTE CARLO SIMULATION ({num_simulations:,} races)")
     print("=" * display.SEPARATOR_LENGTH)
-    print(f"Simulating races with per-competitor variance (fallback +/-{rules.PERFORMANCE_VARIANCE_SECONDS}s) and +/-{sim_config.HEAT_VARIANCE_SECONDS:.1f}s heat variance...")
+    print(f"Simulating races with per-competitor variance (data-driven fallback) and +/-{sim_config.HEAT_VARIANCE_SECONDS:.1f}s heat variance...")
 
     # Track statistics
     finish_spreads = []
@@ -348,7 +348,7 @@ def _calculate_consistency_rating(std_dev: float) -> str:
             - Predictions less reliable, more upset potential
 
     Note:
-        The default ±3 second variance model assumes all competitors have equal
+        The default ?3 second variance model assumes all competitors have equal
         absolute variance. When per-competitor variance is provided, expected
         std-dev may shift accordingly.
 

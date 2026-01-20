@@ -11,7 +11,11 @@ the best prediction using priority logic: ML > LLM > Baseline
 """
 
 # LLM Integration
-from woodchopping.predictions.llm import call_ollama
+from woodchopping.predictions.llm import (
+    call_ollama,
+    check_ollama_connection,
+    reset_ollama_status,
+)
 
 # Baseline Predictions
 from woodchopping.predictions.baseline import (
@@ -52,6 +56,8 @@ from woodchopping.predictions.check_my_work import (
 __all__ = [
     # LLM Integration
     "call_ollama",
+    "check_ollama_connection",
+    "reset_ollama_status",
     # Baseline Predictions
     "get_competitor_historical_times_flexible",
     "get_competitor_historical_times_normalized",

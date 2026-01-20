@@ -9,11 +9,15 @@ This module handles competitor selection operations including:
 
 from typing import List, Tuple, Optional
 import pandas as pd
-from woodchopping.data import load_competitors_df
+from woodchopping.data import load_competitors_df, load_results_df
+from woodchopping.ui.history_entry import filter_competitors_with_history, prompt_add_competitor_times
 
 
 def select_all_event_competitors(comp_df: pd.DataFrame,
-                                 max_competitors: Optional[int] = None) -> pd.DataFrame:
+                                 max_competitors: Optional[int] = None,
+                                 results_df: Optional[pd.DataFrame] = None,
+                                 event_code: Optional[str] = None,
+                                 wood_info: Optional[dict] = None) -> pd.DataFrame:
     """Select ALL competitors for a tournament event (not just one heat).
 
     This replaces the old select_competitors_for_heat() function for tournament mode.
@@ -37,6 +41,60 @@ def select_all_event_competitors(comp_df: pd.DataFrame,
         input("Press Enter to continue...")
         return pd.DataFrame()
 
+    # Optional eligibility filtering (requires event_code)
+    if event_code:
+        if results_df is None:
+            results_df = load_results_df()
+        eligible_df, blocked = filter_competitors_with_history(comp_df, results_df, event_code)
+
+        # Display blocked competitors (N < 3 results - ABSOLUTE MINIMUM)
+        if blocked:
+            print(f"\n{'='*70}")
+            print(f"  BLOCKED COMPETITORS (Cannot be selected)")
+            print(f"{'='*70}")
+            print(f"{len(blocked)} competitors do not meet ABSOLUTE MINIMUM (3 results):")
+            print()
+            for name in sorted(blocked):
+                print(f"  X {name} - Insufficient {event_code} history")
+            print(f"\n{'='*70}")
+
+            if wood_info:
+                add_now = input("\nAdd historical times now to make them eligible? (y/n): ").strip().lower()
+                if add_now == 'y':
+                    for name in blocked:
+                        print(f"\nAdd times for {name} ({event_code})")
+                        added = prompt_add_competitor_times(name, event_code, wood_info)
+                        if added and results_df is not None:
+                            results_df = load_results_df()
+                    # Re-filter after adding times
+                    eligible_df, blocked = filter_competitors_with_history(comp_df, results_df, event_code)
+
+            if eligible_df.empty:
+                print("\nNo eligible competitors after filtering.")
+                input("Press Enter to continue...")
+                return pd.DataFrame()
+
+        # Display warnings for competitors with low confidence (3 <= N < 10)
+        warned_competitors = []
+        for idx, row in eligible_df.iterrows():
+            if '_warning' in row and row['_warning']:
+                warned_competitors.append((row['competitor_name'], row['_result_count'], row['_warning']))
+
+        if warned_competitors:
+            print(f"\n{'='*70}")
+            print(f"  WARNING: Low Confidence Predictions")
+            print(f"{'='*70}")
+            print(f"{len(warned_competitors)} competitors have LESS than recommended minimum (10 results):")
+            print()
+            for name, count, message in warned_competitors:
+                print(f"  ! {name} - Only {count} {event_code} results")
+            print(f"\n  These competitors CAN be selected, but predictions will be")
+            print(f"  less reliable (expect 5-10s error vs typical 2-4s error).")
+            print(f"{'='*70}")
+            input("\nPress Enter to continue...")
+
+        comp_df = eligible_df
+
     # Display roster with index numbers
     print(f"\n{'='*70}")
     print(f"  SELECT COMPETITORS FOR EVENT")
@@ -51,7 +109,14 @@ def select_all_event_competitors(comp_df: pd.DataFrame,
         row = comp_df.iloc[idx]
         name = row.get("competitor_name", "Unknown")
         country = row.get("competitor_country", "Unknown")
-        print(f"  {idx + 1:3d}) {name:35s} ({country})")
+
+        # Show warning indicator for low confidence competitors
+        warning_indicator = ""
+        if '_warning' in row and row['_warning']:
+            result_count = row.get('_result_count', '?')
+            warning_indicator = f" [WARNING: N={result_count}]"
+
+        print(f"  {idx + 1:3d}) {name:35s} ({country}){warning_indicator}")
 
     print("\n" + "=" * 70)
     print("INSTRUCTIONS:")
@@ -63,9 +128,15 @@ def select_all_event_competitors(comp_df: pd.DataFrame,
     print("=" * 70)
 
     selected_indices = set()
+    total_competitors = len(comp_df)
 
     while True:
-        selection = input(f"\nEnter competitor number(s) (or press Enter to finish): ").strip()
+        print(f"\nEligible competitors: {total_competitors}")
+        if max_competitors:
+            print(f"Selected so far: {len(selected_indices)} / {max_competitors}")
+        else:
+            print(f"Selected so far: {len(selected_indices)}")
+        selection = input("Enter competitor number(s) (or press Enter to finish): ").strip()
 
         if selection == "":
             break
@@ -83,28 +154,28 @@ def select_all_event_competitors(comp_df: pd.DataFrame,
                         if 0 <= i < len(comp_df):
                             selected_indices.add(i)
                         else:
-                            print(f"  ⚠ Skipping invalid number: {i+1}")
+                            print(f"  [WARN] Skipping invalid number: {i+1}")
                 else:
                     # Single number
                     idx = int(part) - 1
                     if 0 <= idx < len(comp_df):
                         selected_indices.add(idx)
                     else:
-                        print(f"  ⚠ Invalid number: {part}")
+                        print(f"  [WARN] Invalid number: {part}")
 
             # Show current selection count
-            print(f"  ✓ {len(selected_indices)} competitor(s) selected")
+            print(f"  [OK] {len(selected_indices)} competitor(s) selected")
 
             # Check max limit
             if max_competitors and len(selected_indices) > max_competitors:
-                print(f"  ⚠ WARNING: {len(selected_indices)} exceeds maximum of {max_competitors}")
+                print(f"  [WARN] WARNING: {len(selected_indices)} exceeds maximum of {max_competitors}")
                 over = input(f"    Continue anyway? (y/n): ").strip().lower()
                 if over != 'y':
                     print("  Resetting selection...")
                     selected_indices = set()
 
         except ValueError:
-            print("  ⚠ Invalid input. Use format: 1,3,5-8,12")
+            print("  [WARN] Invalid input. Use format: 1,3,5-8,12")
 
     if not selected_indices:
         print("\nNo competitors selected.")
@@ -239,9 +310,12 @@ def select_competitors_for_heat(comp_df: pd.DataFrame) -> Tuple[pd.DataFrame, Li
 
     selected_indices = []
     selected_names = []
+    total_competitors = len(comp_df)
 
     while True:
-        selection = input(f"\nEnter competitor number (or press Enter to finish): ").strip()
+        print(f"\nEligible competitors: {total_competitors}")
+        print(f"Selected so far: {len(selected_names)}")
+        selection = input("Enter competitor number (or press Enter to finish): ").strip()
 
         if selection == "":
             break
@@ -253,7 +327,7 @@ def select_competitors_for_heat(comp_df: pd.DataFrame) -> Tuple[pd.DataFrame, Li
                     selected_indices.append(idx)
                     name = comp_df.iloc[idx]["competitor_name"]
                     selected_names.append(name)
-                    print(f"✓ {name} added to heat")
+                    print(f"[OK] {name} added to heat")
                 else:
                     print("Competitor already selected")
             else:
@@ -268,7 +342,7 @@ def select_competitors_for_heat(comp_df: pd.DataFrame) -> Tuple[pd.DataFrame, Li
 
     heat_df = comp_df.iloc[selected_indices].copy()
 
-    print(f"\n✓ Total {len(selected_names)} competitors added to heat assignment:")
+    print(f"\n[OK] Total {len(selected_names)} competitors added to heat assignment:")
     for name in selected_names:
         print(f"  - {name}")
 
@@ -335,7 +409,7 @@ def remove_from_heat(heat_df: pd.DataFrame, heat_names: List[str]) -> Tuple[pd.D
             removed_name = heat_names[idx]
             heat_names.remove(removed_name)
             heat_df = heat_df[heat_df["competitor_name"] != removed_name]
-            print(f"\n✓ {removed_name} removed from heat assignment.")
+            print(f"\n[OK] {removed_name} removed from heat assignment.")
         else:
             print("Invalid selection.")
     except ValueError:

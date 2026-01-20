@@ -97,7 +97,7 @@ def visualize_simulation_results(analysis: Dict[str, Any]) -> None:
     Display Format:
         - Competitor name (left-aligned, 25 characters)
         - Win percentage (5 characters, 1 decimal)
-        - Horizontal bar chart (� characters, scaled to max 40 chars)
+        - Horizontal bar chart (? characters, scaled to max 40 chars)
 
     Bars are sorted by win rate (highest to lowest) to make imbalances visible.
 
@@ -105,10 +105,10 @@ def visualize_simulation_results(analysis: Dict[str, Any]) -> None:
         ======================================================================
         WIN RATE VISUALIZATION
         ======================================================================
-        Alice                    25.3% ����������������������������������������
-        Bob                      24.8% ���������������������������������������
-        Charlie                  24.9% ���������������������������������������
-        David                    25.0% ����������������������������������������
+        Alice                    25.3% ????????????????????????????????????????
+        Bob                      24.8% ???????????????????????????????????????
+        Charlie                  24.9% ???????????????????????????????????????
+        David                    25.0% ????????????????????????????????????????
         ======================================================================
 
     Interpretation:
@@ -132,7 +132,7 @@ def visualize_simulation_results(analysis: Dict[str, Any]) -> None:
 
     for name, pct in sorted_winners:
         bar_length = int((pct / max_pct) * 40)  # Scale to 40 chars max
-        bar = "�" * bar_length
+        bar = "?" * bar_length
         print(f"{name:25s} {pct:5.1f}% {bar}")
 
     print("="*70)

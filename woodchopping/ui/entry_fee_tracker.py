@@ -20,7 +20,7 @@ def view_entry_fee_status(tournament_state: Dict) -> None:
         tournament_state: Multi-event tournament state
     """
     if not tournament_state.get('entry_fee_tracking_enabled'):
-        print("\n⚠ Entry fee tracking is not enabled for this tournament")
+        print("\n[WARN] Entry fee tracking is not enabled for this tournament")
         print("Enable it when setting up the tournament roster (Option 3)")
         input("\nPress Enter to continue...")
         return
@@ -29,7 +29,7 @@ def view_entry_fee_status(tournament_state: Dict) -> None:
     events = tournament_state.get('events', [])
 
     if not roster:
-        print("\n⚠ No competitors in tournament roster")
+        print("\n[WARN] No competitors in tournament roster")
         input("\nPress Enter to continue...")
         return
 
@@ -64,41 +64,41 @@ def view_entry_fee_status(tournament_state: Dict) -> None:
             unpaid_by_competitor[comp_name] = unpaid_events
 
     # Display report
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "ENTRY FEE PAYMENT STATUS".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "ENTRY FEE PAYMENT STATUS".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     # Overall status
     percent_paid = int((paid_entries / total_entries * 100)) if total_entries > 0 else 0
-    print("║" + f"  Total Entries: {total_entries}".ljust(68) + "║")
-    print("║" + f"  Paid: {paid_entries} ({percent_paid}%)".ljust(68) + "║")
-    print("║" + f"  Unpaid: {total_entries - paid_entries}".ljust(68) + "║")
+    print("?" + f"  Total Entries: {total_entries}".ljust(68) + "?")
+    print("?" + f"  Paid: {paid_entries} ({percent_paid}%)".ljust(68) + "?")
+    print("?" + f"  Unpaid: {total_entries - paid_entries}".ljust(68) + "?")
 
     if unpaid_by_competitor:
-        print("╠" + "═" * 68 + "╣")
-        print("║" + "  UNPAID FEES BY COMPETITOR".ljust(68) + "║")
-        print("╠" + "═" * 68 + "╣")
+        print("?" + "?" * 68 + "?")
+        print("?" + "  UNPAID FEES BY COMPETITOR".ljust(68) + "?")
+        print("?" + "?" * 68 + "?")
 
         for comp_name, event_list in sorted(unpaid_by_competitor.items()):
             # Truncate name if too long
             display_name = comp_name[:30] if len(comp_name) > 30 else comp_name
-            print("║" + f"  {display_name}".ljust(68) + "║")
+            print("?" + f"  {display_name}".ljust(68) + "?")
 
             for event_name in event_list:
                 # Truncate event name if needed
                 display_event = event_name[:50] if len(event_name) > 50 else event_name
-                print("║" + f"    - {display_event}".ljust(68) + "║")
+                print("?" + f"    - {display_event}".ljust(68) + "?")
 
     if unpaid_by_event:
-        print("╠" + "═" * 68 + "╣")
-        print("║" + "  UNPAID FEES BY EVENT".ljust(68) + "║")
-        print("╠" + "═" * 68 + "╣")
+        print("?" + "?" * 68 + "?")
+        print("?" + "  UNPAID FEES BY EVENT".ljust(68) + "?")
+        print("?" + "?" * 68 + "?")
 
         for event_name, comp_list in sorted(unpaid_by_event.items()):
             display_event = event_name[:50] if len(event_name) > 50 else event_name
-            print("║" + f"  {display_event} ({len(comp_list)} unpaid)".ljust(68) + "║")
+            print("?" + f"  {display_event} ({len(comp_list)} unpaid)".ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
     # Quick action menu
     if unpaid_by_competitor:
@@ -119,7 +119,7 @@ def view_entry_fee_status(tournament_state: Dict) -> None:
         else:
             return
     else:
-        print("\n✓ All entry fees paid!")
+        print("\n[OK] All entry fees paid!")
         input("\nPress Enter to continue...")
 
 
@@ -130,15 +130,15 @@ def mark_fees_paid_by_competitor(tournament_state: Dict, unpaid_by_competitor: D
         tournament_state: Multi-event tournament state
         unpaid_by_competitor: Dict mapping competitor names to unpaid events
     """
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "MARK FEES PAID - BY COMPETITOR".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "MARK FEES PAID - BY COMPETITOR".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     comp_list = sorted(unpaid_by_competitor.keys())
     for idx, comp_name in enumerate(comp_list, 1):
-        print("║" + f"  {idx}. {comp_name}".ljust(68) + "║")
+        print("?" + f"  {idx}. {comp_name}".ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
     try:
         choice = int(input("\nSelect competitor (number): ").strip())
@@ -150,7 +150,7 @@ def mark_fees_paid_by_competitor(tournament_state: Dict, unpaid_by_competitor: D
             comp_obj = next((c for c in roster if c['competitor_name'] == selected_comp), None)
 
             if not comp_obj:
-                print("\n⚠ Competitor not found")
+                print("\n[WARN] Competitor not found")
                 input("\nPress Enter to continue...")
                 return
 
@@ -178,16 +178,16 @@ def mark_fees_paid_by_competitor(tournament_state: Dict, unpaid_by_competitor: D
                 from woodchopping.ui.multi_event_ui import auto_save_multi_event
                 auto_save_multi_event(tournament_state)
 
-                print(f"\n✓ {len(event_ids)} fee(s) marked as paid for {selected_comp}")
+                print(f"\n[OK] {len(event_ids)} fee(s) marked as paid for {selected_comp}")
                 input("\nPress Enter to continue...")
             else:
                 print("\nCancelled")
                 input("\nPress Enter to continue...")
         else:
-            print("\n⚠ Invalid selection")
+            print("\n[WARN] Invalid selection")
             input("\nPress Enter to continue...")
     except ValueError:
-        print("\n⚠ Invalid input")
+        print("\n[WARN] Invalid input")
         input("\nPress Enter to continue...")
 
 
@@ -198,16 +198,16 @@ def mark_fees_paid_by_event(tournament_state: Dict, unpaid_by_event: Dict) -> No
         tournament_state: Multi-event tournament state
         unpaid_by_event: Dict mapping event names to unpaid competitors
     """
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "MARK FEES PAID - BY EVENT".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "MARK FEES PAID - BY EVENT".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     event_list = sorted(unpaid_by_event.keys())
     for idx, event_name in enumerate(event_list, 1):
         comp_count = len(unpaid_by_event[event_name])
-        print("║" + f"  {idx}. {event_name} ({comp_count} unpaid)".ljust(68) + "║")
+        print("?" + f"  {idx}. {event_name} ({comp_count} unpaid)".ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
     try:
         choice = int(input("\nSelect event (number): ").strip())
@@ -220,7 +220,7 @@ def mark_fees_paid_by_event(tournament_state: Dict, unpaid_by_event: Dict) -> No
             event = next((e for e in events if e['event_name'] == selected_event), None)
 
             if not event:
-                print("\n⚠ Event not found")
+                print("\n[WARN] Event not found")
                 input("\nPress Enter to continue...")
                 return
 
@@ -247,16 +247,16 @@ def mark_fees_paid_by_event(tournament_state: Dict, unpaid_by_event: Dict) -> No
                 from woodchopping.ui.multi_event_ui import auto_save_multi_event
                 auto_save_multi_event(tournament_state)
 
-                print(f"\n✓ {marked_count} fee(s) marked as paid for {selected_event}")
+                print(f"\n[OK] {marked_count} fee(s) marked as paid for {selected_event}")
                 input("\nPress Enter to continue...")
             else:
                 print("\nCancelled")
                 input("\nPress Enter to continue...")
         else:
-            print("\n⚠ Invalid selection")
+            print("\n[WARN] Invalid selection")
             input("\nPress Enter to continue...")
     except ValueError:
-        print("\n⚠ Invalid input")
+        print("\n[WARN] Invalid input")
         input("\nPress Enter to continue...")
 
 
@@ -270,15 +270,15 @@ def display_payment_grid(tournament_state: Dict) -> None:
     events = tournament_state.get('events', [])
 
     if not roster or not events:
-        print("\n⚠ No data to display")
+        print("\n[WARN] No data to display")
         input("\nPress Enter to continue...")
         return
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "PAYMENT GRID".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
-    print("║" + "Legend: ✓ = Paid, ✗ = Unpaid, - = Not entered".ljust(68) + "║")
-    print("╚" + "═" * 68 + "╝")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "PAYMENT GRID".center(68) + "?")
+    print("?" + "?" * 68 + "?")
+    print("?" + "Legend: [OK] = Paid, ? = Unpaid, - = Not entered".ljust(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     # Build grid
     print("\n" + "=" * 70)
@@ -304,7 +304,7 @@ def display_payment_grid(tournament_state: Dict) -> None:
 
             if event_id in comp.get('events_entered', []):
                 is_paid = comp.get('entry_fees_paid', {}).get(event_id, False)
-                symbol = "✓" if is_paid else "✗"
+                symbol = "[OK]" if is_paid else "?"
             else:
                 symbol = "-"
 

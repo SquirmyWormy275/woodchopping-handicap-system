@@ -35,8 +35,8 @@ def display_competitor_dashboard():
     competitors_df = load_competitors_df()
 
     if competitors_df.empty:
-        print("\n⚠ No competitors found in roster.")
-        print("Please add competitors first (Option 4 → Add Competitor).\n")
+        print("\n[WARN] No competitors found in roster.")
+        print("Please add competitors first (Option 4 -> Add Competitor).\n")
         input("Press Enter to return to menu...")
         return
 
@@ -74,7 +74,7 @@ def display_competitor_dashboard():
     results_df = _load_and_prepare_results()
 
     if results_df.empty:
-        print(f"\n⚠ No historical results found for analysis.")
+        print(f"\n[WARN] No historical results found for analysis.")
         print("Please add competition results first.\n")
         input("Press Enter to return to menu...")
         return
@@ -130,9 +130,9 @@ def _generate_dashboard(competitor_name: str, comp_info: pd.Series, results_df: 
     profile_analysis = profile_competitor_strengths(competitor_name, results_df)
 
     # Display header
-    print("╔" + "═" * 68 + "╗")
-    print("║" + "COMPETITOR PERFORMANCE DASHBOARD".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("?" + "?" * 68 + "?")
+    print("?" + "COMPETITOR PERFORMANCE DASHBOARD".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     # Basic info line
     name_str = f"Name: {competitor_name}"
@@ -140,12 +140,12 @@ def _generate_dashboard(competitor_name: str, comp_info: pd.Series, results_df: 
     state_str = f"State: {comp_info.get('state_province', 'N/A')}"
     gender_str = f"Gender: {comp_info.get('gender', 'N/A')}"
 
-    info_line = f"║  {name_str:<66}║"
-    details_line = f"║  {country_str:<22} {state_str:<22} {gender_str:<18}║"
+    info_line = f"?  {name_str:<66}?"
+    details_line = f"?  {country_str:<22} {state_str:<22} {gender_str:<18}?"
 
     print(info_line)
     print(details_line)
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
     print()
 
     # SECTION 1: Career Summary
@@ -164,61 +164,61 @@ def _generate_dashboard(competitor_name: str, comp_info: pd.Series, results_df: 
 
 def _display_career_summary(history: dict):
     """Display Section 1: Career Summary."""
-    print("┌" + "─" * 68 + "┐")
-    print("│ SECTION 1: CAREER SUMMARY" + " " * 42 + "│")
-    print("├" + "─" * 68 + "┤")
+    print("+" + "-" * 68 + "+")
+    print("| SECTION 1: CAREER SUMMARY" + " " * 42 + "|")
+    print("+" + "-" * 68 + "+")
 
     # Total competitions
-    print(f"│ Total Competitions: {history['total_comps']:<48}│")
+    print(f"| Total Competitions: {history['total_comps']:<48}|")
 
     # Event breakdown
     if history['event_breakdown']:
         event_str = ", ".join([f"{event} ({count})" for event, count in history['event_breakdown'].items()])
-        print(f"│ Events: {event_str:<58}│")
+        print(f"| Events: {event_str:<58}|")
     else:
-        print(f"│ Events: No data{' ' * 53}│")
+        print(f"| Events: No data{' ' * 53}|")
 
     # Date range
     if history['date_range']:
         dr = history['date_range']
         date_range_str = f"{dr['first']} to {dr['last']} (available for {dr['available']}/{dr['total']} results)"
-        print(f"│ Date Range: {date_range_str:<56}│")
-        print(f"│ First Competition: {dr['first_ago']:<50}│")
-        print(f"│ Last Competition: {dr['last_ago']:<51}│")
+        print(f"| Date Range: {date_range_str:<56}|")
+        print(f"| First Competition: {dr['first_ago']:<50}|")
+        print(f"| Last Competition: {dr['last_ago']:<51}|")
     else:
-        print(f"│ Date Range: Date information not available{' ' * 26}│")
+        print(f"| Date Range: Date information not available{' ' * 26}|")
 
-    print("└" + "─" * 68 + "┘")
+    print("+" + "-" * 68 + "+")
     print()
 
 
 def _display_performance_statistics(history: dict):
     """Display Section 2: Performance Statistics (B2 Integration)."""
-    print("┌" + "─" * 68 + "┐")
-    print("│ SECTION 2: PERFORMANCE STATISTICS (B2 Integration)" + " " * 17 + "│")
-    print("├" + "─" * 68 + "┤")
+    print("+" + "-" * 68 + "+")
+    print("| SECTION 2: PERFORMANCE STATISTICS (B2 Integration)" + " " * 17 + "|")
+    print("+" + "-" * 68 + "+")
 
     if not history['by_event']:
-        print("│ No performance data available" + " " * 38 + "│")
-        print("└" + "─" * 68 + "┘")
+        print("| No performance data available" + " " * 38 + "|")
+        print("+" + "-" * 68 + "+")
         print()
         return
 
     # Per-event statistics
     for event, stats in history['by_event'].items():
-        print(f"│ {event}:{' ' * (65 - len(event))}│")
-        print(f"│   Best Time: {stats['best_time']:.1f} sec ({stats['best_context']})".ljust(67) + "│")
-        print(f"│   Average Time: {stats['avg_time']:.1f} sec (across all diameters)".ljust(67) + "│")
-        print(f"│   Consistency: ±{stats['std_dev']:.1f} sec std dev ({stats['consistency_rating']})".ljust(67) + "│")
-        print("│" + " " * 68 + "│")
+        print(f"| {event}:{' ' * (65 - len(event))}|")
+        print(f"|   Best Time: {stats['best_time']:.1f} sec ({stats['best_context']})".ljust(67) + "|")
+        print(f"|   Average Time: {stats['avg_time']:.1f} sec (across all diameters)".ljust(67) + "|")
+        print(f"|   Consistency: ?{stats['std_dev']:.1f} sec std dev ({stats['consistency_rating']})".ljust(67) + "|")
+        print("|" + " " * 68 + "|")
 
     # Recent form (if dates available)
     if history['recent_form']:
-        print("│ Recent Form (last 5 results, if dates available):" + " " * 18 + "│")
+        print("| Recent Form (last 5 results, if dates available):" + " " * 18 + "|")
         for form in history['recent_form']:
             form_str = f"   {form['date']}: {form['time']:.1f} sec ({form['context']}) - {form['note']}"
-            print(f"│ {form_str}".ljust(67) + "│")
-        print("│" + " " * 68 + "│")
+            print(f"| {form_str}".ljust(67) + "|")
+        print("|" + " " * 68 + "|")
 
     # Performance trend
     trend = history['trend']
@@ -227,85 +227,85 @@ def _display_performance_statistics(history: dict):
     else:
         trend_str = f"Performance Trend: {trend['direction']}"
 
-    print(f"│ {trend_str}".ljust(67) + "│")
+    print(f"| {trend_str}".ljust(67) + "|")
 
-    print("└" + "─" * 68 + "┘")
+    print("+" + "-" * 68 + "+")
     print()
 
 
 def _display_specialization_analysis(profile: dict):
     """Display Section 3: Specialization Analysis (B4 Integration)."""
-    print("┌" + "─" * 68 + "┐")
-    print("│ SECTION 3: SPECIALIZATION ANALYSIS (B4 Integration)" + " " * 16 + "│")
-    print("├" + "─" * 68 + "┤")
+    print("+" + "-" * 68 + "+")
+    print("| SECTION 3: SPECIALIZATION ANALYSIS (B4 Integration)" + " " * 16 + "|")
+    print("+" + "-" * 68 + "+")
 
     # Preferred event
-    print(f"│ Preferred Event: {profile['preferred_event']}".ljust(67) + "│")
+    print(f"| Preferred Event: {profile['preferred_event']}".ljust(67) + "|")
 
     # Preferred diameter
     if profile['preferred_diameter']:
         pd_info = profile['preferred_diameter']
         pref_diam_str = f"Preferred Diameter: {pd_info['diameter']}mm ({pd_info['reason']})"
-        print(f"│ {pref_diam_str}".ljust(67) + "│")
+        print(f"| {pref_diam_str}".ljust(67) + "|")
     else:
-        print(f"│ Preferred Diameter: Insufficient data (need 3+ results per diameter)".ljust(67) + "│")
+        print(f"| Preferred Diameter: Insufficient data (need 3+ results per diameter)".ljust(67) + "|")
 
     # Preferred species
     if profile['preferred_species']:
         ps_info = profile['preferred_species']
         pref_species_str = f"Preferred Species: {ps_info['species']} ({ps_info['reason']})"
-        print(f"│ {pref_species_str}".ljust(67) + "│")
+        print(f"| {pref_species_str}".ljust(67) + "|")
     else:
-        print(f"│ Preferred Species: Insufficient data (need 3+ results per species)".ljust(67) + "│")
+        print(f"| Preferred Species: Insufficient data (need 3+ results per species)".ljust(67) + "|")
 
-    print("│" + " " * 68 + "│")
+    print("|" + " " * 68 + "|")
 
     # Diameter breakdown
     if profile['diameter_breakdown']:
-        print("│ Diameter Performance Breakdown:" + " " * 37 + "│")
+        print("| Diameter Performance Breakdown:" + " " * 37 + "|")
         for diameter in sorted(profile['diameter_breakdown'].keys()):
             stats = profile['diameter_breakdown'][diameter]
-            rating_flag = " ★" if stats['rating'] == "STRONGEST" else ""
+            rating_flag = " ?" if stats['rating'] == "STRONGEST" else ""
             diam_str = f"   {diameter}mm: {stats['avg_time']:.1f} sec avg ({stats['count']} results) - {stats['rating']}{rating_flag}"
-            print(f"│ {diam_str}".ljust(67) + "│")
-        print("│" + " " * 68 + "│")
+            print(f"| {diam_str}".ljust(67) + "|")
+        print("|" + " " * 68 + "|")
     else:
-        print("│ Diameter Performance Breakdown: No data" + " " * 28 + "│")
-        print("│" + " " * 68 + "│")
+        print("| Diameter Performance Breakdown: No data" + " " * 28 + "|")
+        print("|" + " " * 68 + "|")
 
     # Species breakdown (only species with 3+ results)
     if profile['species_breakdown']:
         species_with_data = {k: v for k, v in profile['species_breakdown'].items() if v['count'] >= 3}
 
         if species_with_data:
-            print("│ Species Performance Breakdown (only species with 3+ results):" + " " * 6 + "│")
+            print("| Species Performance Breakdown (only species with 3+ results):" + " " * 6 + "|")
             for species in sorted(species_with_data.keys()):
                 stats = species_with_data[species]
-                rating_flag = " ★" if stats['rating'] == "STRONGEST" else ""
+                rating_flag = " ?" if stats['rating'] == "STRONGEST" else ""
                 species_str = f"   {species}: {stats['avg_time']:.1f} sec avg ({stats['count']} results) - {stats['rating']}{rating_flag}"
-                print(f"│ {species_str}".ljust(67) + "│")
-            print("│" + " " * 68 + "│")
+                print(f"| {species_str}".ljust(67) + "|")
+            print("|" + " " * 68 + "|")
         else:
-            print("│ Species Performance Breakdown: Insufficient data (need 3+ results)" + " " * 1 + "│")
-            print("│" + " " * 68 + "│")
+            print("| Species Performance Breakdown: Insufficient data (need 3+ results)" + " " * 1 + "|")
+            print("|" + " " * 68 + "|")
 
     # Outlier detection
     fast_outliers = profile['outliers']['fast']
     slow_outliers = profile['outliers']['slow']
 
     if fast_outliers or slow_outliers:
-        print("│ Outlier Detection:" + " " * 50 + "│")
+        print("| Outlier Detection:" + " " * 50 + "|")
 
         if fast_outliers:
             for outlier in fast_outliers[:3]:  # Show top 3
                 outlier_str = f"   Unusually Fast: {outlier['time']:.1f} sec ({outlier['context']}) - {outlier['z_score']:.1f} std dev"
-                print(f"│ {outlier_str}".ljust(67) + "│")
+                print(f"| {outlier_str}".ljust(67) + "|")
 
         if slow_outliers:
             for outlier in slow_outliers[:3]:  # Show top 3
                 outlier_str = f"   Unusually Slow: {outlier['time']:.1f} sec ({outlier['context']}) - {outlier['z_score']:.1f} std dev"
-                print(f"│ {outlier_str}".ljust(67) + "│")
+                print(f"| {outlier_str}".ljust(67) + "|")
     else:
-        print("│ Outlier Detection: No significant outliers detected" + " " * 16 + "│")
+        print("| Outlier Detection: No significant outliers detected" + " " * 16 + "|")
 
-    print("└" + "─" * 68 + "┘")
+    print("+" + "-" * 68 + "+")

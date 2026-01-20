@@ -28,24 +28,24 @@ def manage_tournament_scratches(tournament_state: Dict) -> Dict:
         dict: Updated tournament_state
     """
     while True:
-        print("\n╔" + "═" * 68 + "╗")
-        print("║" + "SCRATCH/WITHDRAWAL MANAGEMENT".center(68) + "║")
-        print("╠" + "═" * 68 + "╣")
+        print("\n?" + "?" * 68 + "?")
+        print("?" + "SCRATCH/WITHDRAWAL MANAGEMENT".center(68) + "?")
+        print("?" + "?" * 68 + "?")
 
         # Count scratches
         roster = tournament_state.get('tournament_roster', [])
         scratch_count = sum(1 for c in roster if c.get('status') == 'scratched')
 
-        print("║" + f"  Tournament: {tournament_state.get('tournament_name', 'Unknown')}".ljust(68) + "║")
-        print("║" + f"  Total competitors: {len(roster)}".ljust(68) + "║")
-        print("║" + f"  Scratched: {scratch_count}".ljust(68) + "║")
-        print("╠" + "═" * 68 + "╣")
-        print("║" + "  1. View All Competitors".ljust(68) + "║")
-        print("║" + "  2. Mark Competitor as Scratched".ljust(68) + "║")
-        print("║" + "  3. View Scratch History".ljust(68) + "║")
-        print("║" + "  4. Restore Scratched Competitor (Undo)".ljust(68) + "║")
-        print("║" + "  5. Return to Main Menu".ljust(68) + "║")
-        print("╚" + "═" * 68 + "╝")
+        print("?" + f"  Tournament: {tournament_state.get('tournament_name', 'Unknown')}".ljust(68) + "?")
+        print("?" + f"  Total competitors: {len(roster)}".ljust(68) + "?")
+        print("?" + f"  Scratched: {scratch_count}".ljust(68) + "?")
+        print("?" + "?" * 68 + "?")
+        print("?" + "  1. View All Competitors".ljust(68) + "?")
+        print("?" + "  2. Mark Competitor as Scratched".ljust(68) + "?")
+        print("?" + "  3. View Scratch History".ljust(68) + "?")
+        print("?" + "  4. Restore Scratched Competitor (Undo)".ljust(68) + "?")
+        print("?" + "  5. Return to Main Menu".ljust(68) + "?")
+        print("?" + "?" * 68 + "?")
 
         choice = input("\nChoice [1-5]: ").strip()
 
@@ -60,7 +60,7 @@ def manage_tournament_scratches(tournament_state: Dict) -> Dict:
         elif choice == '5' or choice == '':
             break
         else:
-            print("\n⚠ Invalid choice")
+            print("\n[WARN] Invalid choice")
             input("\nPress Enter to continue...")
 
     return tournament_state
@@ -76,13 +76,13 @@ def view_all_competitors_with_status(tournament_state: Dict) -> None:
     events = tournament_state.get('events', [])
 
     if not roster:
-        print("\n⚠ No competitors in tournament")
+        print("\n[WARN] No competitors in tournament")
         input("\nPress Enter to continue...")
         return
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "COMPETITOR STATUS".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "COMPETITOR STATUS".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     active_count = 0
     scratched_count = 0
@@ -100,24 +100,24 @@ def view_all_competitors_with_status(tournament_state: Dict) -> None:
                 event_names.append(event['event_name'][:20])  # Truncate
 
         if status == 'scratched':
-            status_icon = "✗ SCRATCHED"
+            status_icon = "? SCRATCHED"
             scratched_count += 1
         else:
-            status_icon = "✓ Active"
+            status_icon = "[OK] Active"
             active_count += 1
 
         # Truncate name if needed
         display_name = name[:30] if len(name) > 30 else name
 
-        print("║" + f"  {idx:3d}. {display_name:30s} {status_icon}".ljust(68) + "║")
+        print("?" + f"  {idx:3d}. {display_name:30s} {status_icon}".ljust(68) + "?")
 
         if events_entered:
             events_str = f"       Events: {len(events_entered)}"
-            print("║" + events_str.ljust(68) + "║")
+            print("?" + events_str.ljust(68) + "?")
 
-    print("╠" + "═" * 68 + "╣")
-    print("║" + f"  Active: {active_count}  |  Scratched: {scratched_count}".ljust(68) + "║")
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
+    print("?" + f"  Active: {active_count}  |  Scratched: {scratched_count}".ljust(68) + "?")
+    print("?" + "?" * 68 + "?")
     input("\nPress Enter to continue...")
 
 
@@ -142,20 +142,20 @@ def mark_competitor_scratched(tournament_state: Dict) -> Dict:
     active_roster = [c for c in roster if c.get('status', 'active') == 'active']
 
     if not active_roster:
-        print("\n⚠ No active competitors to scratch")
+        print("\n[WARN] No active competitors to scratch")
         input("\nPress Enter to continue...")
         return tournament_state
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "MARK COMPETITOR AS SCRATCHED".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "MARK COMPETITOR AS SCRATCHED".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     for idx, comp in enumerate(active_roster, 1):
         name = comp['competitor_name']
         events_count = len(comp.get('events_entered', []))
-        print("║" + f"  {idx:3d}. {name:40s} ({events_count} events)".ljust(68) + "║")
+        print("?" + f"  {idx:3d}. {name:40s} ({events_count} events)".ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
     try:
         choice = int(input("\nSelect competitor to scratch (number, or 0 to cancel): ").strip())
@@ -261,8 +261,8 @@ def mark_competitor_scratched(tournament_state: Dict) -> Dict:
                 from woodchopping.ui.multi_event_ui import auto_save_multi_event
                 auto_save_multi_event(tournament_state)
 
-                print(f"\n✓ {comp_name} marked as SCRATCHED")
-                print(f"✓ Removed from {len(affected_events)} event(s):")
+                print(f"\n[OK] {comp_name} marked as SCRATCHED")
+                print(f"[OK] Removed from {len(affected_events)} event(s):")
                 for event_name in affected_events:
                     print(f"  - {event_name}")
 
@@ -270,7 +270,7 @@ def mark_competitor_scratched(tournament_state: Dict) -> Dict:
                 if affected_events:
                     recalc = input("\nRecalculate heats for affected events? (y/n): ").strip().lower()
                     if recalc == 'y':
-                        print("\n⚠ Heat recalculation not yet implemented")
+                        print("\n[WARN] Heat recalculation not yet implemented")
                         print("Please regenerate heats manually if needed")
 
                 input("\nPress Enter to continue...")
@@ -278,10 +278,10 @@ def mark_competitor_scratched(tournament_state: Dict) -> Dict:
                 print("\nScratch cancelled")
                 input("\nPress Enter to continue...")
         else:
-            print("\n⚠ Invalid selection")
+            print("\n[WARN] Invalid selection")
             input("\nPress Enter to continue...")
     except ValueError:
-        print("\n⚠ Invalid input")
+        print("\n[WARN] Invalid input")
         input("\nPress Enter to continue...")
 
     return tournament_state
@@ -296,13 +296,13 @@ def view_scratch_history(tournament_state: Dict) -> None:
     history = tournament_state.get('scratch_history', [])
 
     if not history:
-        print("\n✓ No scratches recorded for this tournament")
+        print("\n[OK] No scratches recorded for this tournament")
         input("\nPress Enter to continue...")
         return
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "SCRATCH HISTORY".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "SCRATCH HISTORY".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     for idx, record in enumerate(history, 1):
         comp_name = record['competitor_name']
@@ -310,13 +310,13 @@ def view_scratch_history(tournament_state: Dict) -> None:
         timestamp = record['timestamp']
         events_affected = record.get('events_affected', [])
 
-        print("║" + f"  {idx}. {comp_name}".ljust(68) + "║")
-        print("║" + f"     Reason: {reason}".ljust(68) + "║")
-        print("║" + f"     Time: {timestamp}".ljust(68) + "║")
-        print("║" + f"     Events affected: {len(events_affected)}".ljust(68) + "║")
-        print("║" + " " * 68 + "║")
+        print("?" + f"  {idx}. {comp_name}".ljust(68) + "?")
+        print("?" + f"     Reason: {reason}".ljust(68) + "?")
+        print("?" + f"     Time: {timestamp}".ljust(68) + "?")
+        print("?" + f"     Events affected: {len(events_affected)}".ljust(68) + "?")
+        print("?" + " " * 68 + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
     input("\nPress Enter to continue...")
 
 
@@ -336,21 +336,21 @@ def restore_scratched_competitor(tournament_state: Dict) -> Dict:
     scratched_roster = [c for c in roster if c.get('status') == 'scratched']
 
     if not scratched_roster:
-        print("\n✓ No scratched competitors to restore")
+        print("\n[OK] No scratched competitors to restore")
         input("\nPress Enter to continue...")
         return tournament_state
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "RESTORE SCRATCHED COMPETITOR".center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "RESTORE SCRATCHED COMPETITOR".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     for idx, comp in enumerate(scratched_roster, 1):
         name = comp['competitor_name']
         reason = comp.get('scratch_reason', 'Unknown')
-        print("║" + f"  {idx}. {name:40s}".ljust(68) + "║")
-        print("║" + f"     Reason: {reason}".ljust(68) + "║")
+        print("?" + f"  {idx}. {name:40s}".ljust(68) + "?")
+        print("?" + f"     Reason: {reason}".ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
     try:
         choice = int(input("\nSelect competitor to restore (number, or 0 to cancel): ").strip())
@@ -392,10 +392,10 @@ def restore_scratched_competitor(tournament_state: Dict) -> Dict:
                 from woodchopping.ui.multi_event_ui import auto_save_multi_event
                 auto_save_multi_event(tournament_state)
 
-                print(f"\n✓ {comp_name} restored to ACTIVE status")
-                print(f"✓ Restored to {len(restored_events)} event(s)")
+                print(f"\n[OK] {comp_name} restored to ACTIVE status")
+                print(f"[OK] Restored to {len(restored_events)} event(s)")
 
-                print("\n⚠ NOTE: Competitor will need to be manually added back to heats")
+                print("\n[WARN] NOTE: Competitor will need to be manually added back to heats")
                 print("   Use 'Regenerate Schedule' if heats have not started")
 
                 input("\nPress Enter to continue...")
@@ -403,10 +403,10 @@ def restore_scratched_competitor(tournament_state: Dict) -> Dict:
                 print("\nRestore cancelled")
                 input("\nPress Enter to continue...")
         else:
-            print("\n⚠ Invalid selection")
+            print("\n[WARN] Invalid selection")
             input("\nPress Enter to continue...")
     except ValueError:
-        print("\n⚠ Invalid input")
+        print("\n[WARN] Invalid input")
         input("\nPress Enter to continue...")
 
     return tournament_state

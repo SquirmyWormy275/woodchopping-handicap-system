@@ -334,7 +334,7 @@ def interpolate_qaa_tables(
         Softwood table: 11s
 
         Weights: 25% soft, 50% med, 25% hard
-        Result: (11×0.25) + (14×0.50) + (17×0.25) = 14.0s
+        Result: (11x0.25) + (14x0.50) + (17x0.25) = 14.0s
     """
     # Get scaled values from each table
     hard_value, _ = scale_mark_qaa(book_mark, target_diameter, 'hardwood')
@@ -372,7 +372,7 @@ def scale_mark_qaa(
 
     Example:
         >>> scale_mark_qaa(20, 275, 'hardwood')
-        (17, "QAA table: 20s @ 300mm → 17s @ 275mm (hardwood)")
+        (17, "QAA table: 20s @ 300mm -> 17s @ 275mm (hardwood)")
     """
     # Select appropriate table
     if wood_type == 'softwood':

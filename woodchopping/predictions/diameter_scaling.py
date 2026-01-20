@@ -13,10 +13,12 @@ Key Concepts:
 The scaling exponent is calibrated from empirical data where available.
 """
 
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Dict
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
+
+from woodchopping.data import standardize_results_data
 
 
 # Default scaling exponent (can be overridden with empirical calibration)
@@ -24,6 +26,9 @@ DEFAULT_SCALING_EXPONENT = 1.4
 
 # Diameter tolerance for "close enough" matches (mm)
 DIAMETER_TOLERANCE = 10
+
+# Cache calibrated exponents per event
+_event_exponent_cache: Dict[str, float] = {}
 
 
 @dataclass
@@ -270,6 +275,33 @@ def calibrate_scaling_exponent(
     return float(np.median(exponents))
 
 
+def get_event_scaling_exponent(
+    results_df: Optional[pd.DataFrame],
+    event_code: str
+) -> float:
+    """
+    Return a calibrated diameter scaling exponent for an event.
+
+    Falls back to the default exponent when calibration is not possible.
+    """
+    event_key = str(event_code).strip().upper()
+    if event_key in _event_exponent_cache:
+        return _event_exponent_cache[event_key]
+
+    if results_df is None or results_df.empty:
+        _event_exponent_cache[event_key] = DEFAULT_SCALING_EXPONENT
+        return DEFAULT_SCALING_EXPONENT
+
+    results_df, _ = standardize_results_data(results_df)
+
+    exponent = calibrate_scaling_exponent(results_df, event_key)
+    if exponent is None:
+        exponent = DEFAULT_SCALING_EXPONENT
+
+    _event_exponent_cache[event_key] = float(exponent)
+    return float(exponent)
+
+
 def get_diameter_info_from_historical_data(
     results_df: pd.DataFrame,
     competitor_name: str,
@@ -287,6 +319,9 @@ def get_diameter_info_from_historical_data(
         Most common diameter in competitor's history, or None
     """
     if results_df is None or results_df.empty:
+        return None
+    required_cols = {'competitor_name', 'event', 'size_mm'}
+    if not required_cols.issubset(results_df.columns):
         return None
 
     comp_data = results_df[

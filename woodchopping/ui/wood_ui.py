@@ -9,6 +9,11 @@ This module handles wood block configuration menus including:
 
 from typing import Dict
 from woodchopping.data import load_wood_data
+from woodchopping.data.validation import (
+    is_high_variance_diameter,
+    get_diameter_variance_warning,
+    check_diameter_sample_size
+)
 
 
 def wood_menu(wood_selection: Dict) -> Dict:
@@ -118,6 +123,39 @@ def enter_wood_size_mm(wood_selection: Dict) -> Dict:
     try:
         val = float(size)
         wood_selection["size_mm"] = val
+
+        # Check for high-variance diameters
+        if is_high_variance_diameter(val):
+            print(f"\n{'='*70}")
+            warning_msg = get_diameter_variance_warning(val)
+            if warning_msg:
+                print(warning_msg)
+            print(f"{'='*70}")
+
+            proceed = input("\nProceed with this diameter anyway? (y/n): ").strip().lower()
+            if proceed != 'y':
+                print("Diameter not set. Please select a different size.")
+                wood_selection["size_mm"] = None
+                return wood_selection
+
+        # Check sample size for this diameter (if event is known)
+        event = wood_selection.get("event")
+        if event and val:
+            from woodchopping.data import load_results_df
+            results_df = load_results_df()
+            sample_count, confidence = check_diameter_sample_size(results_df, val, event)
+
+            if confidence in ["VERY LOW", "LOW"]:
+                print(f"\n{'='*70}")
+                print(f"  SPARSE DATA WARNING")
+                print(f"{'='*70}")
+                print(f"Historical data for {int(val)}mm {event}: {sample_count} results")
+                print(f"Confidence level: {confidence}")
+                print(f"\nPredictions for this diameter will be based on LIMITED historical data.")
+                print(f"Expect higher uncertainty in handicap calculations.")
+                print(f"{'='*70}")
+                input("\nPress Enter to continue...")
+
         format_wood(wood_selection)
     except ValueError:
         print("Invalid size input.")
@@ -167,16 +205,16 @@ def format_wood(ws: Dict) -> str:
     Returns:
         str: Formatted header string
     """
-    species_code = ws.get("species", "—")
-    d = ws.get("size_mm", "—")
-    q = ws.get("quality", "—")
+    species_code = ws.get("species", "--")
+    d = ws.get("size_mm", "--")
+    q = ws.get("quality", "--")
 
     # Get species name from code for display
-    if species_code != "—":
+    if species_code != "--":
         from woodchopping.data import get_species_name_from_code
         species_display = get_species_name_from_code(species_code)
     else:
-        species_display = "—"
+        species_display = "--"
 
     header = f"Selected Wood -> Species: {species_display}, Diameter: {d} mm, Quality: {q}"
     print(f"Wood selection updated: {header}")

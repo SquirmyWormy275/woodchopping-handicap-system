@@ -52,7 +52,7 @@ def personnel_management_menu(comp_df: pd.DataFrame) -> pd.DataFrame:
         if choice == "1":
             # Add new competitor with historical times
             comp_df = add_competitor_with_times()
-            print("\n✓ Competitor added successfully")
+            print("\n[OK] Competitor added successfully")
 
         elif choice == "2":
             # View full roster
@@ -143,7 +143,7 @@ def add_competitor_with_times() -> pd.DataFrame:
 
         wb.save(COMPETITOR_FILE)
         wb.close()
-        print(f"\n✓ {name} added to roster successfully with ID {new_id}")
+        print(f"\n[OK] {name} added to roster successfully with ID {new_id}")
 
         # Now prompt for historical times
         print("\n--- Enter Historical Competition Times ---")
@@ -240,9 +240,9 @@ def add_historical_times_for_competitor(competitor_name: str) -> None:
         save_time_to_results(event, competitor_name, species, size_val, quality, time_val,
                            f"Historical-{event}", timestamp)
         times_added += 1
-        print(f"✓ Time #{times_added} saved successfully")
+        print(f"[OK] Time #{times_added} saved successfully")
 
     if times_added >= 3:
-        print(f"\n✓ {times_added} historical times added for {competitor_name}.")
+        print(f"\n[OK] {times_added} historical times added for {competitor_name}.")
     else:
-        print(f"\n⚠ Warning: Only {times_added} times added. Minimum 3 recommended for handicap calculation.")
+        print(f"\n[WARN] Warning: Only {times_added} times added. Minimum 3 recommended for handicap calculation.")

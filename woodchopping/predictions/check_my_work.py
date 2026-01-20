@@ -187,7 +187,7 @@ def check_my_work(
     # Assumptions snapshot (judge awareness)
     assumptions = {
         'quality_scale': "1=softest, 10=hardest (higher = slower)",
-        'variance_model': "Per-competitor std-dev when available, otherwise +/-3s",
+        'variance_model': "Per-competitor std-dev with data-driven fallback",
         'heat_variance': "Shared heat variance included in Monte Carlo"
     }
 
@@ -270,7 +270,7 @@ def display_check_my_work(
         print(f"\n{'-'*70}")
         print("WARNINGS:")
         for warning in validation['warnings']:
-            print(f"  • {warning}")
+            print(f"  - {warning}")
 
     # Display info
     if validation['info']:

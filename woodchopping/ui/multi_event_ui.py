@@ -19,15 +19,19 @@ import pandas as pd
 # Import existing functions for reuse
 from woodchopping.ui.wood_ui import wood_menu, format_wood, select_event_code
 from woodchopping.ui.competitor_ui import select_all_event_competitors
+from woodchopping.data import load_results_df
+from woodchopping.ui.history_entry import competitor_has_event_history, prompt_add_competitor_times
 from woodchopping.ui.tournament_ui import (
     calculate_tournament_scenarios,
     distribute_competitors_into_heats,
     select_heat_advancers,
+    fill_advancers_with_random_draw,
     generate_next_round
 )
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 from woodchopping.data import load_results_df, append_results_to_excel
 from woodchopping.ui.adjustment_tracking import log_handicap_adjustment
+from woodchopping.ui.progress_ui import ProgressDisplay
 
 
 def create_multi_event_tournament() -> Dict:
@@ -68,8 +72,8 @@ def create_multi_event_tournament() -> Dict:
         'events': []
     }
 
-    print(f"\n✓ Tournament '{tournament_name}' created for {tournament_date}")
-    print(f"✓ You can now add events to this tournament")
+    print(f"\n[OK] Tournament '{tournament_name}' created for {tournament_date}")
+    print(f"[OK] You can now add events to this tournament")
 
     return tournament_state
 
@@ -90,7 +94,7 @@ def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Di
     """
     # Check if roster already exists
     if tournament_state.get('tournament_roster'):
-        print("\n⚠ Tournament roster already configured")
+        print("\n[WARN] Tournament roster already configured")
         overwrite = input("Overwrite existing roster? (y/n): ").strip().lower()
         if overwrite != 'y':
             return tournament_state
@@ -113,9 +117,9 @@ def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Di
     tournament_state['entry_fee_tracking_enabled'] = (fee_tracking == 'y')
 
     if tournament_state['entry_fee_tracking_enabled']:
-        print("\n✓ Entry fee tracking ENABLED")
+        print("\n[OK] Entry fee tracking ENABLED")
     else:
-        print("\n✓ Entry fee tracking DISABLED")
+        print("\n[OK] Entry fee tracking DISABLED")
 
     # Select all competitors for tournament
     print(f"\n{'='*70}")
@@ -129,7 +133,7 @@ def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Di
     selected_df = select_all_event_competitors(comp_df, max_competitors=None)
 
     if selected_df.empty:
-        print("\n⚠ No competitors selected. Tournament roster not configured.")
+        print("\n[WARN] No competitors selected. Tournament roster not configured.")
         return tournament_state
 
     # Build tournament roster
@@ -146,7 +150,7 @@ def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Di
     tournament_state['competitor_roster_df'] = selected_df
 
     print(f"\n{'='*70}")
-    print(f"  ✓ TOURNAMENT ROSTER CONFIGURED")
+    print(f"  [OK] TOURNAMENT ROSTER CONFIGURED")
     print(f"{'='*70}")
     print(f"Total competitors: {len(roster)}")
     print(f"Entry fee tracking: {'ENABLED' if tournament_state['entry_fee_tracking_enabled'] else 'DISABLED'}")
@@ -184,6 +188,10 @@ def save_multi_event_tournament(tournament_state: Dict, filename: str = "multi_t
         # Deep copy to avoid mutating original
         state_copy = copy.deepcopy(tournament_state)
 
+        # Convert top-level DataFrames (V5.1)
+        if 'competitor_roster_df' in state_copy and isinstance(state_copy['competitor_roster_df'], pd.DataFrame):
+            state_copy['competitor_roster_df'] = state_copy['competitor_roster_df'].to_dict('records')
+
         # Convert DataFrames to dict records for JSON serialization
         for event in state_copy.get('events', []):
             # Convert event-level DataFrame
@@ -199,10 +207,10 @@ def save_multi_event_tournament(tournament_state: Dict, filename: str = "multi_t
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(state_copy, f, indent=2, ensure_ascii=False, cls=NumpyEncoder)
 
-        print(f"\n✓ Tournament state saved to {filename}")
+        print(f"\n[OK] Tournament state saved to {filename}")
 
     except Exception as e:
-        print(f"\n⚠ Error saving tournament state: {e}")
+        print(f"\n[WARN] Error saving tournament state: {e}")
 
 
 def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -> Optional[Dict]:
@@ -219,6 +227,10 @@ def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             tournament_state = json.load(f)
+
+        # Reconstruct top-level DataFrames (V5.1)
+        if 'competitor_roster_df' in tournament_state and isinstance(tournament_state['competitor_roster_df'], list):
+            tournament_state['competitor_roster_df'] = pd.DataFrame(tournament_state['competitor_roster_df'])
 
         # Reconstruct DataFrames
         for event in tournament_state.get('events', []):
@@ -266,17 +278,17 @@ def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -
             tournament_state['entry_fee_tracking_enabled'] = False
             tournament_state['competitor_roster_df'] = pd.DataFrame()
 
-        print(f"\n✓ Tournament state loaded from {filename}")
-        print(f"✓ Tournament: {tournament_state.get('tournament_name', 'Unknown')}")
-        print(f"✓ Events: {tournament_state.get('total_events', 0)}")
+        print(f"\n[OK] Tournament state loaded from {filename}")
+        print(f"[OK] Tournament: {tournament_state.get('tournament_name', 'Unknown')}")
+        print(f"[OK] Events: {tournament_state.get('total_events', 0)}")
 
         return tournament_state
 
     except FileNotFoundError:
-        print(f"\n⚠ Tournament file '{filename}' not found")
+        print(f"\n[WARN] Tournament file '{filename}' not found")
         return None
     except Exception as e:
-        print(f"\n⚠ Error loading tournament state: {e}")
+        print(f"\n[WARN] Error loading tournament state: {e}")
         return None
 
 
@@ -338,7 +350,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
 
     # Validate wood configuration
     if not wood_selection.get('species') or not wood_selection.get('size_mm') or wood_selection.get('quality') is None:
-        print("\n⚠ Incomplete wood configuration. Cancelling event addition...")
+        print("\n[WARN] Incomplete wood configuration. Cancelling event addition...")
         return tournament_state
 
     # Step 2: Event code (if not already set by wood menu)
@@ -347,7 +359,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
 
     # Auto-generate event name from wood configuration
     event_name = f"{int(wood_selection['size_mm'])}mm {wood_selection['event']}"
-    print(f"\n✓ Event name auto-generated: {event_name}")
+    print(f"\n[OK] Event name auto-generated: {event_name}")
 
     # Step 2.5: Event type selection (NEW V5.0 - includes bracket)
     print(f"\n{'='*70}")
@@ -364,15 +376,15 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
 
     if event_type_choice == '1':
         event_type = 'handicap'
-        print("\n✓ Handicap event - marks will be calculated in batch later")
+        print("\n[OK] Handicap event - marks will be calculated in batch later")
     elif event_type_choice == '2':
         event_type = 'championship'
-        print("\n✓ Championship event - all competitors will get Mark 3")
+        print("\n[OK] Championship event - all competitors will get Mark 3")
     elif event_type_choice == '3':
         event_type = 'bracket'
-        print("\n✓ Bracket event - single elimination tournament with AI seeding")
+        print("\n[OK] Bracket event - single elimination tournament with AI seeding")
     else:
-        print("\n⚠ Invalid choice. Defaulting to Handicap event")
+        print("\n[WARN] Invalid choice. Defaulting to Handicap event")
         event_type = 'handicap'
 
     # Step 3: Tournament format (stands + format)
@@ -383,12 +395,12 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     # BRACKET MODE: Force 2 stands, skip format selection
     if event_type == 'bracket':
         num_stands = 2
-        print(f"\n✓ Bracket mode requires exactly 2 stands (head-to-head matches)")
+        print(f"\n[OK] Bracket mode requires exactly 2 stands (head-to-head matches)")
 
         try:
             tentative = int(input("Approximate number of competitors for this event: ").strip())
         except ValueError:
-            print("\n⚠ Invalid input. Cancelling event addition...")
+            print("\n[WARN] Invalid input. Cancelling event addition...")
             return tournament_state
 
         event_format = 'bracket'
@@ -397,7 +409,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
             'format_description': 'Single elimination bracket'
         }
 
-        print(f"✓ Bracket tournament - supports any number of competitors (auto byes)")
+        print(f"[OK] Bracket tournament - supports any number of competitors (auto byes)")
 
     # REGULAR MODES: User selects stands and format
     else:
@@ -405,7 +417,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
             num_stands = int(input("\nNumber of available stands for this event: ").strip())
             tentative = int(input("Approximate number of competitors for this event: ").strip())
         except ValueError:
-            print("\n⚠ Invalid input. Cancelling event addition...")
+            print("\n[WARN] Invalid input. Cancelling event addition...")
             return tournament_state
 
         # Calculate scenarios
@@ -418,12 +430,12 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         print(scenarios['single_heat']['description'])
 
         print(f"\n{'='*70}")
-        print(f"  SCENARIO 2: Heats → Finals")
+        print(f"  SCENARIO 2: Heats -> Finals")
         print(f"{'='*70}")
         print(scenarios['heats_to_finals']['description'])
 
         print(f"\n{'='*70}")
-        print(f"  SCENARIO 3: Heats → Semis → Finals")
+        print(f"  SCENARIO 3: Heats -> Semis -> Finals")
         print(f"{'='*70}")
         print(scenarios['heats_to_semis_to_finals']['description'])
 
@@ -441,7 +453,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
             event_format = 'heats_to_semis_to_finals'
             capacity_info = scenarios['heats_to_semis_to_finals']
         else:
-            print("\n⚠ Invalid choice. Cancelling event addition...")
+            print("\n[WARN] Invalid choice. Cancelling event addition...")
             return tournament_state
 
     # Step 5: Payout configuration (OPTIONAL) - NEW V5.0
@@ -459,13 +471,13 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
         payout_config = configure_event_payouts()
 
         if payout_config:
-            print(f"\n✓ Payout configuration saved for {event_name}")
+            print(f"\n[OK] Payout configuration saved for {event_name}")
         else:
             payout_config = {'enabled': False}
-            print(f"\n✓ Payouts skipped for {event_name}")
+            print(f"\n[OK] Payouts skipped for {event_name}")
     else:
         payout_config = {'enabled': False}
-        print(f"\n✓ Payouts skipped for {event_name}")
+        print(f"\n[OK] Payouts skipped for {event_name}")
 
     # V5.1 CHANGE: All events start with 'pending' status (no competitors yet)
     # Competitors will be assigned via tournament roster workflow
@@ -534,7 +546,7 @@ def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, resul
     tournament_state['total_events'] += 1
 
     print(f"\n{'='*70}")
-    print(f"  ✓ EVENT ADDED SUCCESSFULLY")
+    print(f"  [OK] EVENT ADDED SUCCESSFULLY")
     print(f"{'='*70}")
     print(f"Event name: {event_name}")
     print(f"Event order: {event_order}")
@@ -577,15 +589,15 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
     """
     from woodchopping.handicaps import calculate_ai_enhanced_handicaps
 
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = "BATCH HANDICAP CALCULATION".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     # Validation: Check all events are configured
     not_configured = [e for e in tournament_state.get('events', []) if e['status'] == 'pending']
     if not_configured:
-        print(f"\n⚠ ERROR: {len(not_configured)} event(s) not configured:")
+        print(f"\n[WARN] ERROR: {len(not_configured)} event(s) not configured:")
         for event in not_configured:
             print(f"  - {event['event_name']}: {event['status']}")
         print("\nPlease configure all events before calculating handicaps.")
@@ -600,7 +612,7 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
 
     if events_without_competitors:
         print(f"\n{'='*70}")
-        print(f"  ⚠ ERROR: EVENTS WITHOUT COMPETITORS")
+        print(f"  [WARN] ERROR: EVENTS WITHOUT COMPETITORS")
         print(f"{'='*70}")
         print(f"\nThe following events have no competitors assigned:")
         for event in events_without_competitors:
@@ -611,25 +623,27 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
         return tournament_state
 
     if not tournament_state.get('events'):
-        print("\n⚠ No events to calculate handicaps for.")
+        print("\n[WARN] No events to calculate handicaps for.")
         input("\nPress Enter to continue...")
         return tournament_state
 
     # Check if handicaps already calculated
     already_calculated = [e for e in tournament_state['events'] if e['handicap_results_all']]
     if already_calculated:
-        print(f"\n⚠ WARNING: {len(already_calculated)} event(s) already have handicaps calculated.")
+        print(f"\n[WARN] WARNING: {len(already_calculated)} event(s) already have handicaps calculated.")
         print("This will RECALCULATE handicaps for all events.")
         confirm = input("\nContinue? (y/n): ").strip().lower()
         if confirm != 'y':
-            print("\n✓ Handicap calculation cancelled")
+            print("\n[OK] Handicap calculation cancelled")
             input("\nPress Enter to continue...")
             return tournament_state
 
     total_events = len(tournament_state['events'])
     total_competitors = sum(len(e['all_competitors']) for e in tournament_state['events'])
+    event_label = "event" if total_events == 1 else "events"
+    competitor_label = "competitor" if total_competitors == 1 else "competitors"
 
-    print(f"\nCalculating handicaps for {total_events} events ({total_competitors} total competitors)...")
+    print(f"\nCalculating handicaps for {total_events} {event_label} ({total_competitors} total {competitor_label})...")
     print(f"{'='*70}\n")
 
     # Calculate handicaps for each event
@@ -639,7 +653,7 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
             print(f"{'='*70}")
             print(f"  EVENT {event_idx} of {total_events}: {event['event_name']}")
             print(f"{'='*70}")
-            print(f"○ Skipping Championship event (marks pre-assigned: all Mark 3)")
+            print(f"[ ] Skipping Championship event (marks pre-assigned: all Mark 3)")
             print(f"{'='*70}\n")
             continue
 
@@ -651,13 +665,18 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
         print(f"Competitors: {len(event['all_competitors'])}")
         print()
 
+        progress_display = ProgressDisplay(
+            title=f"HANDICAP CALCULATION - EVENT {event_idx} OF {total_events}",
+            width=70,
+            bar_length=40,
+            item_label="competitors",
+            detail_label="Analyzing"
+        )
+        progress_display.start()
+
         def show_progress(current, total, comp_name):
             """Display progress for this event"""
-            percent = int((current / total) * 100)
-            bar_length = 40
-            filled = int((bar_length * current) / total)
-            bar = '█' * filled + '░' * (bar_length - filled)
-            print(f"  [{bar}] {percent:3d}% - {comp_name}")
+            progress_display.update(current, total, comp_name)
 
         # Calculate handicaps for this event
         handicap_results = calculate_ai_enhanced_handicaps(
@@ -671,20 +690,23 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
         )
 
         if not handicap_results:
-            print(f"\n⚠ Failed to calculate handicaps for {event['event_name']}")
+            progress_display.finish("No handicap results returned")
+            print(f"\n[WARN] Failed to calculate handicaps for {event['event_name']}")
             print("Skipping this event...")
             continue
+
+        result_label = "competitor" if len(handicap_results) == 1 else "competitors"
+        progress_display.finish(f"Completed {len(handicap_results)} {result_label}")
 
         # Update event with handicap results
         event['handicap_results_all'] = handicap_results
         event['status'] = 'ready'  # Now ready for heat generation
 
-        print(f"\n✓ Event {event_idx}: Handicaps calculated for {len(handicap_results)} competitors")
-        print()
+        print(f"\n[OK] Event {event_idx}: Handicaps calculated for {len(handicap_results)} {result_label}")
 
     # Display final summary
     print(f"{'='*70}")
-    print(f"  ✓ BATCH HANDICAP CALCULATION COMPLETE")
+    print(f"  [OK] BATCH HANDICAP CALCULATION COMPLETE")
     print(f"{'='*70}")
 
     calculated_events = [e for e in tournament_state['events'] if e['status'] == 'ready']
@@ -697,7 +719,7 @@ def calculate_all_event_handicaps(tournament_state: Dict, results_df: pd.DataFra
 
     # Auto-save
     auto_save_multi_event(tournament_state)
-    print("\n✓ Tournament state auto-saved")
+    print("\n[OK] Tournament state auto-saved")
 
     input("\nPress Enter to continue...")
     return tournament_state
@@ -725,20 +747,20 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
         display_handicap_calculation_explanation
     )
 
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"HANDICAP ANALYSIS: {event['event_name']}".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     # Validation: Check handicaps are calculated
     if event['status'] not in ['ready', 'scheduled', 'in_progress', 'completed']:
-        print(f"\n⚠ ERROR: Handicaps not calculated for this event (status: {event['status']})")
+        print(f"\n[WARN] ERROR: Handicaps not calculated for this event (status: {event['status']})")
         print("\nPlease calculate handicaps first (Option 5).")
         input("\nPress Enter to continue...")
         return
 
     if not event['handicap_results_all']:
-        print("\n⚠ No handicaps calculated for this event.")
+        print("\n[WARN] No handicaps calculated for this event.")
         input("\nPress Enter to continue...")
         return
 
@@ -749,10 +771,10 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
         print(f"{'='*70}")
         print(f"Wood: {event['wood_diameter']}mm {event['wood_species']} (Quality {event['wood_quality']})")
         print(f"Event type: {event['event_code']}")
-        print(f"\n✓ Championship Event")
-        print(f"✓ All {len(event['handicap_results_all'])} competitors have Mark 3")
-        print(f"✓ Fastest time wins - no handicap analysis needed")
-        print(f"✓ All competitors start simultaneously")
+        print(f"\n[OK] Championship Event")
+        print(f"[OK] All {len(event['handicap_results_all'])} competitors have Mark 3")
+        print(f"[OK] Fastest time wins - no handicap analysis needed")
+        print(f"[OK] All competitors start simultaneously")
         print(f"{'='*70}")
 
         # Mark as analysis completed (simple approval)
@@ -791,10 +813,10 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
     print(f"\n{'='*70}")
     run_mc = input("\nRun Monte Carlo fairness simulation? (y/n): ").strip().lower()
     if run_mc == 'y':
-        print(f"\n{'╔' + '═' * 68 + '╗'}")
+        print(f"\n{'?' + '?' * 68 + '?'}")
         title = f"MONTE CARLO SIMULATION".center(68)
-        print(f"{'║'}{title}{'║'}")
-        print(f"{'╚' + '═' * 68 + '╝'}\n")
+        print(f"{'?'}{title}{'?'}")
+        print(f"{'?' + '?' * 68 + '?'}\n")
 
         simulate_and_assess_handicaps(event['handicap_results_all'])
 
@@ -802,10 +824,10 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
     print(f"\n{'='*70}")
     show_ai = input("\nView detailed AI analysis of prediction methods? (y/n): ").strip().lower()
     if show_ai == 'y':
-        print(f"\n{'╔' + '═' * 68 + '╗'}")
+        print(f"\n{'?' + '?' * 68 + '?'}")
         title = f"AI PREDICTION ANALYSIS".center(68)
-        print(f"{'║'}{title}{'║'}")
-        print(f"{'╚' + '═' * 68 + '╝'}\n")
+        print(f"{'?'}{title}{'?'}")
+        print(f"{'?' + '?' * 68 + '?'}\n")
 
         # Prepare wood selection dict for this event
         wood_selection = {
@@ -821,7 +843,7 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
                 wood_selection
             )
         except Exception as e:
-            print(f"\n⚠ Error during AI analysis: {e}")
+            print(f"\n[WARN] Error during AI analysis: {e}")
             print("Continuing...")
 
     # PHASE 4: Explanation of handicap system (optional)
@@ -835,13 +857,13 @@ def analyze_single_event(event: Dict, event_index: int, tournament_state: Dict) 
     mark_complete = input("\nMark this event's analysis as complete? (y/n): ").strip().lower()
     if mark_complete == 'y':
         event['analysis_completed'] = True
-        print("\n✓ Analysis marked as complete")
+        print("\n[OK] Analysis marked as complete")
         print("  You can now manually adjust handicaps for this event in the Approval menu.")
         # Auto-save
         auto_save_multi_event(tournament_state)
-        print("✓ Tournament state auto-saved")
+        print("[OK] Tournament state auto-saved")
     else:
-        print("\n⚠ Analysis not marked complete")
+        print("\n[WARN] Analysis not marked complete")
         print("  Manual handicap adjustments will not be available for this event.")
 
     input("\nPress Enter to continue...")
@@ -856,15 +878,15 @@ def view_analyze_all_handicaps(tournament_state: Dict) -> None:
         tournament_state: Multi-event tournament state dict
     """
     while True:
-        print(f"\n{'╔' + '═' * 68 + '╗'}")
+        print(f"\n{'?' + '?' * 68 + '?'}")
         title = "HANDICAP ANALYSIS - EVENT SELECTION".center(68)
-        print(f"{'║'}{title}{'║'}")
-        print(f"{'╚' + '═' * 68 + '╝'}")
+        print(f"{'?'}{title}{'?'}")
+        print(f"{'?' + '?' * 68 + '?'}")
 
         # Validation: Check handicaps are calculated
         not_ready = [e for e in tournament_state.get('events', []) if e['status'] not in ['ready', 'scheduled', 'in_progress', 'completed']]
         if not_ready:
-            print(f"\n⚠ ERROR: {len(not_ready)} event(s) don't have handicaps calculated:")
+            print(f"\n[WARN] ERROR: {len(not_ready)} event(s) don't have handicaps calculated:")
             for event in not_ready:
                 print(f"  - {event['event_name']}: {event['status']}")
             print("\nPlease calculate handicaps first (Option 5).")
@@ -872,7 +894,7 @@ def view_analyze_all_handicaps(tournament_state: Dict) -> None:
             return
 
         if not tournament_state.get('events'):
-            print("\n⚠ No events in tournament.")
+            print("\n[WARN] No events in tournament.")
             input("\nPress Enter to continue...")
             return
 
@@ -882,7 +904,7 @@ def view_analyze_all_handicaps(tournament_state: Dict) -> None:
         print(f"{'='*70}\n")
 
         for idx, event in enumerate(tournament_state['events'], 1):
-            status_icon = "✓" if event.get('analysis_completed', False) else " "
+            status_icon = "[OK]" if event.get('analysis_completed', False) else " "
             print(f"{idx}. [{status_icon}] {event['event_name']}")
             print(f"    Wood: {event['wood_diameter']}mm {event['wood_species']} (Quality {event['wood_quality']})")
             print(f"    Competitors: {len(event.get('handicap_results_all', []))}")
@@ -897,7 +919,7 @@ def view_analyze_all_handicaps(tournament_state: Dict) -> None:
         choice = input("\nSelect event to analyze (or return to menu): ").strip()
 
         if not choice.isdigit():
-            print("\n⚠ Invalid choice. Please enter a number.")
+            print("\n[WARN] Invalid choice. Please enter a number.")
             input("\nPress Enter to continue...")
             continue
 
@@ -907,7 +929,7 @@ def view_analyze_all_handicaps(tournament_state: Dict) -> None:
             return
 
         if choice_num < 1 or choice_num > len(tournament_state['events']):
-            print("\n⚠ Invalid choice.")
+            print("\n[WARN] Invalid choice.")
             input("\nPress Enter to continue...")
             continue
 
@@ -928,15 +950,15 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
     from woodchopping.ui.handicap_ui import judge_approval
 
     while True:
-        print(f"\n{'╔' + '═' * 68 + '╗'}")
+        print(f"\n{'?' + '?' * 68 + '?'}")
         title = "HANDICAP APPROVAL - EVENT SELECTION".center(68)
-        print(f"{'║'}{title}{'║'}")
-        print(f"{'╚' + '═' * 68 + '╝'}")
+        print(f"{'?'}{title}{'?'}")
+        print(f"{'?' + '?' * 68 + '?'}")
 
         # Validation: Check handicaps are calculated
         not_ready = [e for e in tournament_state.get('events', []) if e['status'] not in ['ready', 'scheduled', 'in_progress', 'completed']]
         if not_ready:
-            print(f"\n⚠ ERROR: {len(not_ready)} event(s) don't have handicaps calculated:")
+            print(f"\n[WARN] ERROR: {len(not_ready)} event(s) don't have handicaps calculated:")
             for event in not_ready:
                 print(f"  - {event['event_name']}: {event['status']}")
             print("\nPlease calculate handicaps first (Option 5).")
@@ -944,7 +966,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
             return
 
         if not tournament_state.get('events'):
-            print("\n⚠ No events in tournament.")
+            print("\n[WARN] No events in tournament.")
             input("\nPress Enter to continue...")
             return
 
@@ -958,7 +980,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
             analysis_done = event.get('analysis_completed', False)
 
             if approved:
-                status_icon = "✓"
+                status_icon = "[OK]"
                 status_text = "APPROVED"
             else:
                 status_icon = " "
@@ -977,7 +999,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
         choice = input("\nSelect event to approve (or choose option): ").strip()
 
         if not choice.isdigit():
-            print("\n⚠ Invalid choice. Please enter a number.")
+            print("\n[WARN] Invalid choice. Please enter a number.")
             input("\nPress Enter to continue...")
             continue
 
@@ -1005,19 +1027,19 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                                 result['approved_by'] = initials
                                 result['approved_at'] = timestamp
 
-                    print(f"\n✓ All handicaps approved by {initials} at {timestamp}")
+                    print(f"\n[OK] All handicaps approved by {initials} at {timestamp}")
                     # Auto-save
                     auto_save_multi_event(tournament_state)
-                    print("✓ Tournament state auto-saved")
+                    print("[OK] Tournament state auto-saved")
                 else:
-                    print("\n⚠ Approval cancelled")
+                    print("\n[WARN] Approval cancelled")
 
             input("\nPress Enter to continue...")
             continue
 
         # Individual event approval
         if choice_num < 1 or choice_num > len(tournament_state['events']):
-            print("\n⚠ Invalid choice.")
+            print("\n[WARN] Invalid choice.")
             input("\nPress Enter to continue...")
             continue
 
@@ -1025,13 +1047,13 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
         event = tournament_state['events'][event_index]
 
         # Show approval menu for this event
-        print(f"\n{'╔' + '═' * 68 + '╗'}")
+        print(f"\n{'?' + '?' * 68 + '?'}")
         title = f"APPROVE: {event['event_name']}".center(68)
-        print(f"{'║'}{title}{'║'}")
-        print(f"{'╚' + '═' * 68 + '╝'}")
+        print(f"{'?'}{title}{'?'}")
+        print(f"{'?' + '?' * 68 + '?'}")
 
         if not event['handicap_results_all']:
-            print("\n⚠ No handicaps calculated for this event.")
+            print("\n[WARN] No handicaps calculated for this event.")
             input("\nPress Enter to continue...")
             continue
 
@@ -1040,7 +1062,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
         if already_approved:
             approver = event['handicap_results_all'][0].get('approved_by', 'Unknown')
             approved_time = event['handicap_results_all'][0].get('approved_at', 'Unknown')
-            print(f"\n✓ This event was already approved by {approver} at {approved_time}")
+            print(f"\n[OK] This event was already approved by {approver} at {approved_time}")
 
             reapprove = input("\nRe-approve these handicaps? (y/n): ").strip().lower()
             if reapprove != 'y':
@@ -1089,12 +1111,12 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                         result['approved_by'] = initials
                         result['approved_at'] = timestamp
 
-                    print(f"\n✓ Championship marks approved by {initials} at {timestamp}")
+                    print(f"\n[OK] Championship marks approved by {initials} at {timestamp}")
                     # Auto-save
                     auto_save_multi_event(tournament_state)
-                    print("✓ Tournament state auto-saved")
+                    print("[OK] Tournament state auto-saved")
                 else:
-                    print("\n⚠ Approval cancelled")
+                    print("\n[WARN] Approval cancelled")
 
                 input("\nPress Enter to continue...")
             else:
@@ -1125,12 +1147,12 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                     result['approved_by'] = initials
                     result['approved_at'] = timestamp
 
-                print(f"\n✓ Handicaps approved by {initials} at {timestamp}")
+                print(f"\n[OK] Handicaps approved by {initials} at {timestamp}")
                 # Auto-save
                 auto_save_multi_event(tournament_state)
-                print("✓ Tournament state auto-saved")
+                print("[OK] Tournament state auto-saved")
             else:
-                print("\n⚠ Approval cancelled")
+                print("\n[WARN] Approval cancelled")
 
             input("\nPress Enter to continue...")
 
@@ -1138,7 +1160,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
             # Check if analysis was completed
             if not event.get('analysis_completed', False):
                 print(f"\n{'='*70}")
-                print(f"  ⚠ ANALYSIS REQUIRED FOR MANUAL ADJUSTMENTS")
+                print(f"  [WARN] ANALYSIS REQUIRED FOR MANUAL ADJUSTMENTS")
                 print(f"{'='*70}")
                 print("\nManual adjustments require full analysis to be completed first.")
                 print("This ensures you understand the handicap calculations and fairness metrics")
@@ -1156,7 +1178,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
             print(f"\n{'='*70}")
             print(f"  MANUAL HANDICAP ADJUSTMENT")
             print(f"{'='*70}")
-            print("\n⚠ This feature allows you to override calculated handicaps.")
+            print("\n[WARN] This feature allows you to override calculated handicaps.")
             print("Use this ONLY if you have specific knowledge about:")
             print("  - Recent injuries or form changes")
             print("  - Equipment issues")
@@ -1164,7 +1186,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
 
             confirm = input("\nProceed with manual adjustments? (y/n): ").strip().lower()
             if confirm != 'y':
-                print("\n⚠ Manual adjustment cancelled")
+                print("\n[WARN] Manual adjustment cancelled")
                 input("\nPress Enter to continue...")
                 continue
 
@@ -1180,11 +1202,11 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                 matching = [r for r in event['handicap_results_all'] if comp_name.lower() in r['name'].lower()]
 
                 if not matching:
-                    print(f"\n⚠ No competitor found matching '{comp_name}'")
+                    print(f"\n[WARN] No competitor found matching '{comp_name}'")
                     continue
 
                 if len(matching) > 1:
-                    print(f"\n⚠ Multiple matches found:")
+                    print(f"\n[WARN] Multiple matches found:")
                     for r in matching:
                         print(f"  - {r['name']}")
                     print("Please be more specific.")
@@ -1198,19 +1220,19 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                 new_mark = input("\nEnter new mark (or blank to cancel): ").strip()
 
                 if not new_mark:
-                    print("⚠ No change made")
+                    print("[WARN] No change made")
                     continue
 
                 if not new_mark.isdigit() or int(new_mark) < 3:
-                    print("⚠ Invalid mark. Must be >= 3.")
+                    print("[WARN] Invalid mark. Must be >= 3.")
                     continue
 
                 # A5: Prompt for reason
-                print("\n" + "─" * 70)
+                print("\n" + "-" * 70)
                 print("Please explain why you're adjusting this handicap (for audit trail):")
                 reason = input("Reason: ").strip()
                 while not reason:
-                    print("⚠ Reason is required for adjustment tracking.")
+                    print("[WARN] Reason is required for adjustment tracking.")
                     reason = input("Reason: ").strip()
 
                 old_mark = result['mark']
@@ -1219,7 +1241,7 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                 result['original_mark'] = old_mark
                 result['adjustment_reason'] = reason  # A5: Store reason
 
-                print(f"\n✓ Mark changed from {old_mark} to {new_mark}")
+                print(f"\n[OK] Mark changed from {old_mark} to {new_mark}")
                 print(f"  Reason: {reason}")
 
             # After adjustments, require approval
@@ -1247,12 +1269,12 @@ def approve_event_handicaps(tournament_state: Dict) -> None:
                     result['approved_by'] = initials
                     result['approved_at'] = timestamp
 
-                print(f"\n✓ Adjusted handicaps approved by {initials} at {timestamp}")
+                print(f"\n[OK] Adjusted handicaps approved by {initials} at {timestamp}")
                 # Auto-save
                 auto_save_multi_event(tournament_state)
-                print("✓ Tournament state auto-saved")
+                print("[OK] Tournament state auto-saved")
             else:
-                print("\n⚠ Approval cancelled - adjustments saved but not approved")
+                print("\n[WARN] Approval cancelled - adjustments saved but not approved")
 
             input("\nPress Enter to continue...")
 
@@ -1273,13 +1295,13 @@ def view_wood_count(tournament_state: Dict) -> None:
     from collections import defaultdict
     from woodchopping.data.excel_io import get_species_name_from_code
 
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"WOOD COUNT: {tournament_state.get('tournament_name', 'Unknown')}".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     if not tournament_state.get('events'):
-        print("\n⚠ No events added yet. Use 'Add Event to Tournament' to begin.")
+        print("\n[WARN] No events added yet. Use 'Add Event to Tournament' to begin.")
         input("\nPress Enter to continue...")
         return
 
@@ -1377,17 +1399,17 @@ def view_tournament_schedule(tournament_state: Dict) -> None:
     Args:
         tournament_state: Multi-event tournament state
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"TOURNAMENT SCHEDULE: {tournament_state.get('tournament_name', 'Unknown')}".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     print(f"\nDate: {tournament_state.get('tournament_date', 'Unknown')}")
     print(f"Total events: {tournament_state.get('total_events', 0)}")
     print(f"Events completed: {tournament_state.get('events_completed', 0)}")
 
     if not tournament_state.get('events'):
-        print("\n⚠ No events added yet. Use 'Add Event to Tournament' to begin.")
+        print("\n[WARN] No events added yet. Use 'Add Event to Tournament' to begin.")
         input("\nPress Enter to continue...")
         return
 
@@ -1418,7 +1440,7 @@ def view_tournament_schedule(tournament_state: Dict) -> None:
         if event['rounds']:
             print(f"\nRounds generated: {len(event['rounds'])}")
             for round_obj in event['rounds']:
-                status_icon = "✓" if round_obj['status'] == 'completed' else "○" if round_obj['status'] == 'pending' else "⚠"
+                status_icon = "[OK]" if round_obj['status'] == 'completed' else "[ ]" if round_obj['status'] == 'pending' else "[WARN]"
                 print(f"  {status_icon} {round_obj['round_name']}: {len(round_obj['competitors'])} competitors ({round_obj['status']})")
 
     # Overall summary
@@ -1448,7 +1470,7 @@ def remove_event_from_tournament(tournament_state: Dict) -> Dict:
         dict: Updated tournament_state
     """
     if not tournament_state.get('events'):
-        print("\n⚠ No events to remove.")
+        print("\n[WARN] No events to remove.")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -1463,7 +1485,7 @@ def remove_event_from_tournament(tournament_state: Dict) -> Dict:
             completed = sum(1 for r in event['rounds'] if r['status'] == 'completed')
             total = len(event['rounds'])
             if completed > 0:
-                status_warning = f" [⚠ HAS RESULTS: {completed}/{total} rounds complete]"
+                status_warning = f" [[WARN] HAS RESULTS: {completed}/{total} rounds complete]"
 
         print(f"  {i}) {event['event_name']} ({event['status']}){status_warning}")
 
@@ -1477,21 +1499,21 @@ def remove_event_from_tournament(tournament_state: Dict) -> Dict:
             return tournament_state
 
         if choice < 1 or choice > len(tournament_state['events']):
-            print("⚠ Invalid selection.")
+            print("[WARN] Invalid selection.")
             input("\nPress Enter to continue...")
             return tournament_state
 
         event_to_remove = tournament_state['events'][choice - 1]
 
         # Confirm deletion
-        print(f"\n⚠ WARNING: You are about to remove:")
+        print(f"\n[WARN] WARNING: You are about to remove:")
         print(f"  Event: {event_to_remove['event_name']}")
         print(f"  Status: {event_to_remove['status']}")
 
         if event_to_remove['rounds']:
             completed = sum(1 for r in event_to_remove['rounds'] if r['status'] == 'completed')
             if completed > 0:
-                print(f"  ⚠⚠ This event has {completed} completed round(s) with recorded results!")
+                print(f"  [WARN][WARN] This event has {completed} completed round(s) with recorded results!")
 
         confirm = input("\nType 'DELETE' to confirm removal: ").strip()
 
@@ -1508,14 +1530,14 @@ def remove_event_from_tournament(tournament_state: Dict) -> Dict:
             event['event_order'] = i
             event['event_id'] = f"event_{i}"
 
-        print(f"\n✓ Event '{event_to_remove['event_name']}' removed successfully")
-        print(f"✓ Remaining events reordered")
+        print(f"\n[OK] Event '{event_to_remove['event_name']}' removed successfully")
+        print(f"[OK] Remaining events reordered")
 
         # Auto-save
         auto_save_multi_event(tournament_state)
 
     except ValueError:
-        print("⚠ Invalid input.")
+        print("[WARN] Invalid input.")
 
     input("\nPress Enter to continue...")
     return tournament_state
@@ -1540,13 +1562,13 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
     """
     # Validation
     if not tournament_state.get('tournament_roster'):
-        print("\n⚠ ERROR: Tournament roster not configured.")
+        print("\n[WARN] ERROR: Tournament roster not configured.")
         print("Please use 'Setup Tournament Roster' first.")
         input("\nPress Enter to continue...")
         return tournament_state
 
     if not tournament_state.get('events'):
-        print("\n⚠ ERROR: No events configured.")
+        print("\n[WARN] ERROR: No events configured.")
         print("Please add events first.")
         input("\nPress Enter to continue...")
         return tournament_state
@@ -1605,11 +1627,11 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
         selection = input("\nEvent numbers: ").strip().lower()
 
         if selection == 'quit':
-            print(f"\n⚠ Exiting assignment. Progress saved.")
+            print(f"\n[WARN] Exiting assignment. Progress saved.")
             break
 
         if selection == 'skip':
-            print(f"⚠ Skipped {comp_name}")
+            print(f"[WARN] Skipped {comp_name}")
             continue
 
         # Parse selection
@@ -1617,15 +1639,79 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
             event_indices = [int(x.strip()) - 1 for x in selection.split(',')]
             selected_events = [events[i] for i in event_indices if 0 <= i < len(events)]
         except (ValueError, IndexError):
-            print(f"⚠ Invalid input. Skipping {comp_name}")
+            print(f"[WARN] Invalid input. Skipping {comp_name}")
             continue
 
         if not selected_events:
-            print(f"⚠ No valid events selected. Skipping {comp_name}")
+            print(f"[WARN] No valid events selected. Skipping {comp_name}")
+            continue
+
+        # Validate history per event with N>=3 minimum requirement
+        from woodchopping.data.validation import check_competitor_eligibility
+        results_df = load_results_df()
+        final_events = []
+        blocked_events = []
+        warned_events = []
+
+        for event in selected_events:
+            # CRITICAL: Use 'event_code' (SB/UH), NOT 'event_type' (handicap/championship)
+            event_code = str(event.get('event_code', '')).strip().upper()
+            if not event_code:
+                final_events.append(event)
+                continue
+
+            # Check eligibility with NEW sparse data validation (N>=3)
+            is_eligible, message, count = check_competitor_eligibility(results_df, comp_name, event_code)
+
+            if is_eligible and not message:
+                # Has sufficient history (N >= 10)
+                final_events.append(event)
+                continue
+            elif is_eligible and message:
+                # Has minimum history (3 <= N < 10) - LOW confidence warning
+                warned_events.append((event, count))
+                final_events.append(event)
+                continue
+            else:
+                # BLOCKED - insufficient history (N < 3)
+                blocked_events.append(event)
+                print(f"\nBLOCKED: {comp_name} has only {count} {event_code} results")
+                print(f"  Absolute minimum: 3 results required")
+                add_now = input("Add times now to make them eligible? (y/n): ").strip().lower()
+                if add_now == 'y':
+                    added = prompt_add_competitor_times(comp_name, event_code, {
+                        'species': event.get('wood_species'),
+                        'size_mm': event.get('wood_diameter'),
+                        'quality': event.get('wood_quality')
+                    })
+                    if added:
+                        results_df = load_results_df()
+                        is_eligible, message, count = check_competitor_eligibility(results_df, comp_name, event_code)
+                        if is_eligible:
+                            final_events.append(event)
+                            if message:  # Still has warning
+                                warned_events.append((event, count))
+                            continue
+
+                print(f"Skipping {comp_name} for {event.get('event_name')} (insufficient history).")
+
+        # Display warnings for low-confidence events
+        if warned_events:
+            print(f"\n{'='*70}")
+            print(f"  WARNING: Low Confidence Predictions")
+            print(f"{'='*70}")
+            for event, count in warned_events:
+                print(f"  ! {event['event_name']} - Only {count} results")
+            print(f"\n  Predictions will be less reliable (expect 5-10s error).")
+            print(f"{'='*70}")
+            input("\nPress Enter to continue...")
+
+        if not final_events:
+            print(f"WARNING: No eligible events selected for {comp_name}.")
             continue
 
         # Update competitor assignments
-        comp['events_entered'] = [e['event_id'] for e in selected_events]
+        comp['events_entered'] = [e['event_id'] for e in final_events]
 
         # Entry fee tracking (if enabled)
         if fee_tracking:
@@ -1633,7 +1719,7 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
             print(f"  ENTRY FEE TRACKING")
             print(f"{'='*70}")
 
-            for event in selected_events:
+            for event in final_events:
                 event_name = event['event_name']
 
                 # Check if already tracked
@@ -1643,7 +1729,7 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
                 fee_paid = input(f"{event_name} - Fee paid? (y/n, currently {status_str}): ").strip().lower()
                 comp['entry_fees_paid'][event['event_id']] = (fee_paid == 'y')
 
-        print(f"\n✓ {comp_name} assigned to {len(selected_events)} event(s)")
+        print(f"\n[OK] {comp_name} assigned to {len(selected_events)} event(s)")
 
     # Populate event.all_competitors from assignments
     print(f"\n{'='*70}")
@@ -1683,7 +1769,7 @@ def assign_competitors_to_events(tournament_state: Dict) -> Dict:
         print(f"  {event['event_name']}: {len(assigned_comps)} competitors")
 
     print(f"\n{'='*70}")
-    print(f"  ✓ COMPETITOR ASSIGNMENT COMPLETE")
+    print(f"  [OK] COMPETITOR ASSIGNMENT COMPLETE")
     print(f"{'='*70}")
 
     # Auto-save
@@ -1711,25 +1797,25 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
     Returns:
         dict: Updated tournament_state with heats generated for all events
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"GENERATE COMPLETE DAY SCHEDULE".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     # Validation: All events must have handicaps calculated (status='ready')
     not_ready = [e for e in tournament_state.get('events', []) if e['status'] != 'ready']
     if not_ready:
-        print(f"\n⚠ ERROR: {len(not_ready)} event(s) do not have handicaps calculated:")
+        print(f"\n[WARN] ERROR: {len(not_ready)} event(s) do not have handicaps calculated:")
         for event in not_ready:
             status_msg = "handicaps NOT calculated" if event['status'] == 'configured' else event['status']
             print(f"  - {event['event_name']}: {status_msg}")
-        print("\n⚠ Please calculate handicaps for ALL events first (use Option 5).")
-        print("   Workflow: Configure events → Calculate handicaps → Generate schedule")
+        print("\n[WARN] Please calculate handicaps for ALL events first (use Option 5).")
+        print("   Workflow: Configure events -> Calculate handicaps -> Generate schedule")
         input("\nPress Enter to continue...")
         return tournament_state
 
     if not tournament_state.get('events'):
-        print("\n⚠ No events to generate schedule for.")
+        print("\n[WARN] No events to generate schedule for.")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -1742,13 +1828,13 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
 
         # Skip if already generated
         if event['rounds']:
-            print(f"\n○ {event_display_name}: Heats already generated (skipping)")
+            print(f"\n[ ] {event_display_name}: Heats already generated (skipping)")
             continue
 
         # Display prominent event banner
-        print("\n" + "╔" + "═" * 68 + "╗")
-        print("║" + event_display_name.center(68) + "║")
-        print("╚" + "═" * 68 + "╝")
+        print("\n" + "?" + "?" * 68 + "?")
+        print("?" + event_display_name.center(68) + "?")
+        print("?" + "?" * 68 + "?")
 
         num_competitors = len(event['all_competitors'])
         num_stands = event['num_stands']
@@ -1771,9 +1857,9 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
             }]
 
             # Display detailed stand assignments
-            print(f"\n{'─'*70}")
+            print(f"\n{'-'*70}")
             print(f"  Heat 1 - Single Heat Mode")
-            print(f"{'─'*70}")
+            print(f"{'-'*70}")
 
             # Display competitors with stand numbers and marks
             for stand_num, comp_name in enumerate(heats[0]['competitors'], 1):
@@ -1785,15 +1871,15 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
                 if event_type == 'championship':
                     label = ""
                 elif stand_num == 1:
-                    label = " ← Backmarker"
+                    label = " ? Backmarker"
                 elif stand_num == len(heats[0]['competitors']):
-                    label = " ← Frontmarker"
+                    label = " ? Frontmarker"
                 else:
                     label = ""
 
                 print(f"  Stand {stand_num:2d}: {comp_name:35s} Mark {mark_str:3s}{label}")
 
-            print(f"{'─'*70}")
+            print(f"{'-'*70}")
 
         else:
             # Multi-round tournament mode
@@ -1812,9 +1898,9 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
 
             # Display detailed heat assignments with stand numbers
             for heat in heats:
-                print(f"\n{'─'*70}")
+                print(f"\n{'-'*70}")
                 print(f"  {heat['round_name']} - {len(heat['competitors'])} competitors (top {heat['num_to_advance']} advance)")
-                print(f"{'─'*70}")
+                print(f"{'-'*70}")
 
                 # Competitors are already sorted by snake draft (backmarker first, frontmarker last)
                 for stand_num, comp_name in enumerate(heat['competitors'], 1):
@@ -1826,24 +1912,24 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
                     if event_type == 'championship':
                         label = ""
                     elif stand_num == 1:
-                        label = " ← Backmarker"
+                        label = " ? Backmarker"
                     elif stand_num == len(heat['competitors']):
-                        label = " ← Frontmarker"
+                        label = " ? Frontmarker"
                     else:
                         label = ""
 
                     print(f"  Stand {stand_num:2d}: {comp_name:35s} Mark {mark_str:3s}{label}")
 
-                print(f"{'─'*70}")
+                print(f"{'-'*70}")
 
         # Update event
         event['rounds'] = heats
         event['status'] = 'scheduled'  # Heats generated, ready for competition
 
-        print(f"✓ {event_display_name}: Heats generated successfully")
+        print(f"[OK] {event_display_name}: Heats generated successfully")
 
     print(f"\n{'='*70}")
-    print(f"  ✓ COMPLETE DAY SCHEDULE GENERATED")
+    print(f"  [OK] COMPLETE DAY SCHEDULE GENERATED")
     print(f"{'='*70}")
     print(f"All events ready for competition!")
 
@@ -1866,13 +1952,13 @@ def view_all_handicaps_summary(tournament_state: Dict) -> None:
     Args:
         tournament_state: Multi-event tournament state
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"HANDICAP MARKS - ALL EVENTS".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     if not tournament_state.get('events'):
-        print("\n⚠ No events in tournament.")
+        print("\n[WARN] No events in tournament.")
         input("\nPress Enter to continue...")
         return
 
@@ -1885,7 +1971,7 @@ def view_all_handicaps_summary(tournament_state: Dict) -> None:
         print(f"{'='*70}")
 
         if not event['handicap_results_all']:
-            print("\n⚠ No handicaps calculated for this event.")
+            print("\n[WARN] No handicaps calculated for this event.")
             continue
 
         # Display handicaps sorted by mark
@@ -1940,10 +2026,10 @@ def display_event_progress(event_obj: Dict, current_round: Dict) -> None:
         event_obj: Event object
         current_round: Current round object being worked on
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"EVENT {event_obj['event_order']}: {event_obj['event_name']}".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     # Count rounds by type
     heats = [r for r in event_obj['rounds'] if r['round_type'] == 'heat']
@@ -1957,11 +2043,11 @@ def display_event_progress(event_obj: Dict, current_round: Dict) -> None:
         completed = sum(1 for r in rounds if r['status'] == 'completed')
         total = len(rounds)
         if completed == total:
-            return f"✓ Complete ({total}/{total})"
+            return f"[OK] Complete ({total}/{total})"
         elif completed > 0:
-            return f"⚠ In Progress ({completed}/{total})"
+            return f"[WARN] In Progress ({completed}/{total})"
         else:
-            return f"○ Pending (0/{total})"
+            return f"[ ] Pending (0/{total})"
 
     print(f"\nRound Status:")
     print(f"  Heats: {get_status_display(heats)}")
@@ -1993,15 +2079,15 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
     Returns:
         dict: Updated tournament_state with recorded results
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"SEQUENTIAL RESULTS ENTRY".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     # Validation: All events must have heats generated
     not_ready = [e for e in tournament_state.get('events', []) if e['status'] == 'pending' or e['status'] == 'configured']
     if not_ready:
-        print(f"\n⚠ ERROR: {len(not_ready)} event(s) not ready for results:")
+        print(f"\n[WARN] ERROR: {len(not_ready)} event(s) not ready for results:")
         for event in not_ready:
             print(f"  - {event['event_name']}: {event['status']}")
         print("\nPlease generate schedule first (Option 5).")
@@ -2014,7 +2100,7 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
 
         if event_idx is None:
             print(f"\n{'='*70}")
-            print(f"  ✓ ALL EVENTS COMPLETED!")
+            print(f"  [OK] ALL EVENTS COMPLETED!")
             print(f"{'='*70}")
             print(f"All rounds across all events have been completed.")
             print(f"You can now generate the final tournament summary (Option 8).")
@@ -2066,8 +2152,8 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
             # Select advancers (if not final)
             if not is_final and event_obj['format'] != 'single_heat':
                 advancers = select_heat_advancers(round_obj)
-                print(f"\n✓ {round_obj['round_name']} completed")
-                print(f"✓ Advancers: {', '.join(advancers)}")
+                print(f"\n[OK] {round_obj['round_name']} completed")
+                print(f"[OK] Advancers: {', '.join(advancers)}")
 
                 # Check if we need to generate next round
                 current_round_type = round_obj['round_type']
@@ -2094,12 +2180,29 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
                         next_type = None
 
                     if next_type:
-                        print(f"\n✓ All {current_round_type}s complete")
-                        print(f"✓ Generating {next_type} round...")
+                        print(f"\n[OK] All {current_round_type}s complete")
+                        print(f"[OK] Generating {next_type} round...")
+
+                        target_count = None
+                        if next_type == 'final':
+                            target_count = event_obj.get('num_stands')
+                        elif next_type == 'semi':
+                            num_semis = event_obj.get('capacity_info', {}).get('num_semis', 2)
+                            if event_obj.get('num_stands'):
+                                target_count = event_obj['num_stands'] * num_semis
+
+                        all_advancers = fill_advancers_with_random_draw(
+                            all_heats,
+                            all_advancers,
+                            target_count,
+                            round_label=next_type
+                        )
 
                         # Generate next round using existing function
+                        # Pass full event_obj - it has all required fields:
+                        # rounds, all_competitors_df, wood_species, wood_diameter, wood_quality, event_code
                         next_rounds = generate_next_round(
-                            {'rounds': event_obj['rounds']},  # Wrap in dict for compatibility
+                            event_obj,
                             all_advancers,
                             next_type,
                             is_championship=(event_obj.get('event_type') == 'championship')
@@ -2107,17 +2210,17 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
 
                         # Add to event rounds
                         event_obj['rounds'].extend(next_rounds)
-                        print(f"✓ {len(next_rounds)} {next_type} round(s) generated")
+                        print(f"[OK] {len(next_rounds)} {next_type} round(s) generated")
 
             else:
                 # Final round or single heat - mark event as complete
                 round_obj['status'] = 'completed'
-                print(f"\n✓ {round_obj['round_name']} completed")
+                print(f"\n[OK] {round_obj['round_name']} completed")
 
                 if is_final:
                     event_obj['status'] = 'completed'
                     tournament_state['events_completed'] += 1
-                    print(f"✓ {event_obj['event_name']} COMPLETE!")
+                    print(f"[OK] {event_obj['event_name']} COMPLETE!")
 
                     # Extract placements
                     event_obj['final_results'] = extract_event_placements(event_obj)
@@ -2150,11 +2253,11 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
 
                 if 1 <= event_choice <= len(tournament_state['events']):
                     tournament_state['current_event_index'] = event_choice - 1
-                    print(f"\n✓ Jumped to {tournament_state['events'][event_choice - 1]['event_name']}")
+                    print(f"\n[OK] Jumped to {tournament_state['events'][event_choice - 1]['event_name']}")
                 else:
-                    print("⚠ Invalid selection")
+                    print("[WARN] Invalid selection")
             except ValueError:
-                print("⚠ Invalid input")
+                print("[WARN] Invalid input")
 
             input("\nPress Enter to continue...")
 
@@ -2166,7 +2269,7 @@ def sequential_results_workflow(tournament_state: Dict, wood_selection: Dict, he
             break
 
         else:
-            print("⚠ Invalid selection")
+            print("[WARN] Invalid selection")
 
     return tournament_state
 
@@ -2232,10 +2335,10 @@ def generate_tournament_summary(tournament_state: Dict) -> None:
     Args:
         tournament_state: Multi-event tournament state
     """
-    print(f"\n{'╔' + '═' * 68 + '╗'}")
+    print(f"\n{'?' + '?' * 68 + '?'}")
     title = f"FINAL TOURNAMENT SUMMARY".center(68)
-    print(f"{'║'}{title}{'║'}")
-    print(f"{'╚' + '═' * 68 + '╝'}")
+    print(f"{'?'}{title}{'?'}")
+    print(f"{'?' + '?' * 68 + '?'}")
 
     print(f"\nTournament: {tournament_state.get('tournament_name', 'Unknown')}")
     print(f"Date: {tournament_state.get('tournament_date', 'Unknown')}")
@@ -2244,7 +2347,7 @@ def generate_tournament_summary(tournament_state: Dict) -> None:
     # Validation: All events must be completed
     incomplete = [e for e in tournament_state.get('events', []) if e['status'] != 'completed']
     if incomplete:
-        print(f"\n⚠ WARNING: {len(incomplete)} event(s) not yet completed:")
+        print(f"\n[WARN] WARNING: {len(incomplete)} event(s) not yet completed:")
         for event in incomplete:
             print(f"  - {event['event_name']}: {event['status']}")
         print("\nShowing results for completed events only.")
@@ -2258,37 +2361,37 @@ def generate_tournament_summary(tournament_state: Dict) -> None:
         print(f"Event type: {event['event_code']}")
 
         if event['status'] != 'completed':
-            print(f"\n⚠ Event not completed - no final results available")
+            print(f"\n[WARN] Event not completed - no final results available")
             continue
 
         # Get placements
         results = event.get('final_results', {})
 
         if not results.get('first_place'):
-            print(f"\n⚠ No final results recorded")
+            print(f"\n[WARN] No final results recorded")
             continue
 
         # Find final round to get times
         final_round = [r for r in event['rounds'] if r['round_type'] == 'final'][0]
         actual_results = final_round.get('actual_results', {})
 
-        print(f"\n{'─'*70}")
+        print(f"\n{'-'*70}")
 
         # Display top 3
         if results['first_place']:
             time = actual_results.get(results['first_place'], 'N/A')
             time_str = f"{time:.2f}s" if isinstance(time, (int, float)) else time
-            print(f"  🥇 1st Place: {results['first_place']} ({time_str})")
+            print(f"  [1] 1st Place: {results['first_place']} ({time_str})")
 
         if results['second_place']:
             time = actual_results.get(results['second_place'], 'N/A')
             time_str = f"{time:.2f}s" if isinstance(time, (int, float)) else time
-            print(f"  🥈 2nd Place: {results['second_place']} ({time_str})")
+            print(f"  [2] 2nd Place: {results['second_place']} ({time_str})")
 
         if results['third_place']:
             time = actual_results.get(results['third_place'], 'N/A')
             time_str = f"{time:.2f}s" if isinstance(time, (int, float)) else time
-            print(f"  🥉 3rd Place: {results['third_place']} ({time_str})")
+            print(f"  [3] 3rd Place: {results['third_place']} ({time_str})")
 
         # Display payouts if configured (NEW V5.0)
         payout_config = event.get('payout_config')

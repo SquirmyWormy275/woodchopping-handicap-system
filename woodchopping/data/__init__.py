@@ -17,7 +17,12 @@ from woodchopping.data.validation import (
     standardize_results_data,
 )
 
-from woodchopping.data.preprocessing import engineer_features_for_ml
+from woodchopping.data.preprocessing import (
+    engineer_features_for_ml,
+    load_and_clean_results,
+    fit_wood_hardness_index,
+    calculate_adaptive_half_lives,
+)
 
 __all__ = [
     # Excel I/O
@@ -35,4 +40,8 @@ __all__ = [
     "standardize_results_data",
     # Preprocessing
     "engineer_features_for_ml",
+    # Baseline V2 Preprocessing
+    "load_and_clean_results",
+    "fit_wood_hardness_index",
+    "calculate_adaptive_half_lives",
 ]

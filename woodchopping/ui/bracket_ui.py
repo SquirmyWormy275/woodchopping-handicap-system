@@ -18,9 +18,9 @@ from typing import Dict, List, Optional, Tuple
 import pandas as pd
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # BRACKET STRUCTURE & GENERATION
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def get_round_info(round_number: int, total_rounds: int) -> Dict[str, str]:
     """Generate round name and code based on position in bracket.
@@ -273,9 +273,9 @@ def link_bracket_matches(rounds: List[Dict]) -> None:
             next_match['feeds_from'].append(match['match_id'])
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # DOUBLE ELIMINATION BRACKET GENERATION
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def generate_double_elimination_bracket(predictions: Dict[str, Dict]) -> Dict:
     """Generate double elimination bracket with winners, losers, and grand finals.
@@ -493,9 +493,9 @@ def create_grand_finals_match() -> Dict:
     }
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # SEEDING & PREDICTIONS
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def generate_bracket_seeds(
     competitors_df: pd.DataFrame,
@@ -567,9 +567,9 @@ def generate_bracket_seeds(
     return predictions
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # HELPER FUNCTIONS
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def find_match_by_id(bracket_state: Dict, match_id: str) -> Optional[Dict]:
     """Find a match by its ID."""
@@ -639,9 +639,9 @@ def get_competitor_seed(bracket_state: Dict, competitor_name: str) -> Optional[i
     return None
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # INITIALIZATION
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def initialize_bracket_tournament(num_stands: int, tentative_competitors: int) -> Dict:
     """Initialize new bracket tournament state.
@@ -677,9 +677,9 @@ def initialize_bracket_tournament(num_stands: int, tentative_competitors: int) -
     }
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # MATCH RESULT ENTRY & ADVANCEMENT
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def record_match_result(
     bracket_state: Dict,
@@ -753,11 +753,11 @@ def advance_winner_to_next_match(bracket_state: Dict, completed_match: Dict) -> 
     # Determine which slot in next match (based on match pairing)
     # Even-numbered matches feed top slot, odd feed bottom
     if completed_match['match_number'] % 2 == 1:
-        # Odd match → top slot
+        # Odd match -> top slot
         next_match['competitor1'] = completed_match['winner']
         next_match['seed1'] = get_competitor_seed(bracket_state, completed_match['winner'])
     else:
-        # Even match → bottom slot
+        # Even match -> bottom slot
         next_match['competitor2'] = completed_match['winner']
         next_match['seed2'] = get_competitor_seed(bracket_state, completed_match['winner'])
 
@@ -832,9 +832,9 @@ def determine_final_placements(bracket_state: Dict) -> None:
     }
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # DOUBLE ELIMINATION MATCH RESULT HANDLING
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def record_double_elim_match_result(
     bracket_state: Dict,
@@ -1063,13 +1063,13 @@ def enter_match_results_interactive(bracket_state: Dict) -> Dict:
     current_match = get_current_match(bracket_state)
 
     if not current_match:
-        print("\n✓ All matches completed! Tournament finished.")
+        print("\n[OK] All matches completed! Tournament finished.")
         display_final_results(bracket_state)
         return bracket_state
 
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "ENTER MATCH RESULTS".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "ENTER MATCH RESULTS".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
     # Display current match
     render_match_box(current_match, is_current=True)
@@ -1138,7 +1138,7 @@ def enter_match_results_interactive(bracket_state: Dict) -> Dict:
     confirm = input("\nConfirm these results? (y/n): ").strip().lower()
 
     if confirm != 'y':
-        print("\n✗ Results cancelled. Re-enter match results.")
+        print("\n? Results cancelled. Re-enter match results.")
         return bracket_state
 
     # Record results (use appropriate function based on elimination type)
@@ -1161,7 +1161,7 @@ def enter_match_results_interactive(bracket_state: Dict) -> Dict:
             finish_pos2
         )
 
-    print(f"\n✓ Results recorded for {current_match['match_id']}")
+    print(f"\n[OK] Results recorded for {current_match['match_id']}")
 
     # Display advancement message
     if bracket_state.get('elimination_type') == 'double':
@@ -1169,17 +1169,17 @@ def enter_match_results_interactive(bracket_state: Dict) -> Dict:
         loser = comp1 if winner == comp2 else comp2
 
         if bracket_type == 'winners':
-            print(f"✓ {winner} advances in Winners Bracket")
+            print(f"[OK] {winner} advances in Winners Bracket")
             print(f"  {loser} drops to Losers Bracket")
         elif bracket_type == 'losers':
-            print(f"✓ {winner} advances in Losers Bracket")
-            print(f"✗ {loser} is ELIMINATED")
+            print(f"[OK] {winner} advances in Losers Bracket")
+            print(f"? {loser} is ELIMINATED")
         elif bracket_type == 'grand_finals':
-            print(f"✓ {winner} is the CHAMPION!")
+            print(f"[OK] {winner} is the CHAMPION!")
             print(f"  {loser} is Runner-Up")
     else:
         if current_match.get('advances_to'):
-            print(f"✓ {winner} advances to {current_match['advances_to']}")
+            print(f"[OK] {winner} advances to {current_match['advances_to']}")
 
     return bracket_state
 
@@ -1193,7 +1193,7 @@ def sequential_match_entry_workflow(bracket_state: Dict) -> Dict:
         current_match = get_current_match(bracket_state)
 
         if not current_match:
-            print("\n✓ Tournament complete!")
+            print("\n[OK] Tournament complete!")
             display_final_results(bracket_state)
             break
 
@@ -1220,9 +1220,9 @@ def sequential_match_entry_workflow(bracket_state: Dict) -> Dict:
     return bracket_state
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # VISUAL DISPLAY - MATCH BOX RENDERING
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def render_match_box(match: Dict, is_current: bool = False) -> None:
     """Render a single match with box-drawing characters.
@@ -1233,32 +1233,32 @@ def render_match_box(match: Dict, is_current: bool = False) -> None:
     """
     # Highlight current match
     if is_current:
-        top_char = "╔"
-        bottom_char = "╚"
-        side_char = "║"
-        mid_char = "╠"
-        horizontal = "═"
+        top_char = "?"
+        bottom_char = "?"
+        side_char = "?"
+        mid_char = "?"
+        horizontal = "?"
     else:
-        top_char = "┌"
-        bottom_char = "└"
-        side_char = "│"
-        mid_char = "├"
-        horizontal = "─"
+        top_char = "+"
+        bottom_char = "+"
+        side_char = "|"
+        mid_char = "+"
+        horizontal = "-"
 
     width = 60
 
     # Status indicator
     if match['status'] == 'completed':
-        status = "✓"
+        status = "[OK]"
     elif match['status'] == 'in_progress':
-        status = "⚡ ACTIVE"
+        status = "? ACTIVE"
     elif match['status'] == 'bye':
         status = "BYE"
     else:
         status = "PENDING"
 
     # Top border
-    print(f"{top_char}{horizontal * (width - 2)}{top_char.replace('╔', '╗').replace('┌', '┐')}")
+    print(f"{top_char}{horizontal * (width - 2)}{top_char.replace('?', '?').replace('+', '+')}")
 
     # Match header
     header = f" {match['match_id']}"
@@ -1266,7 +1266,7 @@ def render_match_box(match: Dict, is_current: bool = False) -> None:
     print(f"{side_char}{header}{' ' * padding}[{status}]{side_char}")
 
     # Middle border
-    print(f"{mid_char}{horizontal * (width - 2)}{mid_char.replace('╠', '╣').replace('├', '┤')}")
+    print(f"{mid_char}{horizontal * (width - 2)}{mid_char.replace('?', '?').replace('+', '+')}")
 
     # Competitor 1
     if match['competitor1']:
@@ -1298,13 +1298,13 @@ def render_match_box(match: Dict, is_current: bool = False) -> None:
 
     # Winner line (if match completed)
     if match['winner']:
-        print(f"{mid_char}{horizontal * (width - 2)}{mid_char.replace('╠', '╣').replace('├', '┤')}")
-        advances_text = f"→ Advances to {match['advances_to']}" if match.get('advances_to') else "→ CHAMPION!"
+        print(f"{mid_char}{horizontal * (width - 2)}{mid_char.replace('?', '?').replace('+', '+')}")
+        advances_text = f"-> Advances to {match['advances_to']}" if match.get('advances_to') else "-> CHAMPION!"
         winner_line = f"Winner: {match['winner']} {advances_text}"
         print(f"{side_char} {winner_line:<{width - 3}}{side_char}")
 
     # Bottom border
-    print(f"{bottom_char}{horizontal * (width - 2)}{bottom_char.replace('╚', '╝').replace('└', '┘')}")
+    print(f"{bottom_char}{horizontal * (width - 2)}{bottom_char.replace('?', '?').replace('+', '+')}")
     print()
 
 
@@ -1318,7 +1318,7 @@ def format_competitor_line(
     """Format a competitor line for match display.
 
     Returns:
-        Formatted string like: "(1) John Smith         23.5s  [1st] ✓"
+        Formatted string like: "(1) John Smith         23.5s  [1st] [OK]"
     """
     # Seed and name
     seed_str = f"({seed})" if seed else "   "
@@ -1336,18 +1336,18 @@ def format_competitor_line(
         pos_str = "     "
 
     # Winner indicator
-    winner_mark = "✓" if name == winner else " "
+    winner_mark = "[OK]" if name == winner else " "
 
     return f"{seed_str} {name_trunc:<27} {time_str}  {pos_str} {winner_mark}"
 
 
 def display_final_results(bracket_state: Dict) -> None:
     """Display final tournament results."""
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "TOURNAMENT COMPLETE!".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "TOURNAMENT COMPLETE!".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
-    print("🏆 FINAL RESULTS:")
+    print("TROPHY FINAL RESULTS:")
     print("=" * 70)
     print(f"\n  1st Place:  {bracket_state.get('champion', 'N/A')}")
     print(f"  2nd Place:  {bracket_state.get('runner_up', 'N/A')}")
@@ -1355,9 +1355,9 @@ def display_final_results(bracket_state: Dict) -> None:
     print()
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # VISUAL DISPLAY - ASCII TREE RENDERING
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def render_bracket_tree_ascii(bracket_state: Dict) -> None:
     """Render horizontal bracket tree with ASCII art.
@@ -1365,10 +1365,10 @@ def render_bracket_tree_ascii(bracket_state: Dict) -> None:
     For small brackets (<=16 competitors), shows full tree.
     For larger brackets, shows current round section.
     """
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + f"  {bracket_state['event_name']}".center(68) + "║")
-    print("║" + "  HEAD-TO-HEAD BRACKET".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + f"  {bracket_state['event_name']}".center(68) + "?")
+    print("?" + "  HEAD-TO-HEAD BRACKET".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
     num_competitors = bracket_state['num_competitors']
 
@@ -1389,54 +1389,54 @@ def render_double_elim_bracket_ascii(bracket_state: Dict) -> None:
     - Losers Bracket section
     - Grand Finals section
     """
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + f"  {bracket_state['event_name']}".center(68) + "║")
-    print("║" + "  DOUBLE ELIMINATION BRACKET".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + f"  {bracket_state['event_name']}".center(68) + "?")
+    print("?" + "  DOUBLE ELIMINATION BRACKET".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
     # WINNERS BRACKET
-    print("╔" + "═" * 68 + "╗")
-    print("║" + "  WINNERS BRACKET".center(68) + "║")
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
+    print("?" + "  WINNERS BRACKET".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     if 'winners_rounds' in bracket_state:
         for round_obj in bracket_state['winners_rounds']:
             print(f"\n{round_obj['round_name']}:")
-            print("─" * 70)
+            print("-" * 70)
             for match in round_obj['matches']:
                 render_match_box_compact(match)
                 print()
 
     # LOSERS BRACKET
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "  LOSERS BRACKET".center(68) + "║")
-    print("╚" + "═" * 68 + "╝")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "  LOSERS BRACKET".center(68) + "?")
+    print("?" + "?" * 68 + "?")
 
     if 'losers_rounds' in bracket_state:
         for round_obj in bracket_state['losers_rounds']:
             print(f"\n{round_obj['round_name']}:")
-            print("─" * 70)
+            print("-" * 70)
             for match in round_obj['matches']:
                 render_match_box_compact(match)
                 if match.get('drop_in_from'):
-                    print(f"  ↓ Drop-ins from {match['drop_in_from']}")
+                    print(f"  ? Drop-ins from {match['drop_in_from']}")
                 print()
 
     # GRAND FINALS
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "  GRAND FINALS".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "  GRAND FINALS".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
     if 'grand_finals' in bracket_state:
         render_match_box_compact(bracket_state['grand_finals'])
 
     # Show eliminated competitors
     if bracket_state.get('eliminated'):
-        print("\n╔" + "═" * 68 + "╗")
-        print("║" + "  ELIMINATED".center(68) + "║")
-        print("╚" + "═" * 68 + "╝")
+        print("\n?" + "?" * 68 + "?")
+        print("?" + "  ELIMINATED".center(68) + "?")
+        print("?" + "?" * 68 + "?")
         for competitor in bracket_state['eliminated']:
-            print(f"  ✗ {competitor}")
+            print(f"  ? {competitor}")
 
 
 def render_match_box_compact(match: Dict) -> None:
@@ -1462,12 +1462,12 @@ def render_match_box_compact(match: Dict) -> None:
 
     # Status indicators
     if status == 'completed':
-        w1 = "✓" if winner == comp1 else " "
-        w2 = "✓" if winner == comp2 else " "
+        w1 = "[OK]" if winner == comp1 else " "
+        w2 = "[OK]" if winner == comp2 else " "
         print(f"  {match_id}: {w1} {c1_display:30} {time1:5.2f}s" if time1 else f"  {match_id}: {w1} {c1_display:30}")
         print(f"         {w2} {c2_display:30} {time2:5.2f}s" if time2 else f"         {w2} {c2_display:30}")
     elif status == 'bye':
-        print(f"  {match_id}: ✓ {c1_display:30} (BYE)")
+        print(f"  {match_id}: [OK] {c1_display:30} (BYE)")
     elif status == 'pending' and comp1 != 'TBD' and comp2 != 'TBD':
         print(f"  {match_id}:   {c1_display:30} [Ready]")
         print(f"           {c2_display:30}")
@@ -1494,7 +1494,7 @@ def render_full_bracket_tree(bracket_state: Dict) -> None:
     for header in round_headers:
         header_line += header[:col_width-2].ljust(col_width) + spacing
     print(header_line)
-    print("─" * len(header_line))
+    print("-" * len(header_line))
     print()
 
     # Simple tree representation - vertical stacking with connections
@@ -1502,7 +1502,7 @@ def render_full_bracket_tree(bracket_state: Dict) -> None:
     render_tree_recursive(rounds, 0, 0, col_width, spacing)
 
     print()
-    print("Legend: ✓ = Winner  ┐├┘ = Bracket connections  ► = Advances")
+    print("Legend: [OK] = Winner  +++ = Bracket connections  ? = Advances")
     print()
 
 
@@ -1521,26 +1521,26 @@ def render_tree_recursive(rounds: List[Dict], round_idx: int, match_idx: int, co
         # Add winner mark
         if match['winner']:
             if match['winner'] == match['competitor1']:
-                comp1 += " ✓"
+                comp1 += " [OK]"
             elif match['winner'] == match['competitor2']:
-                comp2 += " ✓"
+                comp2 += " [OK]"
 
         # Truncate to fit
         comp1 = comp1[:col_width-2]
         comp2 = comp2[:col_width-2]
 
         # Print match
-        print(f"{comp1.ljust(col_width)}  ┐")
-        print(f"{' ' * col_width}  ├──► ", end="")
+        print(f"{comp1.ljust(col_width)}  +")
+        print(f"{' ' * col_width}  +--? ", end="")
 
         # Print advancing competitor if exists
         if match['winner']:
-            adv_name = f"{match['winner'][:15]} ✓"
+            adv_name = f"{match['winner'][:15]} [OK]"
             print(adv_name)
         else:
             print("TBD")
 
-        print(f"{comp2.ljust(col_width)}  ┘")
+        print(f"{comp2.ljust(col_width)}  +")
         print()
 
 
@@ -1550,9 +1550,9 @@ def render_round_section(bracket_state: Dict, round_number: int) -> None:
 
     for round_obj in rounds:
         if round_obj['round_number'] == round_number:
-            print(f"\n{'═' * 70}")
+            print(f"\n{'?' * 70}")
             print(f"  {round_obj['round_name'].upper()} ({round_obj['round_code']})")
-            print(f"{'═' * 70}")
+            print(f"{'?' * 70}")
 
             current_match = get_current_match(bracket_state)
 
@@ -1564,9 +1564,9 @@ def render_round_section(bracket_state: Dict, round_number: int) -> None:
             break
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 # HTML EXPORT
-# ═══════════════════════════════════════════════════════════════════════════
+# ???????????????????????????????????????????????????????????????????????????
 
 def export_bracket_to_html(bracket_state: Dict) -> str:
     """Generate HTML file with bracket visualization.
@@ -1865,8 +1865,8 @@ def generate_matches_html(matches: List[Dict]) -> str:
     for match in matches:
         status_class = match['status']
         status_text = {
-            'completed': '✓ Complete',
-            'in_progress': '⚡ Active',
+            'completed': '[OK] Complete',
+            'in_progress': '? Active',
             'pending': 'Pending',
             'bye': 'BYE'
         }.get(match['status'], 'Pending')
@@ -1898,7 +1898,7 @@ def generate_matches_html(matches: List[Dict]) -> str:
         result_html = ""
         if match['winner']:
             advances_text = f"Advances to {match['advances_to']}" if match.get('advances_to') else "CHAMPION!"
-            result_html = f'<div class="match-result">Winner: {match["winner"]} → {advances_text}</div>'
+            result_html = f'<div class="match-result">Winner: {match["winner"]} -> {advances_text}</div>'
 
         match_html = f"""
         <div class="match {status_class}">
@@ -1927,7 +1927,7 @@ def generate_competitor_html(
     """Generate HTML for a single competitor."""
     is_winner = (name == winner)
     winner_class = "winner" if is_winner else ""
-    winner_mark = '<span class="winner-indicator">✓</span>' if is_winner else ""
+    winner_mark = '<span class="winner-indicator">[OK]</span>' if is_winner else ""
 
     seed_html = f'<span class="seed">({seed})</span>' if seed else ''
     time_html = f'<span class="time">{time:.1f}s</span>' if time else ''

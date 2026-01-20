@@ -12,15 +12,15 @@ The system implements a critical innovation: absolute variance modeling (±3 sec
 
 ```bash
 # Run main program
-python MainProgramV5_0.py
+python MainProgramV5_2.py
 
 # Ensure Ollama is running locally for AI predictions
-# Model required: qwen2.5:7b (optimized for mathematical reasoning)
+# Model required: qwen2.5:32b (optimized for mathematical reasoning and enhanced precision)
 ```
 
 **Prerequisites:**
 - Python 3.13.3
-- Ollama running locally with qwen2.5:7b model
+- Ollama running locally with qwen2.5:32b model
 - `woodchopping.xlsx` in the same directory as scripts
 
 **Main Menu Options:**
@@ -113,8 +113,8 @@ print("╚" + "═" * 68 + "╝")
 
 ### 5. Approved Banner Designs:
 Current approved banners in the codebase:
-- **Single Event Tournament Menu** ([MainProgramV5_0.py:194-205](MainProgramV5_0.py#L194-L205)) - "HANDICAP CALCULATION SYSTEM"
-- **Multi-Event Tournament Menu** ([MainProgramV5_0.py:745-753](MainProgramV5_0.py#L745-L753)) - "TOURNAMENT CONTROL SYSTEM"
+- **Single Event Tournament Menu** ([MainProgramV5_2.py:194-205](MainProgramV5_2.py#L194-L205)) - "HANDICAP CALCULATION SYSTEM"
+- **Multi-Event Tournament Menu** ([MainProgramV5_2.py:745-753](MainProgramV5_2.py#L745-L753)) - "TOURNAMENT CONTROL SYSTEM"
 
 ### 6. Why This Matters:
 **Professionalism = Attention to Detail**
@@ -123,11 +123,83 @@ This software is being considered for use at professional woodchopping competiti
 
 **This is NOT optional. Proper alignment is a requirement, not a preference.**
 
+## ⚠️ CRITICAL DEVELOPMENT RULE - LLM PROMPT MAINTENANCE
+
+**STANDING ORDER (MANDATORY):**
+
+LLM prompts are CRITICAL to prediction accuracy. When system features change, prompts MUST be updated to maintain AI reasoning quality.
+
+### 1. When to Update Prompts:
+- **Adding prediction features** (tournament weighting, new baselines, etc.)
+- **Changing prediction methodology** (time-decay formulas, scaling algorithms)
+- **Adding system capabilities** (new statistics, confidence metrics)
+- **Fixing prediction bugs** (if LLM needs to handle differently)
+- **Adding optional parameters** (new contextual flags)
+
+### 2. Which Prompts Exist:
+- **Time Prediction** (`woodchopping/predictions/ai_predictor.py::predict_competitor_time_with_ai()`)
+  - Purpose: Quality adjustment to baseline times
+  - Critical: Tournament context, baseline sophistication, time-decay
+- **Fairness Assessment** (`woodchopping/simulation/fairness.py::get_ai_assessment_of_handicaps()`)
+  - Purpose: Analyze Monte Carlo results, diagnose bias patterns
+  - Critical: Competitor statistics, variance analysis, consistency
+- **Championship Analysis** (`woodchopping/simulation/fairness.py::get_championship_race_analysis()`)
+  - Purpose: Sports commentary for championship races
+  - Critical: Win probabilities, matchup analysis, upset potential
+
+### 3. Prompt Update Checklist:
+When system changes affect predictions:
+- [ ] **Identify affected prompts** (which prompts reference this feature?)
+- [ ] **Add system context** (explain new capability to LLM)
+- [ ] **Add conditional sections** (if feature is optional)
+- [ ] **Update examples** (show new behavior in action)
+- [ ] **Test thoroughly** (A/B test vs old prompt if possible)
+- [ ] **Update documentation**:
+  - [ ] `PROMPT_CHANGELOG.md` (log version, changes, rationale)
+  - [ ] `PROMPT_ENGINEERING_GUIDELINES.md` (if new patterns introduced)
+  - [ ] `LLM_PROMPT_AUDIT_2026.md` (mark issues as resolved)
+
+### 4. Example: Tournament Weighting Feature
+When V4.4 added 97% tournament weighting:
+```python
+# ❌ BAD - LLM has no idea tournament weighting exists
+prompt = f"Baseline: {baseline:.1f}s. Adjust for quality."
+
+# ✅ GOOD - LLM understands the context
+if tournament_weighted:
+    prompt += f"""
+⚠️ TOURNAMENT CONTEXT
+Competitor already competed on THIS EXACT WOOD
+Tournament result: {tournament_time:.1f}s (97% weight)
+Your adjustment should be MINIMAL - wood is PROVEN
+"""
+```
+
+### 5. Why This Matters:
+**Prompt = LLM's Understanding**
+
+LLM cannot infer system internals. If you add sophisticated features (tournament weighting, adaptive time-decay, convergence calibration) but don't update prompts, the LLM will:
+- Apply incorrect adjustments (treating sophisticated baseline as simple average)
+- Miss opportunities (not leveraging high-confidence tournament data)
+- Generate worse predictions (double-adjusting for already-modeled factors)
+
+**This is NOT optional. Prompt updates are part of the feature implementation.**
+
+### 6. Documentation Standards:
+See `PROMPT_ENGINEERING_GUIDELINES.md` for:
+- Core principles (clarity, structure, context management)
+- STRATHEX-specific guidelines
+- Testing & validation procedures
+- Versioning & change management
+- Common pitfalls and how to avoid them
+
+**This is NOT optional. Prompt maintenance is critical to prediction accuracy.**
+
 ## Architecture
 
 ### Core Components
 
-**MainProgramV5_0.py** - Tournament management interface
+**MainProgramV5_2.py** - Tournament management interface
 - Multi-round tournament system (heats → semis → finals)
 - Main menu loop with 8 main options covering tournament modes, championship simulator, personnel management, and system functions
 - **Option 1**: Single Event Tournament - Design and run individual events with multi-round progression

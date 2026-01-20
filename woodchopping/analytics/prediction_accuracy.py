@@ -270,10 +270,10 @@ def format_prediction_accuracy_report(analysis: Dict) -> str:
     lines = []
 
     # Header
-    lines.append("╔" + "═" * 68 + "╗")
-    lines.append("║" + "PREDICTION ACCURACY REPORT".center(68) + "║")
-    lines.append("║" + analysis.get('round_name', 'Unknown Round').center(68) + "║")
-    lines.append("╚" + "═" * 68 + "╝")
+    lines.append("?" + "?" * 68 + "?")
+    lines.append("?" + "PREDICTION ACCURACY REPORT".center(68) + "?")
+    lines.append("?" + analysis.get('round_name', 'Unknown Round').center(68) + "?")
+    lines.append("?" + "?" * 68 + "?")
     lines.append("")
 
     # Overall accuracy
@@ -294,9 +294,9 @@ def format_prediction_accuracy_report(analysis: Dict) -> str:
     # Per-competitor breakdown
     if analysis['per_competitor']:
         lines.append("Per-Competitor Breakdown:")
-        lines.append("┌" + "─" * 22 + "┬" + "─" * 11 + "┬" + "─" * 11 + "┬" + "─" * 11 + "┬" + "─" * 9 + "┐")
-        lines.append("│ Competitor           │ Predicted │ Actual    │ Error     │ % Error │")
-        lines.append("├" + "─" * 22 + "┼" + "─" * 11 + "┼" + "─" * 11 + "┼" + "─" * 11 + "┼" + "─" * 9 + "┤")
+        lines.append("+" + "-" * 22 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 9 + "+")
+        lines.append("| Competitor           | Predicted | Actual    | Error     | % Error |")
+        lines.append("+" + "-" * 22 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 9 + "+")
 
         for comp in analysis['per_competitor']:
             name = comp['name'][:20].ljust(20)
@@ -305,37 +305,37 @@ def format_prediction_accuracy_report(analysis: Dict) -> str:
             error = f"{comp['error']:+.1f}s".center(9)
             pct_error = f"{comp['pct_error']:+.1f}%".center(7)
 
-            flag = f" ★ {comp.get('flag', '')}" if 'flag' in comp else ""
+            flag = f" ? {comp.get('flag', '')}" if 'flag' in comp else ""
 
-            lines.append(f"│ {name} │ {predicted} │ {actual} │ {error} │ {pct_error} │{flag}")
+            lines.append(f"| {name} | {predicted} | {actual} | {error} | {pct_error} |{flag}")
 
-        lines.append("└" + "─" * 22 + "┴" + "─" * 11 + "┴" + "─" * 11 + "┴" + "─" * 11 + "┴" + "─" * 9 + "┘")
+        lines.append("+" + "-" * 22 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 11 + "+" + "-" * 9 + "+")
         lines.append("")
 
     # Per-method comparison
     if len(analysis.get('per_method', [])) > 1:
         lines.append("Prediction Method Comparison:")
-        lines.append("┌" + "─" * 17 + "┬" + "─" * 13 + "┬" + "─" * 19 + "┐")
-        lines.append("│ Method          │ Times Used  │ Avg Error (MAE)   │")
-        lines.append("├" + "─" * 17 + "┼" + "─" * 13 + "┼" + "─" * 19 + "┤")
+        lines.append("+" + "-" * 17 + "+" + "-" * 13 + "+" + "-" * 19 + "+")
+        lines.append("| Method          | Times Used  | Avg Error (MAE)   |")
+        lines.append("+" + "-" * 17 + "+" + "-" * 13 + "+" + "-" * 19 + "+")
 
         for method in analysis['per_method']:
             method_name = method['method'][:15].ljust(15)
             count = str(method['count']).center(11)
             mae = f"{method['mae']:.1f}s".center(17)
 
-            flag = f" ★ {method.get('flag', '')}" if 'flag' in method else ""
+            flag = f" ? {method.get('flag', '')}" if 'flag' in method else ""
 
-            lines.append(f"│ {method_name} │ {count} │ {mae} │{flag}")
+            lines.append(f"| {method_name} | {count} | {mae} |{flag}")
 
-        lines.append("└" + "─" * 17 + "┴" + "─" * 13 + "┴" + "─" * 19 + "┘")
+        lines.append("+" + "-" * 17 + "+" + "-" * 13 + "+" + "-" * 19 + "+")
         lines.append("")
 
     # Insights
     if analysis.get('insights'):
         lines.append("Insights:")
         for insight in analysis['insights']:
-            lines.append(f"  • {insight}")
+            lines.append(f"  - {insight}")
         lines.append("")
 
     lines.append("[Press Enter to continue]")

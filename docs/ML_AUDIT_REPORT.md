@@ -60,14 +60,13 @@ weight = 0.5^(days_old / 730)
 | Species | `species` | Results sheet | Matching/filtering |
 | Diameter | `size_mm` | Results sheet | ML model, scaling |
 
-### Available But NOT Used
+Baseline V2 Hybrid now builds a composite hardness index from Janka, specific gravity,
+crush strength, shear strength, MOR, and MOE using deconfounded residuals.
+
+### Available But NOT Used (ML Model)
 
 | Property | Column Name | Potential Value |
 |----------|-------------|-----------------|
-| Crush Strength | `crush_strength` | Material resistance |
-| Shear Strength | `shear` | Cutting resistance |
-| MOR (Modulus of Rupture) | `MOR` | Bending strength |
-| MOE (Modulus of Elasticity) | `MOE` | Stiffness |
 | **Wood Quality (0-10)** | **Judge assessment** | **Real-time condition** |
 
 ### Critical Missing Feature: Wood Quality ⚠️
@@ -77,12 +76,12 @@ weight = 0.5^(days_old / 730)
 **Current State:**
 - Quality IS used by LLM predictions (for adjustment)
 - Quality is NOT used by ML predictions
-- Quality is NOT used by baseline predictions
+- Baseline predictions apply rule-based quality adjustment (2% per point)
 
 **Impact:**
 - ML predictions don't account for wood condition variations
 - Two blocks of same species/size but different quality get same prediction
-- LLM compensates for this, but baseline and ML do not
+- LLM compensates for this, but ML does not
 
 **Recommendation:** Add wood quality as a feature or apply quality adjustment to all prediction methods.
 

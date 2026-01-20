@@ -1,4 +1,4 @@
-"""V5.1 UI Helper Functions for Tournament Entry Management.
+"""V5.2 UI Helper Functions for Tournament Entry Management.
 
 These functions provide view, edit, and scratch management capabilities
 for the new entry-form workflow.
@@ -20,7 +20,7 @@ def view_tournament_entries(tournament_state: Dict) -> None:
         tournament_state: Multi-event tournament state
     """
     if not tournament_state.get('tournament_roster'):
-        print("\n⚠ No tournament roster configured")
+        print("\n[WARN] No tournament roster configured")
         input("\nPress Enter to continue...")
         return
 
@@ -60,7 +60,7 @@ def view_tournament_entries(tournament_state: Dict) -> None:
         print(f"\n{comp_name}")
 
         if not events_entered:
-            print(f"  ⚠ No events assigned")
+            print(f"  [WARN] No events assigned")
             continue
 
         print(f"  Events ({len(events_entered)}):")
@@ -74,7 +74,7 @@ def view_tournament_entries(tournament_state: Dict) -> None:
 
             if fee_tracking:
                 fee_paid = comp['entry_fees_paid'].get(event_id, False)
-                status = "✓ PAID" if fee_paid else "✗ UNPAID"
+                status = "[OK] PAID" if fee_paid else "? UNPAID"
                 print(f"    - {event_name} [{status}]")
             else:
                 print(f"    - {event_name}")
@@ -119,7 +119,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
     from woodchopping.ui.multi_event_ui import auto_save_multi_event
 
     if not tournament_state.get('tournament_roster'):
-        print("\n⚠ No tournament roster configured")
+        print("\n[WARN] No tournament roster configured")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -156,30 +156,30 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 comp_idx = int(input("\nSelect competitor number: ").strip()) - 1
                 comp = roster[comp_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             # Show events
             print(f"\nEvents:")
             for i, event in enumerate(events, 1):
-                assigned = "✓" if event['event_id'] in comp['events_entered'] else " "
+                assigned = "[OK]" if event['event_id'] in comp['events_entered'] else " "
                 print(f"{i}. [{assigned}] {event['event_name']}")
 
             try:
                 event_idx = int(input("\nSelect event number: ").strip()) - 1
                 event = events[event_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             # Check if already assigned
             if event['event_id'] in comp['events_entered']:
-                print(f"⚠ {comp['competitor_name']} already entered in {event['event_name']}")
+                print(f"[WARN] {comp['competitor_name']} already entered in {event['event_name']}")
                 continue
 
             # Check if heats already generated
             if event.get('rounds') and any(r.get('status') != 'pending' for r in event['rounds']):
-                print(f"⚠ Cannot add competitor - heats already generated for {event['event_name']}")
+                print(f"[WARN] Cannot add competitor - heats already generated for {event['event_name']}")
                 print(f"   Use scratch management instead.")
                 continue
 
@@ -207,7 +207,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 fee_paid = input(f"Entry fee paid? (y/n): ").strip().lower()
                 comp['entry_fees_paid'][event['event_id']] = (fee_paid == 'y')
 
-            print(f"\n✓ {comp['competitor_name']} added to {event['event_name']}")
+            print(f"\n[OK] {comp['competitor_name']} added to {event['event_name']}")
 
             # Auto-save
             auto_save_multi_event(tournament_state)
@@ -227,11 +227,11 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 comp_idx = int(input("\nSelect competitor number: ").strip()) - 1
                 comp = roster[comp_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             if not comp['events_entered']:
-                print(f"⚠ {comp['competitor_name']} has no event entries")
+                print(f"[WARN] {comp['competitor_name']} has no event entries")
                 continue
 
             # Show their events
@@ -244,19 +244,19 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 event_idx = int(input("\nSelect event number to remove from: ").strip()) - 1
                 event = comp_events[event_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             # Check if heats already generated
             if event.get('rounds') and any(r.get('status') != 'pending' for r in event['rounds']):
-                print(f"⚠ Cannot remove competitor - heats already generated for {event['event_name']}")
+                print(f"[WARN] Cannot remove competitor - heats already generated for {event['event_name']}")
                 print(f"   Use scratch management instead.")
                 continue
 
             # Confirm removal
             confirm = input(f"\nConfirm removal of {comp['competitor_name']} from {event['event_name']}? (y/n): ")
             if confirm.strip().lower() != 'y':
-                print(f"⚠ Cancelled")
+                print(f"[WARN] Cancelled")
                 continue
 
             # Remove assignment
@@ -276,7 +276,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
             if event['event_id'] in comp['entry_fees_paid']:
                 del comp['entry_fees_paid'][event['event_id']]
 
-            print(f"\n✓ {comp['competitor_name']} removed from {event['event_name']}")
+            print(f"\n[OK] {comp['competitor_name']} removed from {event['event_name']}")
 
             # Auto-save
             auto_save_multi_event(tournament_state)
@@ -284,7 +284,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
         elif choice == '3':
             # Update entry fee status
             if not fee_tracking:
-                print(f"\n⚠ Entry fee tracking is disabled for this tournament")
+                print(f"\n[WARN] Entry fee tracking is disabled for this tournament")
                 continue
 
             print(f"\n{'='*70}")
@@ -302,7 +302,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                     unpaid_comps.append((comp, unpaid_events))
 
             if not unpaid_comps:
-                print(f"\n✓ All entry fees paid!")
+                print(f"\n[OK] All entry fees paid!")
                 continue
 
             print(f"\nCompetitors with unpaid fees:")
@@ -313,7 +313,7 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 comp_idx = int(input("\nSelect competitor number: ").strip()) - 1
                 comp, unpaid_events = unpaid_comps[comp_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             # Show unpaid events
@@ -329,19 +329,19 @@ def edit_event_entries(tournament_state: Dict) -> Dict:
                 event_idx = int(input("\nSelect event number to mark as paid: ").strip()) - 1
                 event = unpaid_event_objs[event_idx]
             except (ValueError, IndexError):
-                print(f"⚠ Invalid selection")
+                print(f"[WARN] Invalid selection")
                 continue
 
             # Mark as paid
             comp['entry_fees_paid'][event['event_id']] = True
 
-            print(f"\n✓ {comp['competitor_name']} - {event['event_name']} marked as PAID")
+            print(f"\n[OK] {comp['competitor_name']} - {event['event_name']} marked as PAID")
 
             # Auto-save
             auto_save_multi_event(tournament_state)
 
         else:
-            print(f"⚠ Invalid choice")
+            print(f"[WARN] Invalid choice")
 
     return tournament_state
 
@@ -361,7 +361,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
     from woodchopping.ui.multi_event_ui import auto_save_multi_event
 
     if not tournament_state.get('tournament_roster'):
-        print("\n⚠ No tournament roster configured")
+        print("\n[WARN] No tournament roster configured")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -386,7 +386,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
                 active_assignments.append((comp, event))
 
     if not active_assignments:
-        print(f"\n⚠ No active competitor entries found")
+        print(f"\n[WARN] No active competitor entries found")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -405,7 +405,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
         idx = int(selection) - 1
         comp, event = active_assignments[idx]
     except (ValueError, IndexError):
-        print(f"⚠ Invalid selection")
+        print(f"[WARN] Invalid selection")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -422,7 +422,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
 
     confirm = input(f"\nConfirm scratch? (y/n): ").strip().lower()
     if confirm != 'y':
-        print(f"⚠ Scratch cancelled")
+        print(f"[WARN] Scratch cancelled")
         input("\nPress Enter to continue...")
         return tournament_state
 
@@ -436,7 +436,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
 
         if not rounds:
             # No bracket generated yet - simple removal
-            print(f"\n✓ {comp_name} removed from {event_name} (bracket not generated yet)")
+            print(f"\n[OK] {comp_name} removed from {event_name} (bracket not generated yet)")
             event['all_competitors'].remove(comp_name)
             event['all_competitors_df'] = event['all_competitors_df'][
                 event['all_competitors_df']['competitor_name'] != comp_name
@@ -484,12 +484,12 @@ def manage_scratches(tournament_state: Dict) -> Dict:
                 event['total_rounds'] = len(rounds)
                 event['total_matches'] = sum(len(r['matches']) for r in rounds)
 
-                print(f"\n✓ Bracket regenerated without {comp_name}")
+                print(f"\n[OK] Bracket regenerated without {comp_name}")
                 print(f"  New bracket: {len(predictions)} competitors, {len(rounds)} rounds")
 
             else:
                 # Matches already started - mark as forfeit
-                print(f"\n⚠ Matches already in progress. {comp_name} marked as withdrawn.")
+                print(f"\n[WARN] Matches already in progress. {comp_name} marked as withdrawn.")
                 print(f"   Their remaining matches will be forfeits.")
 
                 # Mark all pending/in-progress matches as forfeits
@@ -513,7 +513,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
 
         if not rounds:
             # No heats generated yet - simple removal
-            print(f"\n✓ {comp_name} removed from {event_name} (heats not generated yet)")
+            print(f"\n[OK] {comp_name} removed from {event_name} (heats not generated yet)")
             event['all_competitors'].remove(comp_name)
             event['all_competitors_df'] = event['all_competitors_df'][
                 event['all_competitors_df']['competitor_name'] != comp_name
@@ -536,7 +536,7 @@ def manage_scratches(tournament_state: Dict) -> Dict:
                         # Round already started - mark as DNS (Did Not Start)
                         print(f"  - {round_obj['round_name']}: {comp_name} marked as DNS")
 
-            print(f"\n✓ {comp_name} scratched from {event_name}")
+            print(f"\n[OK] {comp_name} scratched from {event_name}")
 
     # Auto-save
     auto_save_multi_event(tournament_state)

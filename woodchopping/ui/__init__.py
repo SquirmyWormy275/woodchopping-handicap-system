@@ -102,6 +102,7 @@ from woodchopping.ui.championship_simulator import (
 # Payout UI
 from woodchopping.ui.payout_ui import (
     configure_event_payouts,
+    configure_tournament_payouts,
     display_payout_config,
     display_final_results_with_payouts,
     calculate_total_earnings,
@@ -122,8 +123,8 @@ from woodchopping.ui.bracket_ui import (
     open_bracket_in_browser
 )
 
-# V5.1 Helpers (NEW V5.1 - Entry-Form Workflow)
-from woodchopping.ui.v51_helpers import (
+# V5.2 Helpers (Entry-Form Workflow)
+from woodchopping.ui.v52_helpers import (
     view_tournament_entries,
     edit_event_entries,
     manage_scratches
@@ -242,6 +243,7 @@ __all__ = [
 
     # Payout UI
     'configure_event_payouts',
+    'configure_tournament_payouts',
     'display_payout_config',
     'display_final_results_with_payouts',
     'calculate_total_earnings',
@@ -259,19 +261,19 @@ __all__ = [
     'export_bracket_to_html',
     'open_bracket_in_browser',
 
-    # V5.1 Helpers (NEW V5.1)
+    # V5.2 Helpers
     'view_tournament_entries',
     'edit_event_entries',
     'manage_scratches',
 
-    # Tournament Status & Validation (NEW V5.1)
+    # Tournament Status & Validation
     'display_tournament_progress_tracker',
     'calculate_tournament_progress',
     'check_can_calculate_handicaps',
     'check_can_generate_schedule',
     'get_progress_summary',
 
-    # Error Display (NEW V5.1)
+    # Error Display
     'display_actionable_error',
     'display_blocking_error',
     'display_warning',
@@ -279,13 +281,13 @@ __all__ = [
     'display_progress_box',
     'prompt_with_options',
 
-    # Entry Fee Tracker (NEW V5.1)
+    # Entry Fee Tracker
     'view_entry_fee_status',
     'mark_fees_paid_by_competitor',
     'mark_fees_paid_by_event',
     'display_payment_grid',
 
-    # Scratch Management (NEW V5.1)
+    # Scratch Management
     'manage_tournament_scratches',
     'view_all_competitors_with_status',
     'mark_competitor_scratched',

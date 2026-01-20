@@ -26,7 +26,7 @@ class Rules:
 
     # Performance variance (critical for fairness)
     PERFORMANCE_VARIANCE_SECONDS: int = 3
-    """Absolute performance variation (±3 seconds) for all competitors"""
+    """Absolute performance variation (?3 seconds) for all competitors"""
 
 
 # =============================================================================
@@ -110,16 +110,40 @@ class MLConfig:
     MAX_PREDICTION_TIME: float = 300.0
     """Maximum reasonable prediction time (seconds)"""
 
-    # Feature names
+    # Feature names (23 features - ALL 6 wood properties included for maximum accuracy)
+    # Data analysis showed ALL 6 properties combined: r=0.621 (vs shear alone r=0.523)
     FEATURE_NAMES: tuple = (
-        'competitor_avg_time_by_event',
-        'event_encoded',
-        'size_mm',
-        'wood_janka_hardness',
-        'wood_spec_gravity',
-        'competitor_experience',
-        'competitor_trend_slope'
+        'competitor_avg_time_by_event',  # 1 - PRIMARY (70-80% importance)
+        'event_encoded',                # 2
+        'size_mm',                      # 3
+        'wood_janka_hardness',         # 4
+        'wood_spec_gravity',            # 5
+        'wood_shear_strength',          # 6 - BEST single predictor (r=0.527)
+        'wood_crush_strength',          # 7 - Second best (r=0.447)
+        'wood_MOR',                     # 8 - Modulus of Rupture
+        'wood_MOE',                     # 9 - Modulus of Elasticity
+        'competitor_experience',        # 10
+        'competitor_trend_slope',       # 11
+        'wood_quality',                 # 12 - NEW (CRITICAL MISSING FEATURE)
+        'diameter_squared',             # 13 - NEW (non-linear size)
+        'quality_x_diameter',           # 14 - NEW (interaction)
+        'quality_x_hardness',           # 15 - NEW (interaction)
+        'experience_x_size',            # 16 - NEW (interaction)
+        'competitor_variance',          # 17 - NEW (consistency)
+        'competitor_median_diameter',   # 18 - NEW (selection bias)
+        'recency_score',                # 19 - NEW (momentum vs rust)
+        'career_phase',                 # 20 - NEW (rising/peak/declining)
+        'seasonal_month_sin',           # 21 - NEW (cyclical season)
+        'seasonal_month_cos',           # 22 - NEW (cyclical season)
+        'event_x_diameter'              # 23 - NEW (UH vs SB scaling)
     )
+
+    # Bayesian optimization parameters (NEW for Phase 2)
+    BAYESIAN_OPT_ITERATIONS: int = 50
+    """Number of Bayesian optimization iterations for hyperparameter tuning"""
+
+    BAYESIAN_OPT_CV_FOLDS: int = 3
+    """CV folds for Bayesian optimization (faster than full 5-fold)"""
 
     # Event encoding
     EVENT_ENCODING_SB: int = 0
@@ -200,6 +224,118 @@ class SimulationConfig:
 
 
 # =============================================================================
+# Baseline V2 Hybrid Model Configuration
+# =============================================================================
+
+@dataclass(frozen=True)
+class BaselineV2HybridConfig:
+    """Configuration for Hybrid Baseline V2 model (Phases 1-3)"""
+
+    # Adaptive time-decay weighting (Phase 1)
+    HALF_LIFE_ACTIVE_DAYS: int = 365
+    """Half-life for active competitors (5+ results in last 2 years)"""
+
+    HALF_LIFE_MODERATE_DAYS: int = 730
+    """Half-life for moderate activity competitors (standard 2-year half-life)"""
+
+    HALF_LIFE_INACTIVE_DAYS: int = 1095
+    """Half-life for inactive competitors (3 years - preserve old data longer)"""
+
+    ACTIVITY_WINDOW_DAYS: int = 730
+    """Window to assess activity level (2 years)"""
+
+    ACTIVE_MIN_RESULTS: int = 5
+    """Minimum results in activity window to be considered 'active'"""
+
+    MODERATE_MIN_RESULTS: int = 2
+    """Minimum results in activity window to be considered 'moderate'"""
+
+    # Wood hardness index (Phase 1)
+    MIN_SPECIES_SAMPLES: int = 5
+    """Minimum samples per species for hardness index regression"""
+
+    MIN_TOTAL_SAMPLES_FOR_INDEX: int = 50
+    """Minimum total samples to fit wood hardness index"""
+
+    MIN_SPECIES_VARIETY: int = 3
+    """Minimum number of species required for hardness index"""
+
+    # Hierarchical model fitting (Phase 2)
+    MIN_DATA_FOR_HIERARCHICAL_MODEL: int = 30
+    """Minimum observations to fit hierarchical regression model"""
+
+    DIAMETER_CURVE_MIN_SAMPLES: int = 10
+    """Minimum samples to estimate diameter curve"""
+
+    DIAMETER_CURVE_MIN_RANGE_MM: float = 25.0
+    """Minimum diameter range to fit curve (mm)"""
+
+    SELECTION_BIAS_DEFAULT_DIAMETER: float = 300.0
+    """Default median diameter if no competitor history"""
+
+    # Competitor variance modeling (Phase 2)
+    MIN_STD_DEV_SECONDS: float = 1.5
+    """Minimum competitor std_dev (floor for elite)"""
+
+    MAX_STD_DEV_SECONDS: float = 6.0
+    """Maximum competitor std_dev (ceiling for high-variance)"""
+
+    CONSISTENCY_VERY_HIGH_THRESHOLD: float = 2.5
+    """Max std_dev for VERY HIGH consistency rating"""
+
+    CONSISTENCY_HIGH_THRESHOLD: float = 3.0
+    """Max std_dev for HIGH consistency rating"""
+
+    CONSISTENCY_MODERATE_THRESHOLD: float = 3.5
+    """Max std_dev for MODERATE consistency rating"""
+
+    MIN_SAMPLES_FOR_STD_DEV: int = 3
+    """Minimum samples to estimate competitor std_dev"""
+
+    # Convergence calibration layer (Phase 3)
+    TARGET_FINISH_TIME_SPREAD_SECONDS: float = 2.0
+    """Target finish-time spread after convergence adjustment (killer feature!)"""
+
+    CONVERGENCE_PRESERVE_RANKING: bool = True
+    """Preserve skill ranking during convergence adjustment"""
+
+    BIAS_CORRECTION_MIN_SAMPLES: int = 10
+    """Minimum samples in diameter bin for bias correction"""
+
+    BIAS_CORRECTION_THRESHOLD_SECONDS: float = 1.0
+    """Minimum bias magnitude to trigger correction"""
+
+    SOFT_CONSTRAINT_QUANTILE: float = 0.90
+    """Quantile threshold for soft constraint floor (90th percentile)"""
+
+    SOFT_CONSTRAINT_FLOOR_MULTIPLIER: float = 0.95
+    """Multiplier for historical floor (95% of 90th percentile)"""
+
+    # Confidence calibration (Phase 2 & 3)
+    CONFIDENCE_VERY_HIGH_MIN_WEIGHTED_SAMPLES: int = 10
+    """Minimum weighted samples for VERY HIGH confidence"""
+
+    CONFIDENCE_VERY_HIGH_MAX_STD_DEV: float = 2.5
+    """Maximum std_dev for VERY HIGH confidence"""
+
+    CONFIDENCE_HIGH_MIN_WEIGHTED_SAMPLES: int = 5
+    """Minimum weighted samples for HIGH confidence"""
+
+    CONFIDENCE_HIGH_MAX_STD_DEV: float = 3.5
+    """Maximum std_dev for HIGH confidence"""
+
+    CONFIDENCE_MEDIUM_MIN_WEIGHTED_SAMPLES: int = 2
+    """Minimum weighted samples for MEDIUM confidence"""
+
+    # Model caching (Phase 4)
+    ENABLE_MODEL_CACHE: bool = True
+    """Enable global model caching for performance"""
+
+    CACHE_INVALIDATION_ON_DATA_UPDATE: bool = True
+    """Invalidate cache when roster/results are updated"""
+
+
+# =============================================================================
 # LLM Configuration (Ollama)
 # =============================================================================
 
@@ -209,6 +345,9 @@ class LLMConfig:
 
     DEFAULT_MODEL: str = "qwen2.5:32b"
     """Default Ollama model (32B parameters for maximum mathematical precision)"""
+
+    PREDICTION_MODEL: str = "qwen2.5:32b"
+    """Model for time predictions and race analysis (same as default for consistency)"""
 
     OLLAMA_URL: str = "http://localhost:11434/api/generate"
     """Ollama API endpoint"""
@@ -231,6 +370,9 @@ class LLMConfig:
 
     TOKENS_PREDICTION_ANALYSIS: int = 1000
     """Token limit for comprehensive prediction method analysis (15-20 sentence multi-section analysis)"""
+
+    TOKENS_CHAMPIONSHIP_ANALYSIS: int = 800
+    """Token limit for championship race analysis (6-section sports commentary, 2-4 sentences each)"""
 
 
 # =============================================================================
@@ -319,6 +461,7 @@ rules = Rules()
 data_req = DataRequirements()
 ml_config = MLConfig()
 sim_config = SimulationConfig()
+baseline_v2_config = BaselineV2HybridConfig()
 llm_config = LLMConfig()
 paths = Paths()
 events = EventCodes()

@@ -52,9 +52,9 @@ def prompt_adjustment_reason() -> str:
     Returns:
         Reason string entered by judge
     """
-    print("\n" + "─" * 70)
+    print("\n" + "-" * 70)
     print("ADJUSTMENT REASON (Required for Audit Trail)".center(70))
-    print("─" * 70)
+    print("-" * 70)
     print("Please explain why you're adjusting this handicap.")
     print("Examples:")
     print("  - Wood quality worse than expected")
@@ -66,7 +66,7 @@ def prompt_adjustment_reason() -> str:
     reason = input("Reason for adjustment: ").strip()
 
     while not reason:
-        print("⚠ Reason is required for audit trail.")
+        print("[WARN] Reason is required for audit trail.")
         reason = input("Reason for adjustment: ").strip()
 
     return reason
@@ -79,9 +79,9 @@ def view_adjustment_history(tournament_state: Dict) -> None:
     Args:
         tournament_state: Tournament state dict
     """
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + "HANDICAP ADJUSTMENT HISTORY".center(68) + "║")
-    print("╚" + "═" * 68 + "╝\n")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + "HANDICAP ADJUSTMENT HISTORY".center(68) + "?")
+    print("?" + "?" * 68 + "?\n")
 
     adjustment_log = tournament_state.get('adjustment_log', [])
 
@@ -104,12 +104,12 @@ def view_adjustment_history(tournament_state: Dict) -> None:
     print(f"  Automatic (recalculations): {len(auto_adjustments)}")
     print(f"Average Magnitude: {avg_change:.1f} seconds\n")
 
-    print("─" * 70)
+    print("-" * 70)
 
     # Display adjustment table
-    print("┌" + "─" * 20 + "┬" + "─" * 10 + "┬" + "─" * 10 + "┬" + "─" * 9 + "┬" + "─" * 14 + "┐")
-    print("│ Competitor         │ Original │ Adjusted │ Change  │ Type         │")
-    print("├" + "─" * 20 + "┼" + "─" * 10 + "┼" + "─" * 10 + "┼" + "─" * 9 + "┼" + "─" * 14 + "┤")
+    print("+" + "-" * 20 + "+" + "-" * 10 + "+" + "-" * 10 + "+" + "-" * 9 + "+" + "-" * 14 + "+")
+    print("| Competitor         | Original | Adjusted | Change  | Type         |")
+    print("+" + "-" * 20 + "+" + "-" * 10 + "+" + "-" * 10 + "+" + "-" * 9 + "+" + "-" * 14 + "+")
 
     for adj in adjustment_log:
         name = adj['competitor'][:18].ljust(18)
@@ -119,20 +119,20 @@ def view_adjustment_history(tournament_state: Dict) -> None:
         change_str = f"{change_val:+d}".center(7)
         adj_type = adj.get('adjustment_type', 'manual')[:12].ljust(12)
 
-        print(f"│ {name} │ {original} │ {adjusted} │ {change_str} │ {adj_type} │")
+        print(f"| {name} | {original} | {adjusted} | {change_str} | {adj_type} |")
 
         # Show reason on next line
         reason = adj.get('reason', 'No reason provided')
         # Word wrap reason to fit in 66 characters
         reason_lines = _word_wrap(reason, 66)
         for line in reason_lines:
-            print(f"│   → {line}".ljust(69) + "│")
+            print(f"|   -> {line}".ljust(69) + "|")
 
-        print("├" + "─" * 20 + "┼" + "─" * 10 + "┼" + "─" * 10 + "┼" + "─" * 9 + "┼" + "─" * 14 + "┤")
+        print("+" + "-" * 20 + "+" + "-" * 10 + "+" + "-" * 10 + "+" + "-" * 9 + "+" + "-" * 14 + "+")
 
-    print("└" + "─" * 20 + "┴" + "─" * 10 + "┴" + "─" * 10 + "┴" + "─" * 9 + "┴" + "─" * 14 + "┘")
+    print("+" + "-" * 20 + "+" + "-" * 10 + "+" + "-" * 10 + "+" + "-" * 9 + "+" + "-" * 14 + "+")
 
-    print("\n" + "─" * 70)
+    print("\n" + "-" * 70)
     input("\nPress Enter to continue...")
 
 

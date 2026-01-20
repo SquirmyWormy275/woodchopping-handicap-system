@@ -1,8 +1,8 @@
 # Woodchopping Handicap System (STRATHEX)
 
-**Version**: 5.0
+**Version**: 5.2
 **Status**: Production Ready
-**Last Updated**: January 5, 2026
+**Last Updated**: January 19, 2026
 
 A data-driven handicap calculation system for woodchopping competitions that combines historical performance analysis, machine learning (XGBoost), and AI-enhanced predictions to create fair, competitive handicaps.
 
@@ -14,7 +14,7 @@ A data-driven handicap calculation system for woodchopping competitions that com
 
 ```bash
 # Start the main tournament management program
-python MainProgramV5_0.py
+python MainProgramV5_2.py
 ```
 
 ### Prerequisites
@@ -36,7 +36,7 @@ pip install pandas openpyxl xgboost scikit-learn requests
 ```
 woodchopping-handicap-system/
 │
-├── MainProgramV5_0.py          # Main tournament management interface
+├── MainProgramV5_2.py          # Main tournament management interface
 ├── explanation_system_functions.py  # STRATHEX educational guide for judges
 ├── config.py                   # System configuration settings
 ├── woodchopping.xlsx           # Historical results database

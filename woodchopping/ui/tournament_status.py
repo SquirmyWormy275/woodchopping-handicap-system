@@ -154,19 +154,19 @@ def identify_blocking_issues(progress: Dict, tournament_state: Dict) -> List[str
     for event in events:
         comp_count = len(event.get('all_competitors', []))
         if comp_count == 1:
-            issues.append(f"⚠ {event['event_name']} has only 1 competitor (need min 2)")
+            issues.append(f"[WARN] {event['event_name']} has only 1 competitor (need min 2)")
         elif comp_count == 0 and event.get('status') != 'pending':
-            issues.append(f"⚠ {event['event_name']} has no competitors assigned")
+            issues.append(f"[WARN] {event['event_name']} has no competitors assigned")
 
     # Check for unpaid fees (warning, not blocking)
     if progress['unpaid_fees_count'] > 0:
-        issues.append(f"⚠ {progress['unpaid_fees_count']} unpaid entry fees")
+        issues.append(f"[WARN] {progress['unpaid_fees_count']} unpaid entry fees")
 
     # Check for competitors not assigned to any events
     roster = tournament_state.get('tournament_roster', [])
     unassigned = [comp for comp in roster if not comp.get('events_entered')]
     if unassigned:
-        issues.append(f"⚠ {len(unassigned)} competitors not assigned to any events")
+        issues.append(f"[WARN] {len(unassigned)} competitors not assigned to any events")
 
     return issues
 
@@ -189,12 +189,12 @@ def display_tournament_progress_tracker(tournament_state: Dict) -> None:
     tournament_date = tournament_state.get('tournament_date', 'Date not set')
 
     # Build status display
-    print("\n╔" + "═" * 68 + "╗")
-    print("║" + tournament_name.center(68) + "║")
-    print("║" + tournament_date.center(68) + "║")
-    print("╠" + "═" * 68 + "╣")
-    print("║" + "  TOURNAMENT STATUS".ljust(68) + "║")
-    print("║" + " " * 68 + "║")
+    print("\n?" + "?" * 68 + "?")
+    print("?" + tournament_name.center(68) + "?")
+    print("?" + tournament_date.center(68) + "?")
+    print("?" + "?" * 68 + "?")
+    print("?" + "  TOURNAMENT STATUS".ljust(68) + "?")
+    print("?" + " " * 68 + "?")
 
     # Phase status lines
     status_lines = [
@@ -211,10 +211,10 @@ def display_tournament_progress_tracker(tournament_state: Dict) -> None:
 
     for label, complete, detail in status_lines:
         if complete:
-            icon = "[✓]"
+            icon = "[[OK]]"
         elif detail and "/" in detail:
             # Partial completion
-            icon = "[⚠]"
+            icon = "[[WARN]]"
         else:
             icon = "[ ]"
 
@@ -222,14 +222,14 @@ def display_tournament_progress_tracker(tournament_state: Dict) -> None:
         if detail:
             line = f"{line} {detail}"
 
-        print("║" + line.ljust(68) + "║")
+        print("?" + line.ljust(68) + "?")
 
     # Competition progress (if started)
     if progress['competition_started']:
         comp_line = f"  Progress: {progress['completed_events']}/{progress['events_count']} events completed"
-        print("║" + comp_line.ljust(68) + "║")
+        print("?" + comp_line.ljust(68) + "?")
 
-    print("║" + " " * 68 + "║")
+    print("?" + " " * 68 + "?")
 
     # Next step
     next_step = f"  NEXT STEP: {progress['next_step']}"
@@ -242,34 +242,34 @@ def display_tournament_progress_tracker(tournament_state: Dict) -> None:
             if len(line + " " + word) <= 66:
                 line += (" " + word if line else word)
             else:
-                print("║" + line.ljust(68) + "║")
+                print("?" + line.ljust(68) + "?")
                 line = "  " + word
         if line:
-            print("║" + line.ljust(68) + "║")
+            print("?" + line.ljust(68) + "?")
     else:
-        print("║" + next_step.ljust(68) + "║")
+        print("?" + next_step.ljust(68) + "?")
 
     # Blocking issues
     if progress['blocking_issues']:
-        print("║" + " " * 68 + "║")
-        print("║" + "  ISSUES:".ljust(68) + "║")
+        print("?" + " " * 68 + "?")
+        print("?" + "  ISSUES:".ljust(68) + "?")
         for issue in progress['blocking_issues']:
             # Truncate if too long
             if len(issue) > 66:
                 issue = issue[:63] + "..."
-            print("║" + f"  {issue}".ljust(68) + "║")
+            print("?" + f"  {issue}".ljust(68) + "?")
 
     # Show scratch/unpaid fee info if any
     if progress.get('scratched_count', 0) > 0 or progress.get('unpaid_fees_count', 0) > 0:
-        print("║" + " " * 68 + "║")
+        print("?" + " " * 68 + "?")
         if progress.get('scratched_count', 0) > 0:
-            scratch_line = f"  ⚠ {progress['scratched_count']} competitor(s) scratched"
-            print("║" + scratch_line.ljust(68) + "║")
+            scratch_line = f"  [WARN] {progress['scratched_count']} competitor(s) scratched"
+            print("?" + scratch_line.ljust(68) + "?")
         if progress.get('unpaid_fees_count', 0) > 0:
-            fee_line = f"  ⚠ {progress['unpaid_fees_count']} unpaid entry fees"
-            print("║" + fee_line.ljust(68) + "║")
+            fee_line = f"  [WARN] {progress['unpaid_fees_count']} unpaid entry fees"
+            print("?" + fee_line.ljust(68) + "?")
 
-    print("╚" + "═" * 68 + "╝")
+    print("?" + "?" * 68 + "?")
 
 
 def get_progress_summary(tournament_state: Dict) -> str:

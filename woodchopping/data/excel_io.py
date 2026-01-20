@@ -199,7 +199,7 @@ def load_results_df() -> pd.DataFrame:
         # Get ID to name mapping
         id_to_name, _ = get_competitor_id_name_mapping()
 
-        # Map column names
+        # Map column names (Phase 5: Added FinishPosition for stacking ensemble)
         column_mapping = {
             'CompetitorID': 'competitor_id',
             'Event': 'event',
@@ -209,12 +209,56 @@ def load_results_df() -> pd.DataFrame:
             'Date': 'date',
             'Date (optional)': 'date',
             'Quality': 'quality',
-            'HeatID': 'heat_id'
+            'HeatID': 'heat_id',
+            'FinishPosition': 'finish_position'  # NEW: Nullable field for stacking ensemble
         }
         df = df.rename(columns=column_mapping)
 
+        # Flexible normalization for variant headers (case-insensitive)
+        if 'size_mm' not in df.columns:
+            for col in df.columns:
+                col_lower = str(col).strip().lower()
+                if 'diameter' in col_lower or ('size' in col_lower and 'mm' in col_lower):
+                    df = df.rename(columns={col: 'size_mm'})
+                    break
+        if 'raw_time' not in df.columns:
+            for col in df.columns:
+                col_lower = str(col).strip().lower()
+                if 'time' in col_lower and 'date' not in col_lower:
+                    df = df.rename(columns={col: 'raw_time'})
+                    break
+        if 'event' not in df.columns:
+            for col in df.columns:
+                col_lower = str(col).strip().lower()
+                if 'event' in col_lower:
+                    df = df.rename(columns={col: 'event'})
+                    break
+        if 'species' not in df.columns:
+            for col in df.columns:
+                col_lower = str(col).strip().lower()
+                if 'species' in col_lower:
+                    df = df.rename(columns={col: 'species'})
+                    break
+        if 'competitor_id' not in df.columns and 'competitor_name' not in df.columns:
+            for col in df.columns:
+                col_lower = str(col).strip().lower()
+                if 'competitor' in col_lower and 'id' in col_lower:
+                    df = df.rename(columns={col: 'competitor_id'})
+                    break
+                if col_lower in {'name', 'competitor', 'competitor name'}:
+                    df = df.rename(columns={col: 'competitor_name'})
+                    break
+
+        # Phase 5: Handle FinishPosition field (backward compatible - nullable)
+        if 'finish_position' in df.columns:
+            df['finish_position'] = pd.to_numeric(df['finish_position'], errors='coerce')
+            # NaN values indicate no finish position recorded (backward compatible)
+        else:
+            # Add column if missing (backward compatibility)
+            df['finish_position'] = pd.NA
+
         # Convert IDs to names
-        if 'competitor_id' in df.columns:
+        if 'competitor_id' in df.columns and 'competitor_name' not in df.columns:
             df['competitor_name'] = df['competitor_id'].apply(
                 lambda x: id_to_name.get(str(x).strip(), f"Unknown_{x}")
             )
@@ -228,6 +272,11 @@ def load_results_df() -> pd.DataFrame:
         # Coerce quality to numeric (non-numeric values become NaN)
         if 'quality' in df.columns:
             df['quality'] = pd.to_numeric(df['quality'], errors='coerce')
+
+        # CRITICAL FIX: Normalize event codes to uppercase (fix UH/uh and SB/sb inconsistency)
+        # This bug caused separate baselines for uppercase vs lowercase event codes
+        if 'event' in df.columns:
+            df['event'] = df['event'].str.upper()
 
         return df
 
@@ -298,6 +347,9 @@ def save_time_to_results(
         print(f"Warning: Could not find ID for {name}")
         return
 
+    # Normalize event code to uppercase
+    event = event.upper() if event else event
+
     try:
         wb = load_workbook(paths.EXCEL_FILE)
         ws = detect_results_sheet(wb)
@@ -347,6 +399,9 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
         round_name = None
 
     event_code = wood_selection.get("event")
+    # Normalize event code to uppercase
+    if event_code:
+        event_code = event_code.upper()
     if event_code not in ("SB", "UH"):
         print("Event not selected. Use Wood Menu -> Select event (SB/UH) or Main Menu option 3.")
         return
@@ -380,50 +435,144 @@ def append_results_to_excel(heat_assignment_df, wood_selection, round_object=Non
     rows_to_write = []
     times_collected = {}
 
-    # STEP 1: Collect raw cutting times (for historical data)
+    def _build_mark_map() -> Dict[str, int]:
+        if round_object and round_object.get('handicap_results'):
+            return {r.get('name'): r.get('mark') for r in round_object['handicap_results']}
+        if heat_assignment_df is not None and not heat_assignment_df.empty:
+            if 'competitor_name' in heat_assignment_df.columns and 'mark' in heat_assignment_df.columns:
+                return dict(zip(heat_assignment_df['competitor_name'], heat_assignment_df['mark']))
+        return {}
+
+    def _collect_finish_order() -> Dict[str, int]:
+        print("\n" + "=" * 70)
+        print("RECORD FINISH ORDER")
+        print("=" * 70)
+        print("Enter the finish position for each competitor (1 = finished first, 2 = second, etc.)")
+        print("This is based on when they physically severed their block (handicap delays included)\n")
+        finish_order_local = {}
+        for name in competitors_list:
+            while True:
+                pos_str = input(f"  Finish position for {name}: ").strip()
+                try:
+                    position = int(pos_str)
+                    if position < 1:
+                        print("    Position must be 1 or greater")
+                        continue
+                    finish_order_local[name] = position
+                    break
+                except ValueError:
+                    print("    Invalid position; please enter a number")
+        return finish_order_local
+
+    def _collect_times(require_all: bool) -> Dict[str, float]:
+        print("\n" + "=" * 70)
+        print("RECORD CUTTING TIMES")
+        print("=" * 70)
+        print("Enter the raw cutting time for each competitor (from their mark to block severed)")
+        if not require_all:
+            print("Press Enter to skip a competitor")
+        print("Type 'edit' after entry to adjust a time by name")
+        print("")
+        times_local = {}
+        for name in competitors_list:
+            while True:
+                s = input(f"  Cutting time for {name}: ").strip()
+                if s.lower() == "edit":
+                    if not times_local:
+                        print("    No times entered yet.")
+                        continue
+                    _edit_times(times_local)
+                    continue
+                if s == "":
+                    if require_all:
+                        print("    Time is required for time-only mode.")
+                        continue
+                    break
+                try:
+                    times_local[name] = float(s)
+                    break
+                except ValueError:
+                    print("    Invalid time; please enter a number.")
+            if s == "" and not require_all:
+                continue
+        return times_local
+
+    def _edit_times(times_local: Dict[str, float]) -> None:
+        print("\nEdit a time (press Enter to stop).")
+        while True:
+            name = input("  Competitor name to edit: ").strip()
+            if name == "":
+                break
+            matched = [n for n in times_local.keys() if n.lower() == name.lower()]
+            if not matched:
+                print("    Name not found in entered times.")
+                continue
+            target = matched[0]
+            while True:
+                s = input(f"  New time for {target}: ").strip()
+                try:
+                    times_local[target] = float(s)
+                    print(f"    Updated {target} to {times_local[target]:.2f}s")
+                    break
+                except ValueError:
+                    print("    Invalid time; please enter a number.")
+
+    def _compute_finish_order_from_times(times_local: Dict[str, float]) -> Dict[str, int]:
+        mark_map = _build_mark_map()
+        if not mark_map:
+            print("Note: No handicap marks found; placings based on raw times.")
+        finish_times = []
+        for name, time_val in times_local.items():
+            mark = mark_map.get(name)
+            finish_time = time_val if mark is None else (time_val + float(mark))
+            finish_times.append((name, finish_time))
+        finish_times.sort(key=lambda x: x[1])
+        return {name: idx + 1 for idx, (name, _) in enumerate(finish_times)}
+
     print("\n" + "=" * 70)
-    print("STEP 1: RECORD CUTTING TIMES")
+    print("RECORD RESULTS")
     print("=" * 70)
-    print("Enter the raw cutting time for each competitor (from their mark to block severed)")
-    print("Press Enter to skip a competitor\n")
+    print("Choose how to enter results:")
+    print("1) Placings only (fastest)")
+    print("2) Times only (auto-calc placings from handicap + time)")
+    print("3) Placings + times")
+    choice = input("Selection (1/2/3): ").strip()
 
-    for name in competitors_list:
-        s = input(f"  Cutting time for {name}: ").strip()
-
-        if s == "":
-            continue
-
-        try:
-            t = float(s)
-            times_collected[name] = t
-        except ValueError:
-            print("    Invalid time; skipping this entry.")
-            continue
-
-    if not times_collected:
-        print("\nNo results to record.")
+    if choice == "1":
+        finish_order = _collect_finish_order()
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        print("\nPlacings recorded. No times saved to Excel.")
         return
 
-    # STEP 2: Record finish order (WHO FINISHED FIRST in real-time)
-    print("\n" + "=" * 70)
-    print("STEP 2: RECORD FINISH ORDER")
-    print("=" * 70)
-    print("Enter the finish position for each competitor (1 = finished first, 2 = second, etc.)")
-    print("This is based on when they physically severed their block (handicap delays included)\n")
+    if choice == "2":
+        times_collected = _collect_times(require_all=True)
+        finish_order = _compute_finish_order_from_times(times_collected)
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        if round_object is not None:
+            if 'actual_results' not in round_object:
+                round_object['actual_results'] = {}
+            round_object['actual_results'].update(times_collected)
+    else:
+        finish_order = _collect_finish_order()
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        times_collected = _collect_times(require_all=False)
+        if round_object is not None and times_collected:
+            if 'actual_results' not in round_object:
+                round_object['actual_results'] = {}
+            round_object['actual_results'].update(times_collected)
 
-    finish_order = {}
-    for name in times_collected.keys():
-        while True:
-            pos_str = input(f"  Finish position for {name}: ").strip()
-            try:
-                position = int(pos_str)
-                if position < 1:
-                    print("    Position must be 1 or greater")
-                    continue
-                finish_order[name] = position
-                break
-            except ValueError:
-                print("    Invalid position; please enter a number")
+    if not times_collected:
+        print("\nNo cutting times recorded. Finish order saved; nothing written to Excel.")
+        return
 
     # Prepare rows for Excel and update round_object
     timestamp = datetime.now().isoformat(timespec="seconds")

@@ -17,7 +17,13 @@ from woodchopping.data import (
     get_competitor_id_name_mapping,
     detect_results_sheet
 )
+from woodchopping.data.validation import (
+    is_high_variance_diameter,
+    get_diameter_variance_warning,
+    check_diameter_sample_size
+)
 from woodchopping.handicaps import calculate_ai_enhanced_handicaps
+from woodchopping.handicaps.qaa_legacy import calculate_qaa_legacy_marks
 from woodchopping.simulation import simulate_and_assess_handicaps
 from config import paths, rules, sim_config
 
@@ -51,7 +57,8 @@ def view_handicaps_menu(heat_assignment_df: pd.DataFrame, wood_selection: Dict) 
     while True:
         print("\n--- View Handicap Marks ---")
         print("1) View handicap marks for current heat")
-        print("2) Back to Main Menu")
+        print("2) View QAA legacy marks (QAA tables only)")
+        print("3) Back to Main Menu")
         s = input("Choose an option: ").strip()
 
         if s == "1":
@@ -60,7 +67,13 @@ def view_handicaps_menu(heat_assignment_df: pd.DataFrame, wood_selection: Dict) 
             view_handicaps(heat_assignment_df, wood_selection)
             input("\n(Press Enter to return to the View Handicap Marks menu) ")
 
-        elif s == "2" or s == "":
+        elif s == "2":
+            if not validate_heat_data(heat_assignment_df, wood_selection):
+                continue
+            view_qaa_legacy_handicaps(heat_assignment_df, wood_selection)
+            input("\n(Press Enter to return to the View Handicap Marks menu) ")
+
+        elif s == "3" or s == "":
             break
 
         else:
@@ -152,25 +165,40 @@ def view_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> No
         print("\nUnable to generate handicap marks. Please check historical data.")
         return
 
+    def _truncate_text(text: str, max_len: int) -> str:
+        if max_len <= 0:
+            return ""
+        if len(text) <= max_len:
+            return text
+        if max_len <= 3:
+            return text[:max_len]
+        return text[: max_len - 3] + "..."
+
     # Display compact results
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("CALCULATED HANDICAP MARKS")
-    print("="*70)
+    print("=" * 70)
+    print(f"{'Competitor':<28} {'Mark':>4} {'Pred':>7} {'Conf':<8} {'Method':<10}")
+    print("-" * 70)
 
     for result in results:
-        # Pull explanation generated from model
-        explanation_text = result['explanation']
-        # Find the part after the predicted time
+        name = _truncate_text(result['name'], 28)
+        mark = result['mark']
+        predicted_time = result['predicted_time']
+        confidence = _truncate_text(str(result.get('confidence', 'N/A')), 8)
+        method_used = _truncate_text(str(result.get('method_used', 'N/A')), 10)
+
+        print(f"{name:<28} {mark:>4d} {predicted_time:>6.1f}s {confidence:<8} {method_used:<10}")
+
+        explanation_text = result.get('explanation', '')
+        data_info = ""
         if '(' in explanation_text:
-            data_info = explanation_text[explanation_text.find('(')+1:]
+            data_info = explanation_text[explanation_text.find('(') + 1:]
             if ')' in data_info:
                 data_info = data_info[:data_info.rfind(')')]
-            else:
-                data_info = explanation_text
-        else:
-            data_info = explanation_text
-
-        print(f"{result['name']:25s} Mark {result['mark']:3d}  ({result['predicted_time']:.1f}s predicted) ({data_info}) [Confidence: {result['confidence']}]")
+        if data_info:
+            data_info = _truncate_text(data_info, 64)
+            print(f"  Data: {data_info}")
 
     # Display wood selection
     print("\n" + "="*70)
@@ -180,6 +208,25 @@ def view_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> No
     print(f"Event: {event_code}")
     print("="*70)
 
+    # Display warnings for high-variance diameters
+    if is_high_variance_diameter(diameter):
+        warning_msg = get_diameter_variance_warning(diameter)
+        if warning_msg:
+            print(f"\n{warning_msg}")
+            input("\nPress Enter to continue...")
+
+    # Check sample size for this diameter
+    sample_count, confidence = check_diameter_sample_size(results_df, diameter, event_code)
+    if confidence in ["VERY LOW", "LOW"]:
+        print(f"\n{'='*70}")
+        print(f"  SPARSE DATA WARNING")
+        print(f"{'='*70}")
+        print(f"Historical data for {int(diameter)}mm {event_code}: {sample_count} results")
+        print(f"Confidence level: {confidence}")
+        print(f"\nHandicaps based on LIMITED historical data - expect higher uncertainty.")
+        print(f"{'='*70}")
+        input("\nPress Enter to continue...")
+
     # Offer Monte Carlo simulation
     print("\nWould you like to run a Monte Carlo simulation to validate these handicaps?")
     print(f"This will simulate {sim_config.NUM_SIMULATIONS:,} races to assess fairness.")
@@ -187,6 +234,58 @@ def view_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> No
 
     if choice == 'y':
         simulate_and_assess_handicaps(results, num_simulations=sim_config.NUM_SIMULATIONS)
+
+
+def view_qaa_legacy_handicaps(heat_assignment_df: pd.DataFrame, wood_selection: Dict) -> None:
+    """Display QAA legacy marks for the current heat."""
+    if heat_assignment_df.empty:
+        print("No competitors in heat assignment.")
+        return
+
+    event_code = wood_selection.get("event")
+    if event_code not in ("SB", "UH"):
+        print("QAA legacy marks are only available for SB/UH events.")
+        return
+
+    results_df = load_results_df()
+    if results_df.empty:
+        print("\nNo historical data available. Cannot generate QAA legacy marks.")
+        return
+
+    species = wood_selection.get("species", "Unknown")
+    diameter = wood_selection.get("size_mm", 300)
+    quality = wood_selection.get("quality", 5)
+
+    results = calculate_qaa_legacy_marks(
+        heat_assignment_df,
+        species,
+        diameter,
+        quality,
+        event_code,
+        results_df
+    )
+
+    if not results:
+        print("\nUnable to generate QAA legacy marks.")
+        return
+
+    results.sort(key=lambda x: x['mark'])
+
+    print("\n" + "="*70)
+    print("QAA LEGACY HANDICAP MARKS (TABLES ONLY)")
+    print("="*70)
+
+    for result in results:
+        print(
+            f"{result['name']:25s} Mark {result['mark']:3d}  "
+            f"(300mm book {result['book_mark_300']:.1f}s)  "
+            f"{result['explanation']}"
+        )
+
+    print("\n" + "="*70)
+    print(f"Selected Wood -> Species: {species}, Diameter: {diameter} mm, Quality: {quality}")
+    print(f"Event: {event_code}")
+    print("="*70)
 
 
 def _display_live_standings(times_collected: Dict[str, float],
@@ -200,11 +299,11 @@ def _display_live_standings(times_collected: Dict[str, float],
         all_competitors: List of all competitors in the round
         num_to_advance: Number of competitors who advance (None for finals)
     """
-    print("\n" + "─" * 70)
+    print("\n" + "-" * 70)
     print("Current Standings".center(70))
-    print("┌" + "─" * 5 + "┬" + "─" * 35 + "┬" + "─" * 12 + "┬" + "─" * 10 + "┐")
-    print("│ Pos │ Competitor                        │ Time       │ Status   │")
-    print("├" + "─" * 5 + "┼" + "─" * 35 + "┼" + "─" * 12 + "┼" + "─" * 10 + "┤")
+    print("+" + "-" * 5 + "+" + "-" * 35 + "+" + "-" * 12 + "+" + "-" * 10 + "+")
+    print("| Pos | Competitor                        | Time       | Status   |")
+    print("+" + "-" * 5 + "+" + "-" * 35 + "+" + "-" * 12 + "+" + "-" * 10 + "+")
 
     # Sort by time
     sorted_results = sorted(times_collected.items(), key=lambda x: x[1])
@@ -226,7 +325,7 @@ def _display_live_standings(times_collected: Dict[str, float],
             if total_entered < total_competitors:
                 # Still waiting for results
                 if rank <= num_to_advance:
-                    status = "   ✓   "  # Currently advancing
+                    status = "   [OK]   "  # Currently advancing
                 elif rank == num_to_advance + 1:
                     status = "   ?   "  # On the bubble
                 else:
@@ -234,16 +333,16 @@ def _display_live_standings(times_collected: Dict[str, float],
             else:
                 # All results in
                 if rank <= num_to_advance:
-                    status = "   ✓   "  # Advancing
+                    status = "   [OK]   "  # Advancing
                 else:
-                    status = "   ✗   "  # Eliminated
+                    status = "   ?   "  # Eliminated
 
         # Highlight bubble position
         bubble_marker = " *" if (num_to_advance and rank == num_to_advance) else "  "
 
-        print(f"│ {rank:2d}{bubble_marker} │ {name_str} │ {time_str} │ {status} │")
+        print(f"| {rank:2d}{bubble_marker} | {name_str} | {time_str} | {status} |")
 
-    print("└" + "─" * 5 + "┴" + "─" * 35 + "┴" + "─" * 12 + "┴" + "─" * 10 + "┘")
+    print("+" + "-" * 5 + "+" + "-" * 35 + "+" + "-" * 12 + "+" + "-" * 10 + "+")
 
     # Show pending results
     pending = [c for c in all_competitors if c not in times_collected]
@@ -254,9 +353,9 @@ def _display_live_standings(times_collected: Dict[str, float],
     if num_to_advance and num_to_advance > 0:
         print(f"\nTop {num_to_advance} advance to next round")
         if len(times_collected) == len(all_competitors):
-            print("✓ All results entered - standings are final")
+            print("[OK] All results entered - standings are final")
 
-    print("─" * 70 + "\n")
+    print("-" * 70 + "\n")
 
 
 def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
@@ -319,61 +418,158 @@ def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
     rows_to_write = []
     times_collected = {}
 
-    # STEP 1: Collect raw cutting times (for historical data) - WITH LIVE STANDINGS (A4)
+    def _build_mark_map() -> Dict[str, int]:
+        if round_object and round_object.get('handicap_results'):
+            return {r.get('name'): r.get('mark') for r in round_object['handicap_results']}
+        if heat_assignment_df is not None and not heat_assignment_df.empty:
+            if 'competitor_name' in heat_assignment_df.columns and 'mark' in heat_assignment_df.columns:
+                return dict(zip(heat_assignment_df['competitor_name'], heat_assignment_df['mark']))
+        return {}
+
+    def _collect_finish_order() -> Dict[str, int]:
+        print("\n" + "=" * 70)
+        print("RECORD FINISH ORDER")
+        print("=" * 70)
+        print("Enter the finish position for each competitor (1 = finished first, 2 = second, etc.)")
+        print("This is based on when they physically severed their block (handicap delays included)\n")
+        finish_order_local = {}
+        for name in competitors_list:
+            while True:
+                pos_str = input(f"  Finish position for {name}: ").strip()
+                try:
+                    position = int(pos_str)
+                    if position < 1:
+                        print("    Position must be 1 or greater")
+                        continue
+                    finish_order_local[name] = position
+                    break
+                except ValueError:
+                    print("    Invalid position; please enter a number")
+        return finish_order_local
+
+    def _collect_times(require_all: bool) -> Dict[str, float]:
+        print("\n" + "=" * 70)
+        print("RECORD CUTTING TIMES (Live Standings)")
+        print("=" * 70)
+        print("Enter the raw cutting time for each competitor (from their mark to block severed)")
+        print("Standings will update after each entry")
+        if not require_all:
+            print("Press Enter to skip a competitor")
+        print("Type 'edit' after entry to adjust a time by name")
+        print("")
+
+        # Determine advancement threshold if this is not a final
+        num_to_advance = None
+        if round_object:
+            num_to_advance = round_object.get('num_to_advance', 0)
+
+        times_local = {}
+        for idx, name in enumerate(competitors_list, 1):
+            while True:
+                s = input(f"  [{idx}/{len(competitors_list)}] Cutting time for {name}: ").strip()
+                if s.lower() == "edit":
+                    if not times_local:
+                        print("    No times entered yet.")
+                        continue
+                    _edit_times(times_local, competitors_list, num_to_advance)
+                    continue
+                if s == "":
+                    if require_all:
+                        print("    Time is required for time-only mode.")
+                        continue
+                    break
+                try:
+                    t = float(s)
+                    times_local[name] = t
+                    if len(times_local) > 0:
+                        _display_live_standings(times_local, competitors_list, num_to_advance)
+                    break
+                except ValueError:
+                    print("    Invalid time; please enter a number.")
+            if s == "" and not require_all:
+                continue
+        return times_local
+
+    def _edit_times(times_local: Dict[str, float],
+                    all_competitors: List[str],
+                    num_to_advance: Optional[int]) -> None:
+        print("\nEdit a time (press Enter to stop).")
+        while True:
+            name = input("  Competitor name to edit: ").strip()
+            if name == "":
+                break
+            matched = [n for n in times_local.keys() if n.lower() == name.lower()]
+            if not matched:
+                print("    Name not found in entered times.")
+                continue
+            target = matched[0]
+            while True:
+                s = input(f"  New time for {target}: ").strip()
+                try:
+                    times_local[target] = float(s)
+                    print(f"    Updated {target} to {times_local[target]:.2f}s")
+                    if len(times_local) > 0:
+                        _display_live_standings(times_local, all_competitors, num_to_advance)
+                    break
+                except ValueError:
+                    print("    Invalid time; please enter a number.")
+
+    def _compute_finish_order_from_times(times_local: Dict[str, float]) -> Dict[str, int]:
+        mark_map = _build_mark_map()
+        if not mark_map:
+            print("Note: No handicap marks found; placings based on raw times.")
+        finish_times = []
+        for name, time_val in times_local.items():
+            mark = mark_map.get(name)
+            finish_time = time_val if mark is None else (time_val + float(mark))
+            finish_times.append((name, finish_time))
+        finish_times.sort(key=lambda x: x[1])
+        return {name: idx + 1 for idx, (name, _) in enumerate(finish_times)}
+
     print("\n" + "=" * 70)
-    print("STEP 1: RECORD CUTTING TIMES (Live Standings)")
+    print("RECORD RESULTS")
     print("=" * 70)
-    print("Enter the raw cutting time for each competitor (from their mark to block severed)")
-    print("Standings will update after each entry")
-    print("Press Enter to skip a competitor\n")
+    print("Choose how to enter results:")
+    print("1) Placings only (fastest)")
+    print("2) Times only (auto-calc placings from handicap + time)")
+    print("3) Placings + times")
+    choice = input("Selection (1/2/3): ").strip()
 
-    # Determine advancement threshold if this is not a final
-    num_to_advance = None
-    if round_object:
-        num_to_advance = round_object.get('num_to_advance', 0)
-
-    for idx, name in enumerate(competitors_list, 1):
-        s = input(f"  [{idx}/{len(competitors_list)}] Cutting time for {name}: ").strip()
-
-        if s == "":
-            continue
-
-        try:
-            t = float(s)
-            times_collected[name] = t
-
-            # Display live standings after each entry (A4 Feature)
-            if len(times_collected) > 0:
-                _display_live_standings(times_collected, competitors_list, num_to_advance)
-
-        except ValueError:
-            print("    Invalid time; skipping this entry.")
-            continue
-
-    if not times_collected:
-        print("\nNo results to record.")
+    if choice == "1":
+        finish_order = _collect_finish_order()
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        print("\nPlacings recorded. No times saved to Excel.")
         return
 
-    # STEP 2: Record finish order (WHO FINISHED FIRST in real-time)
-    print("\n" + "=" * 70)
-    print("STEP 2: RECORD FINISH ORDER")
-    print("=" * 70)
-    print("Enter the finish position for each competitor (1 = finished first, 2 = second, etc.)")
-    print("This is based on when they physically severed their block (handicap delays included)\n")
+    if choice == "2":
+        times_collected = _collect_times(require_all=True)
+        finish_order = _compute_finish_order_from_times(times_collected)
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        if round_object is not None:
+            if 'actual_results' not in round_object:
+                round_object['actual_results'] = {}
+            round_object['actual_results'].update(times_collected)
+    else:
+        finish_order = _collect_finish_order()
+        if round_object is not None:
+            if 'finish_order' not in round_object:
+                round_object['finish_order'] = {}
+            round_object['finish_order'].update(finish_order)
+        times_collected = _collect_times(require_all=False)
+        if round_object is not None and times_collected:
+            if 'actual_results' not in round_object:
+                round_object['actual_results'] = {}
+            round_object['actual_results'].update(times_collected)
 
-    finish_order = {}
-    for name in times_collected.keys():
-        while True:
-            pos_str = input(f"  Finish position for {name}: ").strip()
-            try:
-                position = int(pos_str)
-                if position < 1:
-                    print("    Position must be 1 or greater")
-                    continue
-                finish_order[name] = position
-                break
-            except ValueError:
-                print("    Invalid position; please enter a number")
+    if not times_collected:
+        print("\nNo cutting times recorded. Finish order saved; nothing written to Excel.")
+        return
 
     # Prepare rows for Excel and update round_object
     timestamp = datetime.now().isoformat(timespec="seconds")
@@ -386,6 +582,8 @@ def append_results_to_excel(heat_assignment_df: Optional[pd.DataFrame] = None,
 
         # Store in round_object if using tournament system
         if round_object is not None:
+            if 'actual_results' not in round_object:
+                round_object['actual_results'] = {}
             round_object['actual_results'][name] = time_val
             if 'finish_order' not in round_object:
                 round_object['finish_order'] = {}
@@ -467,7 +665,7 @@ def judge_approval() -> Tuple[str, str]:
         confirm = input(f"\nConfirm approval by {initials}? (y/n): ").strip().lower()
         if confirm == 'y':
             timestamp = datetime.now().isoformat(timespec="seconds")
-            print(f"\n✓ Approved by {initials} at {timestamp}")
+            print(f"\n[OK] Approved by {initials} at {timestamp}")
             return initials, timestamp
         else:
             print("Approval cancelled. Please re-enter initials.")
@@ -483,7 +681,7 @@ def manual_adjust_handicaps(
     This function:
     1. Displays current handicap list
     2. Allows selection of competitor to adjust
-    3. Validates new mark (3 ≤ mark ≤ 180 per AAA rules)
+    3. Validates new mark (3 <= mark <= 180 per AAA rules)
     4. Shows updated handicap sheet after each change
     5. Repeats until judge is satisfied
 
@@ -596,11 +794,11 @@ def manual_adjust_handicaps(
                         old_mark = competitor['mark']
 
                         # Prompt for reason (A5 feature)
-                        print("\n" + "─" * 70)
+                        print("\n" + "-" * 70)
                         print("Please explain why you're adjusting this handicap (for audit trail):")
                         reason = input("Reason: ").strip()
                         while not reason:
-                            print("⚠ Reason is required for adjustment tracking.")
+                            print("[WARN] Reason is required for adjustment tracking.")
                             reason = input("Reason: ").strip()
 
                         competitor['mark'] = new_mark
@@ -608,7 +806,7 @@ def manual_adjust_handicaps(
                         competitor['original_mark'] = old_mark
                         competitor['adjustment_reason'] = reason  # A5: Store reason
 
-                        print(f"\n✓ Updated {competitor['name']}: Mark {old_mark} → {new_mark}")
+                        print(f"\n[OK] Updated {competitor['name']}: Mark {old_mark} -> {new_mark}")
                         print(f"  Reason: {reason}")
                         break
 

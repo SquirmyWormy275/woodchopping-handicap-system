@@ -47,6 +47,16 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
     if 'quality' in df.columns:
         df['quality'] = pd.to_numeric(df['quality'], errors='coerce')
 
+    # Coerce time and size to numeric to prevent comparison errors
+    df['raw_time'] = pd.to_numeric(df['raw_time'], errors='coerce')
+    df['size_mm'] = pd.to_numeric(df['size_mm'], errors='coerce')
+
+    # Remove rows with missing core numeric fields
+    missing_numeric = df[df['raw_time'].isna() | df['size_mm'].isna()]
+    if not missing_numeric.empty:
+        warnings.append(f"Removed {len(missing_numeric)} records with non-numeric time/diameter")
+        df = df[df['raw_time'].notna() & df['size_mm'].notna()]
+
     # Remove invalid times (use config constants)
     invalid_times = df[
         (df['raw_time'] <= data_req.MIN_VALID_TIME_SECONDS) |
@@ -82,6 +92,10 @@ def validate_results_data(results_df: pd.DataFrame) -> Tuple[Optional[pd.DataFra
     if not missing_names.empty:
         warnings.append(f"Removed {len(missing_names)} records with missing competitor names")
         df = df[df['competitor_name'].notna() & (df['competitor_name'] != '')]
+
+    # Normalize event codes before validation (e.g., "sb" -> "SB")
+    if 'event' in df.columns:
+        df['event'] = df['event'].astype(str).str.strip().str.upper()
 
     # Check for invalid event codes (use config constants)
     invalid_events = df[~df['event'].isin(events.VALID_EVENTS)]
@@ -216,3 +230,217 @@ def validate_heat_data(heat_assignment_df, wood_selection):
         return False
 
     return True
+
+
+# ===== SPARSE DATA VALIDATION =====
+# Based on statistical analysis of 1003 historical results:
+# - N < 3: Insufficient for basic statistics (BLOCK)
+# - N < 10: Low confidence predictions (WARN)
+# - N >= 10: Moderate to high confidence
+
+ABSOLUTE_MINIMUM_RESULTS = 3  # Hard block - cannot make prediction
+RECOMMENDED_MINIMUM_RESULTS = 10  # Soft warning - lower confidence
+
+
+def get_competitor_result_count(results_df: pd.DataFrame, competitor_name: str, event: str = None) -> int:
+    """
+    Count how many historical results a competitor has.
+
+    Args:
+        results_df: Historical results DataFrame
+        competitor_name: Competitor name to check
+        event: Optional event filter (e.g., 'UH', 'SB'). If None, counts all events.
+
+    Returns:
+        int: Number of historical results
+    """
+    if results_df is None or results_df.empty:
+        return 0
+
+    # Filter by competitor name (case-insensitive)
+    comp_data = results_df[results_df['competitor_name'].str.lower() == competitor_name.lower()]
+
+    # Filter by event if specified
+    if event:
+        event = event.upper()
+        comp_data = comp_data[comp_data['event'] == event]
+
+    return len(comp_data)
+
+
+def get_data_confidence_level(result_count: int) -> str:
+    """
+    Determine confidence level based on result count.
+
+    Based on empirical analysis:
+    - N=3: 8-12s prediction error
+    - N=10: 2-4s prediction error
+
+    Args:
+        result_count: Number of historical results
+
+    Returns:
+        str: Confidence level ('BLOCKED', 'LOW', 'MEDIUM', 'HIGH')
+    """
+    if result_count < ABSOLUTE_MINIMUM_RESULTS:
+        return "BLOCKED"
+    elif result_count < RECOMMENDED_MINIMUM_RESULTS:
+        return "LOW"
+    elif result_count < 20:
+        return "MEDIUM"
+    else:
+        return "HIGH"
+
+
+def check_competitor_eligibility(results_df: pd.DataFrame, competitor_name: str, event: str) -> Tuple[bool, str, int]:
+    """
+    Check if a competitor meets minimum data requirements.
+
+    Args:
+        results_df: Historical results DataFrame
+        competitor_name: Competitor name to check
+        event: Event code ('UH' or 'SB')
+
+    Returns:
+        Tuple of (is_eligible: bool, message: str, result_count: int)
+    """
+    result_count = get_competitor_result_count(results_df, competitor_name, event)
+    confidence = get_data_confidence_level(result_count)
+
+    if confidence == "BLOCKED":
+        message = (
+            f"BLOCKED: {competitor_name} has only {result_count} historical {event} results\n"
+            f"  Absolute minimum: {ABSOLUTE_MINIMUM_RESULTS} results required\n"
+            f"  Please add historical times before using this competitor"
+        )
+        return False, message, result_count
+    elif confidence == "LOW":
+        message = (
+            f"WARNING: {competitor_name} has only {result_count} historical {event} results\n"
+            f"  Recommended minimum: {RECOMMENDED_MINIMUM_RESULTS} results for high confidence\n"
+            f"  Predictions will be less reliable (expect 5-10s error)"
+        )
+        return True, message, result_count
+    else:
+        return True, "", result_count
+
+
+def validate_all_competitors_eligibility(results_df: pd.DataFrame, competitor_names: List[str], event: str) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Validate all competitors in a list for minimum data requirements.
+
+    Args:
+        results_df: Historical results DataFrame
+        competitor_names: List of competitor names to check
+        event: Event code ('UH' or 'SB')
+
+    Returns:
+        Tuple of (blocked_competitors, warned_competitors, messages)
+    """
+    blocked = []
+    warned = []
+    messages = []
+
+    for name in competitor_names:
+        is_eligible, message, count = check_competitor_eligibility(results_df, name, event)
+
+        if not is_eligible:
+            blocked.append(name)
+            messages.append(message)
+        elif message:  # Has warning but not blocked
+            warned.append(name)
+            messages.append(message)
+
+    return blocked, warned, messages
+
+
+# ===== HIGH-VARIANCE DIAMETER DETECTION =====
+# Based on empirical analysis of 1003 historical results:
+# - Diameters with CoV > 60% show unpredictable performance
+# - These diameters produce wide prediction error spreads
+# - High variance may indicate inconsistent wood quality or measurement errors
+
+HIGH_VARIANCE_DIAMETERS = {
+    279: 71,  # CoV = 71% (HIGHEST VARIANCE)
+    254: 67,  # CoV = 67%
+    270: 63,  # CoV = 63%
+    275: 61   # CoV = 61%
+}
+
+HIGH_VARIANCE_THRESHOLD_COV = 60  # Coefficient of Variation threshold (%)
+
+
+def is_high_variance_diameter(diameter_mm: float) -> bool:
+    """
+    Check if diameter is known to have high performance variance.
+
+    Args:
+        diameter_mm: Block diameter in millimeters
+
+    Returns:
+        bool: True if diameter has high variance (CoV > 60%)
+    """
+    diameter_rounded = round(diameter_mm)
+    return diameter_rounded in HIGH_VARIANCE_DIAMETERS
+
+
+def get_diameter_variance_warning(diameter_mm: float) -> Optional[str]:
+    """
+    Get warning message for high-variance diameters.
+
+    Args:
+        diameter_mm: Block diameter in millimeters
+
+    Returns:
+        str: Warning message if high variance, None otherwise
+    """
+    diameter_rounded = round(diameter_mm)
+    if diameter_rounded in HIGH_VARIANCE_DIAMETERS:
+        cov = HIGH_VARIANCE_DIAMETERS[diameter_rounded]
+        warning = (
+            f"WARNING: {diameter_rounded}mm diameter has HIGH PERFORMANCE VARIANCE\n"
+            f"  Historical coefficient of variation: {cov}%\n"
+            f"  Predictions for this diameter may be less reliable\n"
+            f"  Expect wider spread in finish times even with optimal handicaps\n"
+            f"  Recommendation: Consider using standard diameters (300mm, 250mm, 225mm)"
+        )
+        return warning
+    return None
+
+
+def check_diameter_sample_size(results_df: pd.DataFrame, diameter_mm: float, event: str) -> Tuple[int, str]:
+    """
+    Check how many historical results exist for a given diameter.
+
+    Args:
+        results_df: Historical results DataFrame
+        diameter_mm: Block diameter in millimeters
+        event: Event code ('UH' or 'SB')
+
+    Returns:
+        Tuple of (sample_count: int, confidence_level: str)
+    """
+    if results_df is None or results_df.empty:
+        return 0, "NO DATA"
+
+    # Filter by event and diameter (within ?5mm tolerance)
+    event = event.upper()
+    diameter_data = results_df[
+        (results_df['event'] == event) &
+        (results_df['size_mm'] >= diameter_mm - 5) &
+        (results_df['size_mm'] <= diameter_mm + 5)
+    ]
+
+    sample_count = len(diameter_data)
+
+    # Determine confidence level
+    if sample_count < 5:
+        confidence = "VERY LOW"
+    elif sample_count < 15:
+        confidence = "LOW"
+    elif sample_count < 30:
+        confidence = "MEDIUM"
+    else:
+        confidence = "HIGH"
+
+    return sample_count, confidence

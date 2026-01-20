@@ -123,7 +123,7 @@ def _get_category_rating(category_avg: float, overall_avg: float, count: int) ->
 
     Rating thresholds:
     - STRONGEST: >1.0s faster than overall average
-    - AVERAGE: within ±1.0s of overall average
+    - AVERAGE: within ?1.0s of overall average
     - WEAKER: >1.0s slower than overall average
     - LIMITED DATA: <3 results in category
     - NO DATA: 0 results
