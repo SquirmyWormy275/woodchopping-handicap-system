@@ -84,7 +84,7 @@ class VarianceScaler:
     Predict competitor-specific variance (uncertainty) using XGBoost.
 
     Trains on absolute residuals to predict std_dev per competitor,
-    replacing uniform ?3s assumption with data-driven uncertainty.
+    replacing uniform ±3s assumption with data-driven uncertainty.
     """
 
     def __init__(self):

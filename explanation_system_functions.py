@@ -27,35 +27,16 @@ def explanation_menu():
 
     while True:
         print("\n")
-        print("""
-???    ??????????????      ??????? ??????? ????   ????????????
-???    ??????????????     ?????????????????????? ?????????????
-??? ?? ?????????  ???     ???     ???   ????????????????????
-????????????????  ???     ???     ???   ????????????????????
-?????????????????????????????????????????????? ??? ???????????
- ???????? ???????????????? ??????? ??????? ???     ???????????
-
-????????? ???????     ????????????  ???????????
-??????????????????    ????????????  ???????????
-   ???   ???   ???       ???   ??????????????
-   ???   ???   ???       ???   ??????????????
-   ???   ?????????       ???   ???  ???????????
-   ???    ???????        ???   ???  ???????????
-
-????????????????????????  ?????? ????????????  ??????????????  ???
-?????????????????????????????????????????????  ???????????????????
-????????   ???   ????????????????   ???   ??????????????   ??????
-????????   ???   ????????????????   ???   ??????????????   ??????
-????????   ???   ???  ??????  ???   ???   ???  ??????????????? ???
-????????   ???   ???  ??????  ???   ???   ???  ??????????????  ???
-
-???    ?????????????? ?????? ??????? ???????
-???    ??????????????????????????????????????
-??? ?? ??????  ????? ???????????????????  ???
-????????????? ?????  ???????????????????  ???
-????????????????????????  ??????  ???????????
- ???????? ??????????????  ??????  ??????????
-""")
+        print("╔" + "═" * 68 + "╗")
+        print("║" + " " * 68 + "║")
+        print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+        print("║" + "S T R A T H E X".center(68) + "║")
+        print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+        print("║" + " " * 68 + "║")
+        print("║" + "Woodchopping Handicap System".center(68) + "║")
+        print("║" + "Understanding How It Works".center(68) + "║")
+        print("║" + " " * 68 + "║")
+        print("╚" + "═" * 68 + "╝")
         print("\n" + "=" * 70)
         print("  STRATHEX HANDICAP SYSTEM - HOW IT WORKS")
         print("=" * 70)
@@ -107,7 +88,7 @@ Handicapping solves this by giving faster competitors DELAYED STARTS:
   - Slowest competitor (Mark 3) starts immediately
   - Fastest competitors (higher marks) start later
   - If handicaps are perfect, everyone finishes at the SAME TIME
-  - Natural variation (?3 seconds) creates exciting competition
+  - Natural variation (±3 seconds) creates exciting competition
 
 TWO EVENT TYPES: HANDICAP vs CHAMPIONSHIP
 
@@ -156,12 +137,12 @@ KEY INNOVATIONS:
    - Competitor's historical performance on similar wood
 
 3. ABSOLUTE VARIANCE MODELING
-   CRITICAL INNOVATION: We use ?3 seconds variance for ALL competitors.
+   CRITICAL INNOVATION: We use ±3 seconds variance for ALL competitors.
 
    Why? Real-world factors affect everyone equally in ABSOLUTE terms:
    - Wood grain knot costs 2 seconds for novice AND expert
    - Technique wobble affects everyone by similar absolute time
-   - Proportional variance (?5% of time) gives unfair advantage to fast choppers
+   - Proportional variance (±5% of time) gives unfair advantage to fast choppers
 
    Tested with 1 million Monte Carlo simulations - absolute variance is FAIRER.
 
@@ -231,7 +212,7 @@ HOW IT WORKS:
 
 3. Apply WOOD QUALITY adjustment
    - Quality scale: 0 (extremely hard) to 10 (extremely soft)
-   - Adjustment: ?2% per quality point from average (5)
+   - Adjustment: ±2% per quality point from average (5)
    - Quality 8 wood: baseline x 0.94 (6% faster)
    - Quality 2 wood: baseline x 1.06 (6% slower)
 
@@ -302,7 +283,7 @@ HOW IT WORKS:
    - Tight grain? Knots? Moisture? Grain direction?
 
 5. Returns predicted time with reasoning
-6. System applies ?2% per quality point adjustment for consistency
+6. System applies ±2% per quality point adjustment for consistency
 
 EXAMPLE PROMPT TO AI:
   "You are an expert woodchopping handicapper. Predict cutting time for:
@@ -430,7 +411,7 @@ HOW IT WORKS:
 5. Model validated with 5-fold cross-validation
 6. For new prediction:
    - System feeds 23 features, model outputs base prediction
-   - WOOD QUALITY ADJUSTMENT applied: ?2% per quality point
+   - WOOD QUALITY ADJUSTMENT applied: ±2% per quality point
    - Ensures consistency with Baseline and LLM methods
 
 EXAMPLE:
@@ -579,9 +560,9 @@ DATA REQUIREMENTS (V5.0):
 WHY THIS PRIORITY?
 
 Testing showed:
-  - ML average error: ?2.1 seconds (when data available)
-  - LLM average error: ?3.4 seconds
-  - Baseline average error: ?4.8 seconds
+  - ML average error: ~2.1 seconds (when data available)
+  - LLM average error: ~3.4 seconds
+  - Baseline average error: ~4.8 seconds
 
 The system displays ALL THREE predictions (when available) so judges can see:
   - Which method was used for handicap marks
@@ -689,7 +670,7 @@ PROBLEM:
   and ML ignored it, causing inconsistent handicaps for same competitor.
 
 SOLUTION:
-  Standardized quality adjustment across ALL methods: ?2% per quality point
+  Standardized quality adjustment across ALL methods: ±2% per quality point
 
   Quality scale interpretation:
     10 = Extremely soft/rotten -> baseline x 0.90 (10% faster)
@@ -978,15 +959,15 @@ SOLUTION:
     - Multi-event: Option 11 "Print Schedule (Export to File)"
 
   Format Example:
-    ??????????????????????????????????????????????????????????
-    ?               TOURNAMENT SCHEDULE                      ?
-    ?  Event: 300mm SB                                       ?
-    ?  Wood: Douglas Fir, 300mm, Quality 6                   ?
-    ??????????????????????????????????????????????????????????
-    ?  HEAT 1                                                ?
-    ?  Stand 1: John Smith (Mark 15)                         ?
-    ?  Stand 2: Jane Doe (Mark 12)                           ?
-    ??????????????????????????????????????????????????????????
+    ╔════════════════════════════════════════════════════════╗
+    ║               TOURNAMENT SCHEDULE                      ║
+    ║  Event: 300mm SB                                       ║
+    ║  Wood: Douglas Fir, 300mm, Quality 6                   ║
+    ╠════════════════════════════════════════════════════════╣
+    ║  HEAT 1                                                ║
+    ║  Stand 1: John Smith (Mark 15)                         ║
+    ║  Stand 2: Jane Doe (Mark 12)                           ║
+    ╚════════════════════════════════════════════════════════╝
 
 IMPACT:
   - Saves 15-20 minutes per tournament in schedule preparation
@@ -1118,10 +1099,10 @@ SOLUTION:
     - Preferred event, diameter, and species identification
     - Diameter performance breakdown with ratings:
         STRONGEST: >1.0s faster than overall average
-        AVERAGE: within ?1.0s of overall average
+        AVERAGE: within ±1.0s of overall average
         WEAKER: >1.0s slower than overall average
     - Species performance breakdown (minimum 3 results required)
-    - Outlier detection (z-score ?1.5 threshold)
+    - Outlier detection (z-score ±1.5 threshold)
 
   Data Handling:
     - Gracefully handles missing dates (only 55% of results have dates)
@@ -1812,7 +1793,7 @@ def show_statistical_glossary():
         {
             'term': 'AVERAGE (MEAN)',
             'definition': 'The sum of all values divided by the count of values.',
-            'example': 'If John cut blocks in 30s, 32s, 28s, 31s, and 29s, his average is (30+32+28+31+29)?5 = 30.0 seconds.',
+            'example': 'If John cut blocks in 30s, 32s, 28s, 31s, and 29s, his average is (30+32+28+31+29)÷5 = 30.0 seconds.',
             'relevance': 'Used to calculate a competitor\'s typical performance. The baseline prediction starts with their historical average.',
             'where_seen': 'Handicap calculation screen, prediction methods display'
         },
@@ -1820,7 +1801,7 @@ def show_statistical_glossary():
             'term': 'STANDARD DEVIATION (STD DEV)',
             'definition': 'Measures how spread out values are from the average. Low = consistent, high = variable.',
             'example': 'Competitor A: times of 30s, 30s, 31s (std dev ~0.5s - very consistent)\nCompetitor B: times of 25s, 35s, 30s (std dev ~4.1s - inconsistent)',
-            'relevance': 'Shows performance consistency. Consistent competitors are more predictable. We use ?3 second standard deviation in Monte Carlo simulations.',
+            'relevance': 'Shows performance consistency. Consistent competitors are more predictable. We use ±3 second standard deviation in Monte Carlo simulations.',
             'where_seen': 'Monte Carlo simulation results, statistical analysis section'
         },
         {
@@ -1889,14 +1870,14 @@ def show_statistical_glossary():
         {
             'term': 'MONTE CARLO SIMULATION',
             'definition': 'A method that runs thousands/millions of virtual races with random performance variation to test handicap fairness.',
-            'example': 'System runs 1,000,000 simulated races:\n- Each race, competitors vary ?3s from predicted time\n- Count who wins each race\n- Calculate win probability for each competitor',
+            'example': 'System runs 1,000,000 simulated races:\n- Each race, competitors vary ±3s from predicted time\n- Count who wins each race\n- Calculate win probability for each competitor',
             'relevance': 'Validates that handicaps are FAIR. If one competitor wins 40% of simulations while others win 5%, the handicaps are biased.',
             'where_seen': 'Optional fairness analysis after calculating handicaps (Menu Option 5)'
         },
         {
             'term': 'WIN PROBABILITY / WIN RATE',
             'definition': 'The percentage of simulated races won by each competitor. Ideally, all competitors should have equal win probability.',
-            'example': 'Heat with 5 competitors:\nIdeal: 20% win rate each (5 competitors = 100%?5)\nActual: Joe 23%, Sue 21%, Bob 19%, Amy 22%, Dan 15%\nDan is disadvantaged (15% vs 20% ideal)',
+            'example': 'Heat with 5 competitors:\nIdeal: 20% win rate each (5 competitors = 100%÷5)\nActual: Joe 23%, Sue 21%, Bob 19%, Amy 22%, Dan 15%\nDan is disadvantaged (15% vs 20% ideal)',
             'relevance': 'Measures handicap fairness. Spread <3% = Excellent, <6% = Very Good, <10% = Good, >16% = Poor.',
             'where_seen': 'Monte Carlo simulation results, displayed as bar charts and percentages'
         },
@@ -1985,16 +1966,16 @@ def show_statistical_glossary():
             'where_seen': 'Wood species data (background), technical deep dive explanations'
         },
         {
-            'term': 'ABSOLUTE VARIANCE (?3 SECONDS)',
-            'definition': 'Every competitor varies by the SAME number of seconds (?3s), not a percentage. Critical for fairness.',
-            'example': 'Fast chopper (30s predicted): actual time between 27-33s\nSlow chopper (60s predicted): actual time between 57-63s\nBOTH vary by ?3s absolute',
-            'relevance': 'MAJOR INNOVATION. Proportional variance (?5%) gives unfair advantage to fast choppers. Real factors (grain knots, fatigue) affect everyone equally in seconds, not percentages.',
+            'term': 'ABSOLUTE VARIANCE (±3 SECONDS)',
+            'definition': 'Every competitor varies by the SAME number of seconds (±3s), not a percentage. Critical for fairness.',
+            'example': 'Fast chopper (30s predicted): actual time between 27-33s\nSlow chopper (60s predicted): actual time between 57-63s\nBOTH vary by ±3s absolute',
+            'relevance': 'MAJOR INNOVATION. Proportional variance (±5%) gives unfair advantage to fast choppers. Real factors (grain knots, fatigue) affect everyone equally in seconds, not percentages.',
             'where_seen': 'Monte Carlo simulation methodology, system overview documentation'
         },
         {
             'term': 'PROPORTIONAL VARIANCE',
-            'definition': 'Variation as a percentage of predicted time (e.g., ?5%). REJECTED by this system as unfair.',
-            'example': 'With ?5% variance:\nFast chopper (30s): varies 27-33s (?3s range)\nSlow chopper (60s): varies 54-66s (?6s range)\nSlow chopper gets DOUBLE the variation!',
+            'definition': 'Variation as a percentage of predicted time (e.g., ±5%). REJECTED by this system as unfair.',
+            'example': 'With ±5% variance:\nFast chopper (30s): varies 27-33s (±3s range)\nSlow chopper (60s): varies 54-66s (±6s range)\nSlow chopper gets DOUBLE the variation!',
             'relevance': 'Proportional variance creates bias. Testing showed 31% win rate spread vs 6.7% with absolute variance. This is why we use absolute.',
             'where_seen': 'System documentation, mentioned in technical explanations of fairness'
         }
@@ -2044,24 +2025,22 @@ def show_technical_deep_dive():
   
     print("\n")
     print("""
-      ????????????????????????????????????????????????????????????
-
-      ????????????????????????????????????????????????????????????
-      ?         [WARN]?  DANGER: MAXIMUM NERDERY AHEAD! [WARN]?            ?
-      ?                                                          ?
-      ?  Congratulations! You've found the secret developer      ?
-      ?  backdoor where we keep the REALLY nerdy stuff.          ?
-      ?                                                          ?
-      ?  If you were hoping for a quick explanation, turn back   ?
-      ?  now. If you want to know EXACTLY how the sausage is     ?
-      ?  made, including all the weird edge cases and sketchy    ?
-      ?  assumptions we hope nobody asks about... buckle up.     ?
-      ?                                                          ?
-      ?  The Wizard is about to spill ALL the algorithmic tea.   ?
-      ?                                                          ?
-      ?  ? "I solemnly swear I will over-explain everything."    ?
-      ?                                                          ?
-      ????????????????????????????????????????????????????????????
+      ╔════════════════════════════════════════════════════════════╗
+      ║     ⚠️  DANGER: MAXIMUM NERDERY AHEAD! ⚠️                   ║
+      ║                                                            ║
+      ║  Congratulations! You've found the secret developer        ║
+      ║  backdoor where we keep the REALLY nerdy stuff.            ║
+      ║                                                            ║
+      ║  If you were hoping for a quick explanation, turn back     ║
+      ║  now. If you want to know EXACTLY how the sausage is       ║
+      ║  made, including all the weird edge cases and sketchy      ║
+      ║  assumptions we hope nobody asks about... buckle up.       ║
+      ║                                                            ║
+      ║  The Wizard is about to spill ALL the algorithmic tea.     ║
+      ║                                                            ║
+      ║  🧙 "I solemnly swear I will over-explain everything."     ║
+      ║                                                            ║
+      ╚════════════════════════════════════════════════════════════╝
 
           
 
@@ -2091,18 +2070,18 @@ def show_technical_deep_dive():
 
 
 
-      ????????????????????????????????????????????????????????????
+      ════════════════════════════════════════════════════════════════
     """)
 
-    input("\n? Press Enter to descend into the technical rabbit hole...\n")
+    input("\n🧙 Press Enter to descend into the technical rabbit hole...\n")
 
     print("\n" + "=" * 70)
-    print("  ? THE WIZARD'S GRIMOIRE OF QUESTIONABLE STATISTICAL DECISIONS ?")
+    print("  🔮 THE WIZARD'S GRIMOIRE OF QUESTIONABLE STATISTICAL DECISIONS 🔮")
     print("=" * 70)
 
     print("""
 
-? "Ah, a fellow nerd! Excellent! Let me tell you EXACTLY how this works,
+🧙 "Ah, a fellow nerd! Excellent! Let me tell you EXACTLY how this works,
 including the parts we don't usually mention in polite company.
 
 Look, I'm not gonna lie - predicting the future is HARD. We're basically
@@ -2684,27 +2663,27 @@ STEP-BY-STEP CALCULATION:
 
 Sue Johnson (slowest):
   gap = 58.3 - 58.3 = 0.0s
-  mark = 3 + ?0.0? = 3 + 0 = Mark 3
+  mark = 3 + ⌈0.0⌉ = 3 + 0 = Mark 3
   -> Sue starts immediately when "Mark 3!" is called
 
 Bob Wilson:
   gap = 58.3 - 52.7 = 5.6s
-  mark = 3 + ?5.6? = 3 + 6 = Mark 9
+  mark = 3 + ⌈5.6⌉ = 3 + 6 = Mark 9
   -> Bob waits 6 seconds, starts when "Mark 9!" is called
 
 Amy Chen:
   gap = 58.3 - 48.2 = 10.1s
-  mark = 3 + ?10.1? = 3 + 11 = Mark 14
+  mark = 3 + ⌈10.1⌉ = 3 + 11 = Mark 14
   -> Amy waits 11 seconds, starts at "Mark 14!"
 
 Joe Smith:
   gap = 58.3 - 42.8 = 15.5s
-  mark = 3 + ?15.5? = 3 + 16 = Mark 19
+  mark = 3 + ⌈15.5⌉ = 3 + 16 = Mark 19
   -> Joe waits 16 seconds, starts at "Mark 19!"
 
 Dan Martinez (fastest):
   gap = 58.3 - 38.1 = 20.2s
-  mark = 3 + ?20.2? = 3 + 21 = Mark 24
+  mark = 3 + ⌈20.2⌉ = 3 + 21 = Mark 24
   -> Dan waits 21 seconds, starts at "Mark 24!"
 
 THEORETICAL FINISH TIMES (if predictions perfect):
@@ -2716,7 +2695,7 @@ THEORETICAL FINISH TIMES (if predictions perfect):
 
   -> Everyone finishes within ~1 second (practically simultaneous!)
 
-REAL-WORLD FINISH (with ?3s variation):
+REAL-WORLD FINISH (with ±3s variation):
   Natural performance variation means actual finishes spread by 5-10s,
   creating exciting competition. Monte Carlo simulation validates that
   all competitors have ~equal win probability despite skill differences.
@@ -2740,15 +2719,15 @@ learning working together to create FAIR competition."
     input("\nPress Enter to see The Wizard's final wisdom (and questionable life advice)...\n")
 
     print("\n" + "=" * 70)
-    print("  ? THE WIZARD'S FINAL WISDOM (AND GENERAL RANTING) ?")
+    print("  🧙 THE WIZARD'S FINAL WISDOM (AND GENERAL RANTING) 🧙")
     print("=" * 70)
 
     print("""
-? "Congratulations! You've made it through my entire technical rant without
+🧙 "Congratulations! You've made it through my entire technical rant without
 falling asleep! As a reward, let me share some ACTUAL INSIGHTS (plus a few
 hot takes about statistics that nobody asked for):"
 
-???????????????????????????????????????????????????????????????????????
+═══════════════════════════════════════════════════════════════════════════
 
 1. WHY THREE PREDICTION METHODS? (Because We're Paranoid)
 
@@ -2779,13 +2758,13 @@ hot takes about statistics that nobody asked for):"
    Could we get away with 10,000? Probably. But then some statistician would
    tweet "INSUFFICIENT SAMPLE SIZE" and we'd never live it down.
 
-4. THE ?3 SECOND BREAKTHROUGH (Our One Good Idea)
+4. THE ±3 SECOND BREAKTHROUGH (Our One Good Idea)
 
    This is the only truly ORIGINAL contribution to handicapping science:
    Using ABSOLUTE variance instead of PROPORTIONAL variance.
 
-   Previous systems: "Fast people vary by ?5%, slow people vary by ?5%"
-   Our system: "Everyone varies by ?3 seconds because PHYSICS"
+   Previous systems: "Fast people vary by ±5%, slow people vary by ±5%"
+   Our system: "Everyone varies by ±3 seconds because PHYSICS"
 
    Why? Because wood grain knots don't care if you're fast. Fatigue happens
    in seconds, not percentages. We tested this extensively and the results
@@ -2798,9 +2777,9 @@ hot takes about statistics that nobody asked for):"
    why semicolons exist and whether tabs or spaces are correct (it's spaces,
    fight me).
 
-???????????????????????????????????????????????????????????????????????
+═══════════════════════════════════════════════════════════════════════════
 
-? "REAL TALK: No handicapping system is perfect. Wood is weird. Axes are
+🧙 "REAL TALK: No handicapping system is perfect. Wood is weird. Axes are
 unpredictable. Humans are chaotic meat puppets powered by breakfast and
 spite. But STRATHEX is probably the most over-engineered, unnecessarily
 complicated, absurdly transparent system ever created for predicting
@@ -2812,14 +2791,14 @@ the question: 'Who should start first?'
 
 Is it overkill? Absolutely. Are we proud of it? You bet your XGBoost we are."
 
-? "Now go forth and handicap with confidence! Or at least with DOCUMENTED
+🧙 "Now go forth and handicap with confidence! Or at least with DOCUMENTED
 UNCERTAINTY, which is the best any of us can hope for in this cruel world."
 
          *    .    *  THE WIZARD   *    .    *
          .    *         .  HAS SPOKEN   .    *
          *    .    *  (FINALLY)    *    .    *
 
-???????????????????????????????????????????????????????????????????????
+═══════════════════════════════════════════════════════════════════════════
 """)
 
     input("\nPress Enter to return to menu...")

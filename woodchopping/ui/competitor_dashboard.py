@@ -130,9 +130,9 @@ def _generate_dashboard(competitor_name: str, comp_info: pd.Series, results_df: 
     profile_analysis = profile_competitor_strengths(competitor_name, results_df)
 
     # Display header
-    print("?" + "?" * 68 + "?")
-    print("?" + "COMPETITOR PERFORMANCE DASHBOARD".center(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("╔" + "═" * 68 + "╗")
+    print("║" + "COMPETITOR PERFORMANCE DASHBOARD".center(68) + "║")
+    print("╠" + "═" * 68 + "╣")
 
     # Basic info line
     name_str = f"Name: {competitor_name}"
@@ -140,12 +140,12 @@ def _generate_dashboard(competitor_name: str, comp_info: pd.Series, results_df: 
     state_str = f"State: {comp_info.get('state_province', 'N/A')}"
     gender_str = f"Gender: {comp_info.get('gender', 'N/A')}"
 
-    info_line = f"?  {name_str:<66}?"
-    details_line = f"?  {country_str:<22} {state_str:<22} {gender_str:<18}?"
+    info_line = f"║  {name_str:<66}║"
+    details_line = f"║  {country_str:<22} {state_str:<22} {gender_str:<18}║"
 
     print(info_line)
     print(details_line)
-    print("?" + "?" * 68 + "?")
+    print("╚" + "═" * 68 + "╝")
     print()
 
     # SECTION 1: Career Summary

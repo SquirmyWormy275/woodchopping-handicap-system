@@ -208,7 +208,7 @@ if trend_analysis:
     trend_df = pd.DataFrame(trend_analysis)
     trend_df = trend_df[trend_df['r_squared'] >= 0.20]  # Only significant trends
 
-    print(f"\nCompetitors with significant trends (R? &gt;= 0.20):")
+    print(f"\nCompetitors with significant trends (R² >= 0.20):")
     print(f"\nFastest Improvers (negative slope):")
     print(trend_df.nsmallest(5, 'slope_sec_per_day')[['competitor', 'n_results', 'slope_sec_per_day', 'r_squared', 'mean_time']])
 

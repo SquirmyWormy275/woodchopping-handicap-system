@@ -236,7 +236,7 @@ def predict_time_ridge(
     if return_ci:
         # Estimate standard error from training residuals
         # This is a simplified version - full CI would require training data
-        # For now, use rule of thumb: ?1.96 * 3s (assume ?3s std_dev)
+        # For now, use rule of thumb: ±1.96 * 3s (assume ±3s std_dev)
         std_error = 3.0
         ci = (prediction - 1.96 * std_error, prediction + 1.96 * std_error)
 

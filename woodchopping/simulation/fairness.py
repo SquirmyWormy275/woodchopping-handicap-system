@@ -191,12 +191,12 @@ def get_ai_assessment_of_handicaps(analysis: Dict[str, Any]) -> str:
 
 CONSISTENCY RATING THRESHOLDS:
 - Very High (std_dev <= 2.5s): Elite consistency, highly predictable
-- High (std_dev <= 3.0s): Normal variance, matches ?3s model assumption
+- High (std_dev <= 3.0s): Normal variance, matches ±3s model assumption
 - Moderate (std_dev <= 3.5s): Above expected variance
 - Low (std_dev > 3.5s): High variability, unpredictable outcomes
 
 VARIANCE MODEL VALIDATION:
-The system assumes ?3s absolute performance variation for all competitors.
+The system assumes ±3s absolute performance variation for all competitors.
 If a competitor's std_dev significantly exceeds 3.0s, this suggests:
 1. Prediction may be inaccurate (wrong baseline time)
 2. Competitor has genuinely high performance variability
@@ -207,7 +207,7 @@ In your PATTERN DIAGNOSIS section, you MUST comment on:
 - Are there competitors with unusually high variance (std_dev > 3.5s)?
 - Does high variance correlate with prediction confidence (LOW confidence -> high variance)?
 - Are there competitors with surprisingly tight clustering (std_dev < 2.5s)?
-- Does the ?3s model hold across all competitors, or are there outliers?
+- Does the ±3s model hold across all competitors, or are there outliers?
 - Do biased competitors also show unusual variance patterns?"""
 
     prompt = f"""You are a master woodchopping handicapper and statistician analyzing the fairness of predicted handicap marks through Monte Carlo simulation.

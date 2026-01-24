@@ -26,7 +26,7 @@ class Rules:
 
     # Performance variance (critical for fairness)
     PERFORMANCE_VARIANCE_SECONDS: int = 3
-    """Absolute performance variation (?3 seconds) for all competitors"""
+    """Absolute performance variation (±3 seconds) for all competitors"""
 
 
 # =============================================================================

@@ -989,7 +989,7 @@ def estimate_diameter_curve(
         # Weighted least squares (equal weights for now, can add time-decay later)
         coeffs_norm = np.linalg.lstsq(X_poly, y, rcond=None)[0]
 
-        # Calculate R?
+        # Calculate R²
         y_pred = X_poly @ coeffs_norm
         ss_res = np.sum((y - y_pred) ** 2)
         ss_tot = np.sum((y - np.mean(y)) ** 2)
@@ -1424,7 +1424,7 @@ def group_wise_bias_correction(
     if 'raw_time' not in results_df.columns:
         results_df, _ = standardize_results_data(results_df)
 
-    # Determine diameter bin (?25mm)
+    # Determine diameter bin (±25mm)
     diameter_min = diameter - 25
     diameter_max = diameter + 25
 

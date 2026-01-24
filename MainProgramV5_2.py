@@ -117,21 +117,16 @@ import explanation_system_functions as explain
 
 # STRATHEX Banner
 try:
-    print("""
-????????????????????????????????????????????????????????????????????????
-?                                                                      ?
-?    ???????????????????????  ?????? ????????????  ??????????????  ??? ?
-?   ?????????????????????????????????????????????  ??????????????????? ?
-?   ???????    ???   ????????????????   ???   ??????????????   ??????  ?
-?    ???????   ???   ????????????????   ???   ??????????????   ??????  ?
-?   ????????   ???   ???  ??????  ???   ???   ???  ??????????????????? ?
-?   ???????    ???   ???  ??????  ???   ???   ???  ??????????????  ??? ?
-?                                                                      ?
-?              WOODCHOPPING HANDICAP CALCULATOR v5.2                   ?
-?                    Professional Competition System                   ?
-?                                                                      ?
-????????????????????????????????????????????????????????????????????????
-""")
+    print("╔" + "═" * 68 + "╗")
+    print("║" + " " * 68 + "║")
+    print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+    print("║" + "S T R A T H E X".center(68) + "║")
+    print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("║" + "WOODCHOPPING HANDICAP CALCULATOR v5.2".center(68) + "║")
+    print("║" + "Professional Competition System".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
 except UnicodeEncodeError:
     # Fallback to ASCII banner if Unicode fails
     print("""
@@ -275,9 +270,9 @@ def display_bracket_status_tracker(wood_selection: dict, tournament_state: dict)
         wood_selection: Wood configuration dictionary
         tournament_state: Tournament state dictionary
     """
-    print("\n" + "?" * 70)
+    print("\n" + "═" * 70)
     print("  CONFIGURATION STATUS")
-    print("?" * 70)
+    print("═" * 70)
 
     # Wood configuration status
     wood_status = get_wood_status_display(wood_selection)
@@ -287,7 +282,7 @@ def display_bracket_status_tracker(wood_selection: dict, tournament_state: dict)
     comp_status = get_competitor_status_display(tournament_state)
     print(f"  Personnel:   {comp_status}")
 
-    print("?" * 70)
+    print("═" * 70)
 
 
 def manage_bracket_competitors(tournament_state: dict, comp_df: pd.DataFrame, max_competitors: int = 999) -> dict:
@@ -302,9 +297,9 @@ def manage_bracket_competitors(tournament_state: dict, comp_df: pd.DataFrame, ma
         dict: Updated tournament_state
     """
     while True:
-        print("\n?" + "?" * 68 + "?")
-        print("?" + "MANAGE COMPETITORS".center(68) + "?")
-        print("?" + "?" * 68 + "?")
+        print("\n╔" + "═" * 68 + "╗")
+        print("║" + "MANAGE COMPETITORS".center(68) + "║")
+        print("╚" + "═" * 68 + "╝")
 
         # Display current selection
         current_competitors = tournament_state.get('all_competitors', [])
@@ -500,25 +495,25 @@ def single_event_menu():
         # Display banner based on tournament format
         if tournament_state.get('format') == 'bracket':
             # Bracket mode banner
-            print("\n?" + "?" * 68 + "?")
-            print("?" + " " * 68 + "?")
-            print("?" + "BRACKET TOURNAMENT SYSTEM".center(68) + "?")
-            print("?" + "Head-to-Head Championship Format".center(68) + "?")
-            print("?" + " " * 68 + "?")
-            print("?" + "?" * 68 + "?")
+            print("\n╔" + "═" * 68 + "╗")
+            print("║" + " " * 68 + "║")
+            print("║" + "BRACKET TOURNAMENT SYSTEM".center(68) + "║")
+            print("║" + "Head-to-Head Championship Format".center(68) + "║")
+            print("║" + " " * 68 + "║")
+            print("╚" + "═" * 68 + "╝")
 
             # Display configuration status tracker
             display_bracket_status_tracker(wood_selection, tournament_state)
         else:
             # Regular handicap mode banner
-            print("\n?" + "?" * 68 + "?")
-            print("?" + " " * 68 + "?")
-            print("?" + "------------------------------".center(68) + "?")
-            print("?" + "HANDICAP CALCULATION SYSTEM".center(68) + "?")
-            print("?" + "AI-Powered Fair Competition".center(68) + "?")
-            print("?" + "------------------------------".center(68) + "?")
-            print("?" + " " * 68 + "?")
-            print("?" + "?" * 68 + "?")
+            print("\n╔" + "═" * 68 + "╗")
+            print("║" + " " * 68 + "║")
+            print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+            print("║" + "HANDICAP CALCULATION SYSTEM".center(68) + "║")
+            print("║" + "AI-Powered Fair Competition".center(68) + "║")
+            print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+            print("║" + " " * 68 + "║")
+            print("╚" + "═" * 68 + "╝")
 
         # Show current configuration status (including payouts)
         if tournament_state.get('event_name'):
@@ -837,29 +832,29 @@ def single_event_menu():
 
             # Check event code
             if not wood_selection.get('event'):
-                missing.append("  ? Event type not selected (SB/UH - use Option 1 or 3)")
+                missing.append("  ✗ Event type not selected (SB/UH - use Option 1 or 3)")
 
             # If anything is missing, show comprehensive error
             if missing:
                 box_width = 68
-                print("\n?" + "?" * box_width + "?")
+                print("\n╔" + "═" * box_width + "╗")
 
                 # Center the title
-                title = "[WARN] CANNOT CALCULATE HANDICAPS [WARN]"
+                title = "⚠️ CANNOT CALCULATE HANDICAPS ⚠️"
                 title_line = title.center(box_width)
-                print("?" + title_line + "?")
+                print("║" + title_line + "║")
 
-                print("?" + "?" * box_width + "?")
+                print("╠" + "═" * box_width + "╣")
 
                 # Header line
                 header = "Missing required information:".ljust(box_width)
-                print("?" + header + "?")
+                print("║" + header + "║")
 
                 # Missing items
                 for item in missing:
-                    print("?" + item.ljust(box_width) + "?")
+                    print("║" + item.ljust(box_width) + "║")
 
-                print("?" + "?" * box_width + "?")
+                print("╚" + "═" * box_width + "╝")
                 print("\nPlease complete the missing items above, then try again.")
                 input("\nPress Enter to return to menu...")
                 continue
@@ -902,7 +897,7 @@ def single_event_menu():
 
             # Success message with axe icon
             print("\n" + "=" * 70)
-            print("    ?  HANDICAP CALCULATION COMPLETE! ?")
+            print("    🪓  HANDICAP CALCULATION COMPLETE! 🪓")
             print(f"    [OK]  {len(handicap_results)} competitors analyzed")
             print("=" * 70)
 
@@ -1008,9 +1003,9 @@ def single_event_menu():
                 print("Complete at least one round first to view prediction accuracy.")
                 input("\nPress Enter to continue...")
             else:
-                print("\n?" + "?" * 68 + "?")
-                print("?" + "PREDICTION ACCURACY ANALYSIS".center(68) + "?")
-                print("?" + "?" * 68 + "?")
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "PREDICTION ACCURACY ANALYSIS".center(68) + "║")
+                print("╚" + "═" * 68 + "╝")
 
                 for round_obj in completed_rounds:
                     # Analyze accuracy
@@ -1143,16 +1138,16 @@ def single_event_menu():
                 if wood_selection.get('quality') is None:
                     missing.append("  ? Wood quality not set (use Option 1)")
                 if not wood_selection.get('event'):
-                    missing.append("  ? Event type not selected (use Option 1)")
+                    missing.append("  ✗ Event type not selected (use Option 1)")
 
                 if missing:
-                    print("\n?" + "?" * 68 + "?")
-                    print("?" + "[WARN] CANNOT GENERATE BRACKET [WARN]".center(68) + "?")
-                    print("?" + "?" * 68 + "?")
-                    print("?" + "Missing required information:".ljust(68) + "?")
+                    print("\n╔" + "═" * 68 + "╗")
+                    print("║" + "⚠️ CANNOT GENERATE BRACKET ⚠️".center(68) + "║")
+                    print("╠" + "═" * 68 + "╣")
+                    print("║" + "Missing required information:".ljust(68) + "║")
                     for item in missing:
-                        print("?" + item.ljust(68) + "?")
-                    print("?" + "?" * 68 + "?")
+                        print("║" + item.ljust(68) + "║")
+                    print("╚" + "═" * 68 + "╝")
                     input("\nPress Enter to return to menu...")
                     continue
 
@@ -1164,9 +1159,9 @@ def single_event_menu():
 
                 elimination_type = tournament_state.get('elimination_type', 'single')
 
-                print("\n?" + "?" * 68 + "?")
-                print("?" + f"GENERATING {elimination_type.upper()} ELIMINATION BRACKET".center(68) + "?")
-                print("?" + "?" * 68 + "?\n")
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + f"GENERATING {elimination_type.upper()} ELIMINATION BRACKET".center(68) + "║")
+                print("╚" + "═" * 68 + "╝\n")
 
                 # Generate predictions for seeding
                 predictions = generate_bracket_seeds(
@@ -1375,9 +1370,9 @@ def single_event_menu():
                     print("\nERROR: Generate bracket first (Option 10)")
                     input("\nPress Enter to return to menu...")
                     continue
-                print("\n?" + "?" * 68 + "?")
-                print("?" + "EXPORTING BRACKET TO HTML".center(68) + "?")
-                print("?" + "?" * 68 + "?\n")
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "EXPORTING BRACKET TO HTML".center(68) + "║")
+                print("╚" + "═" * 68 + "╝\n")
                 html_file = export_bracket_to_html(tournament_state)
                 open_bracket_in_browser(html_file)
                 print(f"\n[OK] Bracket exported to: {html_file}")
@@ -1427,7 +1422,7 @@ def single_event_menu():
 
         elif menu_choice == '15':
             # Save Event State (BOTH MODES)
-            save_tournament_state(tournament_state, "tournament_state.json")
+            save_tournament_state(tournament_state, "saves/tournament_state.json")
 
         elif menu_choice == '16':
             # Return to Main Menu (BOTH MODES)
@@ -1449,15 +1444,15 @@ def multi_event_tournament_menu():
             display_tournament_progress_tracker(multi_event_tournament_state)
         else:
             # Show banner only if no tournament
-            print("\n??????????????????????????????????????????????????????????????????????")
-            print("?" + " " * 68 + "?")
-            print("?" + "------------------------------".center(68) + "?")
-            print("?" + "TOURNAMENT MANAGEMENT SYSTEM".center(68) + "?")
-            print("?" + "Multi-Event Handicapping".center(68) + "?")
-            print("?" + "------------------------------".center(68) + "?")
-            print("?" + "? STRATHEX ?".center(68) + "?")
-            print("?" + " " * 68 + "?")
-            print("??????????????????????????????????????????????????????????????????????")
+            print("\n╔" + "═" * 68 + "╗")
+            print("║" + " " * 68 + "║")
+            print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+            print("║" + "TOURNAMENT MANAGEMENT SYSTEM".center(68) + "║")
+            print("║" + "Multi-Event Handicapping".center(68) + "║")
+            print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+            print("║" + "◆ STRATHEX ◆".center(68) + "║")
+            print("║" + " " * 68 + "║")
+            print("╚" + "═" * 68 + "╝")
 
         print("\nSETUP PHASE:")
         print("  1. Create New Tournament")
@@ -1507,20 +1502,20 @@ def multi_event_tournament_menu():
 
         elif menu_choice == 'h':
             # Help - show what each option does
-            print("\n?" + "?" * 68 + "?")
-            print("?" + "HELP - Tournament Workflow".center(68) + "?")
-            print("?" + "?" * 68 + "?")
-            print("?" + "1. Start by creating a new tournament".ljust(68) + "?")
-            print("?" + "2. Define all events (wood, format, etc.)".ljust(68) + "?")
-            print("?" + "3. Select all competitors for the day".ljust(68) + "?")
-            print("?" + "4. Assign each competitor to their events".ljust(68) + "?")
-            print("?" + "5. (Optional) Configure prize money/payouts".ljust(68) + "?")
-            print("?" + "6-8. Calculate and approve handicaps".ljust(68) + "?")
-            print("?" + "9. Generate the complete day schedule".ljust(68) + "?")
-            print("?" + "10. Handle day-of scratches/withdrawals".ljust(68) + "?")
-            print("?" + "11-13. Run competition and track results".ljust(68) + "?")
-            print("?" + "14-15. View final summaries and earnings".ljust(68) + "?")
-            print("?" + "?" * 68 + "?")
+            print("\n╔" + "═" * 68 + "╗")
+            print("║" + "HELP - Tournament Workflow".center(68) + "║")
+            print("╠" + "═" * 68 + "╣")
+            print("║" + "1. Start by creating a new tournament".ljust(68) + "║")
+            print("║" + "2. Define all events (wood, format, etc.)".ljust(68) + "║")
+            print("║" + "3. Select all competitors for the day".ljust(68) + "║")
+            print("║" + "4. Assign each competitor to their events".ljust(68) + "║")
+            print("║" + "5. (Optional) Configure prize money/payouts".ljust(68) + "║")
+            print("║" + "6-8. Calculate and approve handicaps".ljust(68) + "║")
+            print("║" + "9. Generate the complete day schedule".ljust(68) + "║")
+            print("║" + "10. Handle day-of scratches/withdrawals".ljust(68) + "║")
+            print("║" + "11-13. Run competition and track results".ljust(68) + "║")
+            print("║" + "14-15. View final summaries and earnings".ljust(68) + "║")
+            print("╚" + "═" * 68 + "╝")
             input("\nPress Enter to continue...")
             continue
 
@@ -1543,17 +1538,17 @@ def multi_event_tournament_menu():
 
             # Event management submenu loop
             while True:
-                print("\n?" + "?" * 68 + "?")
-                print("?" + "EVENT MANAGEMENT".center(68) + "?")
-                print("?" + "?" * 68 + "?")
-                print("?" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "?")
-                print("?" + f"Current events: {len(multi_event_tournament_state.get('events', []))}".ljust(68) + "?")
-                print("?" + "?" * 68 + "?")
-                print("?" + "  1. Add New Event".ljust(68) + "?")
-                print("?" + "  2. Remove Event".ljust(68) + "?")
-                print("?" + "  3. View Wood Count".ljust(68) + "?")
-                print("?" + "  4. Return to Main Menu".ljust(68) + "?")
-                print("?" + "?" * 68 + "?")
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "EVENT MANAGEMENT".center(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "║")
+                print("║" + f"Current events: {len(multi_event_tournament_state.get('events', []))}".ljust(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + "  1. Add New Event".ljust(68) + "║")
+                print("║" + "  2. Remove Event".ljust(68) + "║")
+                print("║" + "  3. View Wood Count".ljust(68) + "║")
+                print("║" + "  4. Return to Main Menu".ljust(68) + "║")
+                print("╚" + "═" * 68 + "╝")
 
                 event_choice = input("\nChoice [1-4]: ").strip()
 
@@ -1637,23 +1632,23 @@ def multi_event_tournament_menu():
 
             # Submenu loop for entry fees and payouts
             while True:
-                print("\n?" + "?" * 68 + "?")
-                print("?" + "TOURNAMENT FINANCES".center(68) + "?")
-                print("?" + "?" * 68 + "?")
-                print("?" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "?")
+                print("\n╔" + "═" * 68 + "╗")
+                print("║" + "TOURNAMENT FINANCES".center(68) + "║")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + f"Tournament: {multi_event_tournament_state['tournament_name']}".ljust(68) + "║")
 
                 # Show fee tracking status
                 if multi_event_tournament_state.get('entry_fee_tracking_enabled'):
-                    print("?" + "Entry Fee Tracking: ENABLED".ljust(68) + "?")
+                    print("║" + "Entry Fee Tracking: ENABLED".ljust(68) + "║")
                 else:
-                    print("?" + "Entry Fee Tracking: DISABLED".ljust(68) + "?")
+                    print("║" + "Entry Fee Tracking: DISABLED".ljust(68) + "║")
 
-                print("?" + "?" * 68 + "?")
-                print("?" + "  1. View Entry Fee Status".ljust(68) + "?")
-                print("?" + "  2. Mark Fees as Paid".ljust(68) + "?")
-                print("?" + "  3. Configure Event Payouts".ljust(68) + "?")
-                print("?" + "  4. Return to Main Menu".ljust(68) + "?")
-                print("?" + "?" * 68 + "?")
+                print("╠" + "═" * 68 + "╣")
+                print("║" + "  1. View Entry Fee Status".ljust(68) + "║")
+                print("║" + "  2. Mark Fees as Paid".ljust(68) + "║")
+                print("║" + "  3. Configure Event Payouts".ljust(68) + "║")
+                print("║" + "  4. Return to Main Menu".ljust(68) + "║")
+                print("╚" + "═" * 68 + "╝")
 
                 finance_choice = input("\nChoice [1-4]: ").strip()
 
@@ -1797,9 +1792,9 @@ def multi_event_tournament_menu():
                 input("\nPress Enter to return to menu...")
                 continue
 
-            filename = input("\nEnter filename (default: multi_tournament_state.json): ").strip()
+            filename = input("\nEnter filename (default: saves/multi_tournament_state.json): ").strip()
             if not filename:
-                filename = "multi_tournament_state.json"
+                filename = "saves/multi_tournament_state.json"
 
             save_multi_event_tournament(multi_event_tournament_state, filename)
 
@@ -1823,14 +1818,14 @@ def championship_simulator_menu():
     """
     global comp_df
 
-    print("\n?" + "?" * 68 + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "------------------------------".center(68) + "?")
-    print("?" + "CHAMPIONSHIP RACE SIMULATOR".center(68) + "?")
-    print("?" + "Mock Race Predictions & Analysis".center(68) + "?")
-    print("?" + "------------------------------".center(68) + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + " " * 68 + "║")
+    print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+    print("║" + "CHAMPIONSHIP RACE SIMULATOR".center(68) + "║")
+    print("║" + "Mock Race Predictions & Analysis".center(68) + "║")
+    print("║" + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
 
     run_championship_simulator(comp_df)
 
@@ -1841,9 +1836,9 @@ Top level: Choose between single event or multi-event tournament
 Second level: Detailed menus for each mode
 '''
 while True:
-    print("\n" + "?" + "?" * 68 + "?")
-    print("?" + " " * 19 + "? STRATHEX MAIN MENU ?" + " " * 27 + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n" + "╔" + "═" * 68 + "╗")
+    print("║" + " " * 19 + "◆ STRATHEX MAIN MENU ◆" + " " * 27 + "║")
+    print("╚" + "═" * 68 + "╝")
     print("\nMODE SELECTION:")
     print("  1. Design an Event (Single Event)")
     print("  2. Design a Tournament (Multiple Events)")
@@ -1896,16 +1891,16 @@ while True:
 
         if load_choice == '1':
             # Load single event
-            loaded_state = load_tournament_state("tournament_state.json")
+            loaded_state = load_tournament_state("saves/tournament_state.json")
             if loaded_state:
                 tournament_state.update(loaded_state)
                 print("\n[OK] Single event state loaded successfully")
                 input("\nPress Enter to return to menu...")
         elif load_choice == '2':
             # Load multi-event tournament
-            filename = input("\nEnter filename (default: multi_tournament_state.json): ").strip()
+            filename = input("\nEnter filename (default: saves/multi_tournament_state.json): ").strip()
             if not filename:
-                filename = "multi_tournament_state.json"
+                filename = "saves/multi_tournament_state.json"
 
             loaded_multi_state = load_multi_event_tournament(filename)
             if loaded_multi_state:
@@ -1946,9 +1941,9 @@ while True:
                 auto_save_state(tournament_state)
                 print("\n[OK] Single event state saved")
             elif save_choice == '2':
-                filename = input("\nEnter filename (default: multi_tournament_state.json): ").strip()
+                filename = input("\nEnter filename (default: saves/multi_tournament_state.json): ").strip()
                 if not filename:
-                    filename = "multi_tournament_state.json"
+                    filename = "saves/multi_tournament_state.json"
                 save_multi_event_tournament(multi_event_tournament_state, filename)
 
         print("\nGoodbye!")

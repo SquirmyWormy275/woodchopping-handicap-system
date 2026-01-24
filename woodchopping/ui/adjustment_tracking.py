@@ -79,9 +79,9 @@ def view_adjustment_history(tournament_state: Dict) -> None:
     Args:
         tournament_state: Tournament state dict
     """
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "HANDICAP ADJUSTMENT HISTORY".center(68) + "?")
-    print("?" + "?" * 68 + "?\n")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "HANDICAP ADJUSTMENT HISTORY".center(68) + "║")
+    print("╚" + "═" * 68 + "╝\n")
 
     adjustment_log = tournament_state.get('adjustment_log', [])
 

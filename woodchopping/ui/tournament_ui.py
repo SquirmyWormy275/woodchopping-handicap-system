@@ -400,8 +400,7 @@ def select_heat_advancers(round_object: Dict) -> List[str]:
 
     else:
         # Fallback: No finish order recorded (legacy mode - use raw times)
-        print("WARNING: No finish order recorded. Using raw cutting times (may be inaccurate for handicap).
-")
+        print("WARNING: No finish order recorded. Using raw cutting times (may be inaccurate for handicap).")
 
         if round_object['actual_results']:
             sorted_results = sorted(
@@ -883,7 +882,7 @@ def view_tournament_status(tournament_state: Dict) -> None:
     print(f"\n{'='*70}\n")
 
 
-def save_tournament_state(tournament_state: Dict, filename: str = "tournament_state.json") -> None:
+def save_tournament_state(tournament_state: Dict, filename: str = "saves/tournament_state.json") -> None:
     """Save tournament state to JSON for crash recovery.
 
     Args:
@@ -917,7 +916,7 @@ def save_tournament_state(tournament_state: Dict, filename: str = "tournament_st
         print(f"Error saving tournament state: {e}")
 
 
-def load_tournament_state(filename: str = "tournament_state.json") -> Optional[Dict]:
+def load_tournament_state(filename: str = "saves/tournament_state.json") -> Optional[Dict]:
     """Load tournament state from JSON.
 
     Args:
@@ -964,4 +963,4 @@ def auto_save_state(tournament_state: Dict) -> None:
     Args:
         tournament_state: Tournament state to save
     """
-    save_tournament_state(tournament_state, "tournament_state.json")
+    save_tournament_state(tournament_state, "saves/tournament_state.json")

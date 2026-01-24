@@ -4,7 +4,7 @@ Backtesting validation for Baseline V2 Hybrid Model.
 Performs leave-one-out cross-validation to measure:
 - Mean Absolute Error (MAE) - target <2.5s
 - Root Mean Squared Error (RMSE)
-- R? score
+- R² score
 - Prediction bias (systematic over/under prediction)
 - Performance by event type (SB vs UH)
 - Performance by skill level (fast vs slow competitors)
@@ -115,7 +115,7 @@ def calculate_metrics(predictions_df: pd.DataFrame) -> Dict:
     mae = predictions_df['abs_error'].mean()
     rmse = np.sqrt((predictions_df['error'] ** 2).mean())
 
-    # R? score
+    # R² score
     ss_res = ((predictions_df['actual_time'] - predictions_df['predicted_time']) ** 2).sum()
     ss_tot = ((predictions_df['actual_time'] - predictions_df['actual_time'].mean()) ** 2).sum()
     r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else 0
@@ -186,14 +186,14 @@ def print_metrics_report(metrics: Dict, title: str = "OVERALL METRICS"):
     print(f"\nAccuracy Metrics:")
     print(f"  MAE (Mean Absolute Error):     {metrics['mae']:.2f}s")
     print(f"  RMSE (Root Mean Squared Error): {metrics['rmse']:.2f}s")
-    print(f"  R? Score:                       {metrics['r2']:.3f}")
+    print(f"  R² Score:                       {metrics['r2']:.3f}")
     print(f"  Bias (mean error):              {metrics['bias']:+.2f}s")
 
     print(f"\nPrediction Accuracy Distribution:")
-    print(f"  Within ?1s: {metrics['within_1s']:.1f}%")
-    print(f"  Within ?2s: {metrics['within_2s']:.1f}%")
-    print(f"  Within ?3s: {metrics['within_3s']:.1f}%")
-    print(f"  Within ?5s: {metrics['within_5s']:.1f}%")
+    print(f"  Within ±1s: {metrics['within_1s']:.1f}%")
+    print(f"  Within ±2s: {metrics['within_2s']:.1f}%")
+    print(f"  Within ±3s: {metrics['within_3s']:.1f}%")
+    print(f"  Within ±5s: {metrics['within_5s']:.1f}%")
 
     # Pass/fail assessment
     print(f"\nTarget Assessment:")

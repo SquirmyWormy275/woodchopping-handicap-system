@@ -788,7 +788,7 @@ def display_methods_explanation(ml_training_info: Dict = None) -> None:
     print("\nML MODEL (XGBoost):")
     if ml_training_info:
         print(f"  - Trained on {ml_training_info.get('training_records', 'N/A')} historical performances")
-        print(f"  - Model Performance: MAE={ml_training_info.get('mae', 0):.1f}s, R?={ml_training_info.get('r2', 0):.3f}")
+        print(f"  - Model Performance: MAE={ml_training_info.get('mae', 0):.1f}s, R²={ml_training_info.get('r2', 0):.3f}")
     else:
         print("  - Machine learning model trained on historical data")
     print("  - Features: competitor history, wood hardness, density, diameter, experience")

@@ -49,11 +49,11 @@ def configure_event_payouts() -> Optional[Dict]:
         }
         or None if user cancels
     """
-    print("?" + "?" * 68 + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "CONFIGURE EVENT PAYOUTS".center(68) + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "?" * 68 + "?")
+    print("╚" + "═" * 68 + "╝")
+    print("║" + " " * 68 + "║")
+    print("║" + "CONFIGURE EVENT PAYOUTS".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
 
     print("\nHow many places will be paid?")
     print("Enter 0 to skip payout configuration for this event.")
@@ -102,11 +102,11 @@ def configure_event_payouts() -> Optional[Dict]:
     total_purse = sum(payouts.values())
 
     # Display summary
-    print("\n" + "?" + "?" * 68 + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "PAYOUT SUMMARY".center(68) + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n" + "╔" + "═" * 68 + "╗")
+    print("║" + " " * 68 + "║")
+    print("║" + "PAYOUT SUMMARY".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
     print()
     print("-" * 70)
 
@@ -171,11 +171,11 @@ def display_final_results_with_payouts(
         payout_config: Payout configuration dict
         event_name: Event name for banner
     """
-    print("\n" + "?" + "?" * 68 + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + f"FINAL RESULTS - {event_name}".center(68) + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n" + "╔" + "═" * 68 + "╗")
+    print("║" + " " * 68 + "║")
+    print("║" + f"FINAL RESULTS - {event_name}".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
     print()
 
     all_placements = final_results.get('all_placements', {})
@@ -301,11 +301,11 @@ def display_tournament_earnings_summary(
         tournament_state: Multi-event tournament state
         competitor_earnings: {competitor_name: total_earnings}
     """
-    print("\n" + "?" + "?" * 68 + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "TOURNAMENT EARNINGS SUMMARY".center(68) + "?")
-    print("?" + " " * 68 + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n" + "╔" + "═" * 68 + "╗")
+    print("║" + " " * 68 + "║")
+    print("║" + "TOURNAMENT EARNINGS SUMMARY".center(68) + "║")
+    print("║" + " " * 68 + "║")
+    print("╚" + "═" * 68 + "╝")
     print()
 
     # Tournament info
@@ -437,11 +437,11 @@ def configure_tournament_payouts(tournament_state: Dict) -> Dict:
             return tournament_state
 
         # Display header
-        print("\n?" + "?" * 68 + "?")
-        print("?" + "CONFIGURE EVENT PAYOUTS".center(68) + "?")
-        print("?" + "?" * 68 + "?")
-        print("?" + f"Tournament: {tournament_state.get('tournament_name', 'Unknown')}".ljust(68) + "?")
-        print("?" + "?" * 68 + "?")
+        print("\n╔" + "═" * 68 + "╗")
+        print("║" + "CONFIGURE EVENT PAYOUTS".center(68) + "║")
+        print("╚" + "═" * 68 + "╝")
+        print("║" + f"Tournament: {tournament_state.get('tournament_name', 'Unknown')}".ljust(68) + "║")
+        print("╚" + "═" * 68 + "╝")
 
         # Show all events with payout status
         print("\n  #   Event Name                    Payout Status")
@@ -563,9 +563,9 @@ def _copy_payout_config(tournament_state: Dict) -> Dict:
         input("\nPress Enter to continue...")
         return tournament_state
 
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "COPY PAYOUT CONFIGURATION".center(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "COPY PAYOUT CONFIGURATION".center(68) + "║")
+    print("╚" + "═" * 68 + "╝")
 
     # Show configured events to copy from
     print("\nSelect source event to copy FROM:")

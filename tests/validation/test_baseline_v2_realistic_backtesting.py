@@ -142,7 +142,7 @@ def calculate_metrics(predictions_df: pd.DataFrame) -> Dict:
     median_ae = predictions_df['abs_error'].median()
     rmse = np.sqrt((predictions_df['error'] ** 2).mean())
 
-    # R? score
+    # R² score
     ss_res = ((predictions_df['actual_time'] - predictions_df['predicted_time']) ** 2).sum()
     ss_tot = ((predictions_df['actual_time'] - predictions_df['actual_time'].mean()) ** 2).sum()
     r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else 0

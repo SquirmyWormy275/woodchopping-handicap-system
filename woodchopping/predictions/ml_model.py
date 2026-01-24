@@ -119,7 +119,7 @@ def perform_cross_validation(
                                   scoring='neg_mean_absolute_error',
                                   n_jobs=-1)
 
-    # Perform cross-validation for R?
+    # Perform cross-validation for R²
     r2_scores = cross_val_score(model, X, y, cv=cv_folds,
                                  scoring='r2',
                                  n_jobs=-1)
@@ -704,7 +704,7 @@ def predict_time_ml(
         # Quality scale: 1-10, where 5 is average
         # Lower quality (1-4) = softer wood = faster times (negative adjustment)
         # Higher quality (6-10) = harder wood = slower times (positive adjustment)
-        # Adjustment: ?2% per quality point from average
+        # Adjustment: ±2% per quality point from average
         quality = int(quality) if quality is not None else 5
         quality = max(1, min(10, quality))
         quality_offset = quality - 5  # Range: -5 to +5

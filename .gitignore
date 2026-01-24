@@ -27,10 +27,16 @@ Thumbs.db
 nul
 
 # Project-specific
-archive/
-scripts/
 *.log
 
-# Tournament state (optionally uncomment to ignore)
-# tournament_state.json
-# multi_tournament_state.json
+# Tournament state files (session-specific, not tracked)
+saves/
+
+# Data backups (not tracked - regeneratable)
+data/backups/
+
+# Test output artifacts
+data/results/*.csv
+
+# pytest cache
+.pytest_cache/

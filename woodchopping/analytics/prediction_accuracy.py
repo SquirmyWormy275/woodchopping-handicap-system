@@ -270,10 +270,10 @@ def format_prediction_accuracy_report(analysis: Dict) -> str:
     lines = []
 
     # Header
-    lines.append("?" + "?" * 68 + "?")
-    lines.append("?" + "PREDICTION ACCURACY REPORT".center(68) + "?")
-    lines.append("?" + analysis.get('round_name', 'Unknown Round').center(68) + "?")
-    lines.append("?" + "?" * 68 + "?")
+    lines.append("╔" + "═" * 68 + "╗")
+    lines.append("║" + "PREDICTION ACCURACY REPORT".center(68) + "║")
+    lines.append("║" + analysis.get('round_name', 'Unknown Round').center(68) + "║")
+    lines.append("╚" + "═" * 68 + "╝")
     lines.append("")
 
     # Overall accuracy

@@ -64,41 +64,41 @@ def view_entry_fee_status(tournament_state: Dict) -> None:
             unpaid_by_competitor[comp_name] = unpaid_events
 
     # Display report
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "ENTRY FEE PAYMENT STATUS".center(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "ENTRY FEE PAYMENT STATUS".center(68) + "║")
+    print("╚" + "═" * 68 + "╝")
 
     # Overall status
     percent_paid = int((paid_entries / total_entries * 100)) if total_entries > 0 else 0
-    print("?" + f"  Total Entries: {total_entries}".ljust(68) + "?")
-    print("?" + f"  Paid: {paid_entries} ({percent_paid}%)".ljust(68) + "?")
-    print("?" + f"  Unpaid: {total_entries - paid_entries}".ljust(68) + "?")
+    print("║" + f"  Total Entries: {total_entries}".ljust(68) + "║")
+    print("║" + f"  Paid: {paid_entries} ({percent_paid}%)".ljust(68) + "║")
+    print("║" + f"  Unpaid: {total_entries - paid_entries}".ljust(68) + "║")
 
     if unpaid_by_competitor:
-        print("?" + "?" * 68 + "?")
-        print("?" + "  UNPAID FEES BY COMPETITOR".ljust(68) + "?")
-        print("?" + "?" * 68 + "?")
+        print("╚" + "═" * 68 + "╝")
+        print("║" + "  UNPAID FEES BY COMPETITOR".ljust(68) + "║")
+        print("╚" + "═" * 68 + "╝")
 
         for comp_name, event_list in sorted(unpaid_by_competitor.items()):
             # Truncate name if too long
             display_name = comp_name[:30] if len(comp_name) > 30 else comp_name
-            print("?" + f"  {display_name}".ljust(68) + "?")
+            print("║" + f"  {display_name}".ljust(68) + "║")
 
             for event_name in event_list:
                 # Truncate event name if needed
                 display_event = event_name[:50] if len(event_name) > 50 else event_name
-                print("?" + f"    - {display_event}".ljust(68) + "?")
+                print("║" + f"    - {display_event}".ljust(68) + "║")
 
     if unpaid_by_event:
-        print("?" + "?" * 68 + "?")
-        print("?" + "  UNPAID FEES BY EVENT".ljust(68) + "?")
-        print("?" + "?" * 68 + "?")
+        print("╚" + "═" * 68 + "╝")
+        print("║" + "  UNPAID FEES BY EVENT".ljust(68) + "║")
+        print("╚" + "═" * 68 + "╝")
 
         for event_name, comp_list in sorted(unpaid_by_event.items()):
             display_event = event_name[:50] if len(event_name) > 50 else event_name
-            print("?" + f"  {display_event} ({len(comp_list)} unpaid)".ljust(68) + "?")
+            print("║" + f"  {display_event} ({len(comp_list)} unpaid)".ljust(68) + "║")
 
-    print("?" + "?" * 68 + "?")
+    print("╚" + "═" * 68 + "╝")
 
     # Quick action menu
     if unpaid_by_competitor:
@@ -130,15 +130,15 @@ def mark_fees_paid_by_competitor(tournament_state: Dict, unpaid_by_competitor: D
         tournament_state: Multi-event tournament state
         unpaid_by_competitor: Dict mapping competitor names to unpaid events
     """
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "MARK FEES PAID - BY COMPETITOR".center(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "MARK FEES PAID - BY COMPETITOR".center(68) + "║")
+    print("╚" + "═" * 68 + "╝")
 
     comp_list = sorted(unpaid_by_competitor.keys())
     for idx, comp_name in enumerate(comp_list, 1):
-        print("?" + f"  {idx}. {comp_name}".ljust(68) + "?")
+        print("║" + f"  {idx}. {comp_name}".ljust(68) + "║")
 
-    print("?" + "?" * 68 + "?")
+    print("╚" + "═" * 68 + "╝")
 
     try:
         choice = int(input("\nSelect competitor (number): ").strip())
@@ -198,16 +198,16 @@ def mark_fees_paid_by_event(tournament_state: Dict, unpaid_by_event: Dict) -> No
         tournament_state: Multi-event tournament state
         unpaid_by_event: Dict mapping event names to unpaid competitors
     """
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "MARK FEES PAID - BY EVENT".center(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "MARK FEES PAID - BY EVENT".center(68) + "║")
+    print("╚" + "═" * 68 + "╝")
 
     event_list = sorted(unpaid_by_event.keys())
     for idx, event_name in enumerate(event_list, 1):
         comp_count = len(unpaid_by_event[event_name])
-        print("?" + f"  {idx}. {event_name} ({comp_count} unpaid)".ljust(68) + "?")
+        print("║" + f"  {idx}. {event_name} ({comp_count} unpaid)".ljust(68) + "║")
 
-    print("?" + "?" * 68 + "?")
+    print("╚" + "═" * 68 + "╝")
 
     try:
         choice = int(input("\nSelect event (number): ").strip())
@@ -274,11 +274,11 @@ def display_payment_grid(tournament_state: Dict) -> None:
         input("\nPress Enter to continue...")
         return
 
-    print("\n?" + "?" * 68 + "?")
-    print("?" + "PAYMENT GRID".center(68) + "?")
-    print("?" + "?" * 68 + "?")
-    print("?" + "Legend: [OK] = Paid, ? = Unpaid, - = Not entered".ljust(68) + "?")
-    print("?" + "?" * 68 + "?")
+    print("\n╔" + "═" * 68 + "╗")
+    print("║" + "PAYMENT GRID".center(68) + "║")
+    print("╚" + "═" * 68 + "╝")
+    print("║" + "Legend: [OK] = Paid, ? = Unpaid, - = Not entered".ljust(68) + "║")
+    print("╚" + "═" * 68 + "╝")
 
     # Build grid
     print("\n" + "=" * 70)

@@ -162,14 +162,14 @@ def setup_tournament_roster(tournament_state: Dict, comp_df: pd.DataFrame) -> Di
     return tournament_state
 
 
-def save_multi_event_tournament(tournament_state: Dict, filename: str = "multi_tournament_state.json") -> None:
+def save_multi_event_tournament(tournament_state: Dict, filename: str = "saves/multi_tournament_state.json") -> None:
     """Save multi-event tournament state to JSON file.
 
     Handles DataFrame serialization and NumPy type conversion for all events and rounds.
 
     Args:
         tournament_state: Multi-event tournament state dictionary
-        filename: Output filename (default: multi_tournament_state.json)
+        filename: Output filename (default: saves/multi_tournament_state.json)
     """
     import numpy as np
 
@@ -213,13 +213,13 @@ def save_multi_event_tournament(tournament_state: Dict, filename: str = "multi_t
         print(f"\n[WARN] Error saving tournament state: {e}")
 
 
-def load_multi_event_tournament(filename: str = "multi_tournament_state.json") -> Optional[Dict]:
+def load_multi_event_tournament(filename: str = "saves/multi_tournament_state.json") -> Optional[Dict]:
     """Load multi-event tournament state from JSON file.
 
     Reconstructs DataFrames from dict records.
 
     Args:
-        filename: Input filename (default: multi_tournament_state.json)
+        filename: Input filename (default: saves/multi_tournament_state.json)
 
     Returns:
         dict: Loaded tournament state, or None if load failed
@@ -298,7 +298,7 @@ def auto_save_multi_event(tournament_state: Dict) -> None:
     Args:
         tournament_state: Multi-event tournament state dictionary
     """
-    save_multi_event_tournament(tournament_state, "multi_tournament_state.json")
+    save_multi_event_tournament(tournament_state, "saves/multi_tournament_state.json")
 
 
 def add_event_to_tournament(tournament_state: Dict, comp_df: pd.DataFrame, results_df: pd.DataFrame) -> Dict:
@@ -1832,9 +1832,9 @@ def generate_complete_day_schedule(tournament_state: Dict) -> Dict:
             continue
 
         # Display prominent event banner
-        print("\n" + "?" + "?" * 68 + "?")
-        print("?" + event_display_name.center(68) + "?")
-        print("?" + "?" * 68 + "?")
+        print("\n" + "╔" + "═" * 68 + "╗")
+        print("║" + event_display_name.center(68) + "║")
+        print("╚" + "═" * 68 + "╝")
 
         num_competitors = len(event['all_competitors'])
         num_stands = event['num_stands']

@@ -423,7 +423,7 @@ def check_diameter_sample_size(results_df: pd.DataFrame, diameter_mm: float, eve
     if results_df is None or results_df.empty:
         return 0, "NO DATA"
 
-    # Filter by event and diameter (within ?5mm tolerance)
+    # Filter by event and diameter (within ±5mm tolerance)
     event = event.upper()
     diameter_data = results_df[
         (results_df['event'] == event) &

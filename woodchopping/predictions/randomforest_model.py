@@ -213,6 +213,6 @@ def predict_time_randomforest(
     else:
         confidence = "LOW"
 
-    explanation = f"RandomForest prediction ({n_samples} samples, OOB R?={oob_score:.2f})"
+    explanation = f"RandomForest prediction ({n_samples} samples, OOB R²={oob_score:.2f})"
 
     return prediction, confidence, explanation, std_dev

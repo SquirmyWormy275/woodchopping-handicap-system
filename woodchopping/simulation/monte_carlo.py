@@ -348,7 +348,7 @@ def _calculate_consistency_rating(std_dev: float) -> str:
             - Predictions less reliable, more upset potential
 
     Note:
-        The default ?3 second variance model assumes all competitors have equal
+        The default ±3 second variance model assumes all competitors have equal
         absolute variance. When per-competitor variance is provided, expected
         std-dev may shift accordingly.
 

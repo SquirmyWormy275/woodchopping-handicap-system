@@ -233,7 +233,7 @@ BASELINE CALCULATION FOR THIS CASE:
 Baseline {baseline:.1f}s = (Tournament {tournament_time:.1f}s x 97%) + (Historical {historical_baseline_for_context:.1f}s x 3%)
 
 YOUR TASK: Apply MINOR quality adjustment ONLY if wood quality has changed since tournament round.
-Expected adjustment range: ?1-3% maximum (wood is proven via tournament result)
+Expected adjustment range: ±1-3% maximum (wood is proven via tournament result)
 Do NOT apply standard quality adjustments - this is PROVEN data from SAME WOOD.
 """
 

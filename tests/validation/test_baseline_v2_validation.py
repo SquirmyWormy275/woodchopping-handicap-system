@@ -184,7 +184,7 @@ def test_tournament_weighting():
 def test_quality_adjustments():
     """Test that quality adjustments work correctly."""
     print("\n" + "="*70)
-    print("TEST 4: QUALITY ADJUSTMENTS (?2% PER POINT)")
+    print("TEST 4: QUALITY ADJUSTMENTS (±2% PER POINT)")
     print("="*70)
 
     try:
