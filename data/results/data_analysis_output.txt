@@ -1,0 +1,235 @@
+================================================================================
+WOODCHOPPING DATA ANALYSIS FOR NEW BASELINE MODEL
+================================================================================
+Roster loaded successfully from Excel. Found 64 competitors.
+
+DATASET OVERVIEW
+   Total performance records: 998
+   Columns available: ['competitor_id', 'event', 'Time', 'Species', 'Diameter', 'quality', 'heat_id', 'date', 'Notes (Competition, special circumstances, etc.)', 'competitor_name']
+   Unique competitors: 64
+   Unique wood species: 8
+   Species column: Species
+
+================================================================================
+1. TIME DISTRIBUTION ANALYSIS
+================================================================================
+
+SB Event Times:
+   Count: 466
+   Mean: 38.22s  |  Median: 25.00s
+   Std Dev: 36.13s
+   Min: 11.00s  |  Max: 296.00s
+   P25: 19.00s  |  P75: 40.00s
+   P10: 16.00s  |  P90: 77.50s
+
+UH Event Times:
+   Count: 532
+   Mean: 42.69s  |  Median: 31.00s
+   Std Dev: 36.31s
+   Min: 13.00s  |  Max: 297.00s
+   P25: 22.00s  |  P75: 47.25s
+   P10: 19.00s  |  P90: 76.00s
+
+================================================================================
+2. DIAMETER IMPACT ANALYSIS
+================================================================================
+
+SB - Time by Diameter (25mm bins):
+              count   mean    std  min  max
+diameter_bin                               
+225              24  74.67  42.26   20  182
+250              95  63.44  50.17   15  284
+275              19  65.53  61.03   22  296
+300             314  24.54  13.83   11  141
+350              12  77.67  39.43   36  144
+
+SB Correlation (diameter vs time): -0.3613
+
+UH - Time by Diameter (25mm bins):
+              count   mean    std  min  max
+diameter_bin                               
+250              98  66.27  48.92   22  297
+275              56  73.07  49.66   20  224
+300             314  26.50  11.43   13  101
+325              52  50.31  27.23   22  163
+350              12  98.92  46.93   44  188
+
+UH Correlation (diameter vs time): -0.3845
+
+================================================================================
+3. WOOD SPECIES IMPACT ANALYSIS
+================================================================================
+
+Columns after merge: ['competitor_id', 'event', 'Time', 'Species', 'Diameter', 'quality', 'heat_id', 'date', 'Notes (Competition, special circumstances, etc.)', 'competitor_name', 'speciesID', 'species', 'janka_hard', 'spec_gravity']
+
+Species with 10+ samples:
+                    count  mean_time  std_time  janka  spec_grav
+species                                                         
+poplar (European)      79      24.62      8.75   2400       0.36
+eastern white pine    602      26.25     11.33   1690       0.34
+quaking aspen          19      43.68     14.62   1560       0.35
+cottonwood             24      53.38     37.53   1560       0.38
+ponderosa pine         79      58.89     40.61   2050       0.38
+western white pine    130      78.69     48.86   1870       0.35
+alder                  39      84.26     59.21   2620       0.37
+poplar (Hybrid)        26      95.85     65.13   1820       0.35
+
+Correlation: Janka Hardness vs Time: 0.2352
+Correlation: Specific Gravity vs Time: 0.3350
+
+================================================================================
+4. COMPETITOR CONSISTENCY ANALYSIS
+================================================================================
+
+Competitors with 5+ results (sorted by consistency):
+Most Consistent (lowest CV%):
+                 count   mean   std     cv
+competitor_name                           
+Trevor Beaudry       6  19.17  1.72   8.97
+Stirling Hart        5  22.80  2.59  11.36
+Hanna Quigley       10  38.00  4.47  11.76
+Mark Bouquin        14  20.86  2.66  12.75
+Arden Cogar Jr      68  19.43  2.69  13.84
+Kate Witkowski      14  38.71  5.50  14.21
+Emily Brown         10  37.60  6.20  16.49
+Nate Hodges         25  18.24  3.13  17.16
+Branden Sirguy      12  24.08  4.25  17.65
+Kate Page           20  46.90  8.50  18.12
+
+Least Consistent (highest CV%):
+                 count    mean    std     cv
+competitor_name                             
+Alex Kaper          15   55.67  40.95  73.56
+Cole Schlenker      12   42.25  25.06  59.31
+Kailee Curtis       17  103.41  60.71  58.71
+Mike Johnson        11   82.55  45.72  55.38
+Erin LaVoie         24   40.46  20.10  49.68
+Angus Nicholson     15   42.20  20.96  49.67
+Seth Bergman         5   71.40  34.55  48.39
+Allison Briscoe      7   72.57  34.93  48.13
+Zane Sandborg       14   76.57  36.23  47.32
+Kelly Kerrigan       9   55.11  23.92  43.40
+
+Overall consistency stats:
+   Mean CV: 30.16%
+   Median CV: 25.98%
+
+================================================================================
+5. TEMPORAL PATTERN ANALYSIS
+================================================================================
+
+Records with dates: 978 / 998 (98.0%)
+
+Year-over-year performance:
+      count   mean    std
+year                     
+1970     74  89.77  60.47
+2001      2  17.50   2.12
+2004      2  18.00   0.00
+2005      1  20.00    NaN
+2006      2  17.50   3.54
+2007      2  17.00   1.41
+2009      5  33.40  23.69
+2012      6  19.00   3.58
+2013     47  26.66   9.45
+2014     52  27.73  10.81
+2015     58  26.12   7.91
+2016     50  23.82   5.72
+2017     50  23.62   5.61
+2018     66  23.86   9.21
+2019     53  25.81  15.02
+2021     56  28.64  14.16
+2022     52  29.23  15.48
+2023     85  41.68  41.16
+2024    154  50.59  37.16
+2025    161  53.58  42.72
+
+Monthly patterns (seasonal):
+       count   mean
+month              
+1         74  89.77
+3          5  34.80
+4         33  35.42
+5        164  47.47
+6        241  34.53
+7        393  26.07
+8         15  49.67
+9         33  81.21
+10        20  96.60
+
+================================================================================
+6. COMPETITOR IMPROVEMENT/DECLINE TRENDS
+================================================================================
+
+Competitors with significant trends (R² &gt;= 0.20):
+
+Fastest Improvers (negative slope):
+         competitor  n_results  slope_sec_per_day  r_squared  mean_time
+31      Mason Banks          5          -0.261479   0.928702  87.800000
+7    Kelly Kerrigan          9          -0.022228   0.483958  55.111111
+10  Samantha Graves          8          -0.015996   0.530229  39.125000
+6      Lindsay Daun          6          -0.013804   0.284008  61.666667
+9       Emily Brown         10          -0.006015   0.280402  37.600000
+
+Fastest Decliners (positive slope):
+         competitor  n_results  slope_sec_per_day  r_squared  mean_time
+46   Trevor Beaudry          6           0.005502   0.359549  19.166667
+34   Mike Forrester         38           0.004731   0.324489  33.973684
+38  David Moses Jr.         41           0.002020   0.235522  27.439024
+1   Allison Briscoe          7           0.001795   0.257170  72.571429
+32        Joey Long          5           0.001285   0.896388  39.600000
+
+================================================================================
+7. CROSS-EVENT PERFORMANCE (SB vs UH)
+================================================================================
+
+Competitors with both SB and UH results: 61
+Correlation (SB mean vs UH mean): 0.8291
+
+Interpretation: Strong correlation
+   -> Good at one event ~= good at both
+
+================================================================================
+8. FEATURE IMPORTANCE ESTIMATION (Correlation Matrix)
+================================================================================
+
+Correlation with Time:
+Time            1.0000
+spec_gravity    0.3350
+janka_hard      0.2352
+Diameter       -0.3279
+Name: Time, dtype: float64
+
+================================================================================
+9. DATA QUALITY ASSESSMENT
+================================================================================
+
+Missing Data:
+   Dates: 20 / 998 (2.0%)
+   Species: 0 / 998 (0.0%)
+   Diameter: 0 / 998 (0.0%)
+   Quality: 0 / 998 (0.0%)
+
+Quality Score Distribution:
+quality
+5    998
+Name: count, dtype: int64
+
+================================================================================
+10. KEY INSIGHTS & RECOMMENDATIONS
+================================================================================
+
+Based on the analysis above, here are the key insights:
+
+1. DIAMETER IMPACT: Strong correlation with time - non-linear scaling critical
+2. WOOD PROPERTIES: Janka hardness matters, but specific gravity also relevant
+3. COMPETITOR CONSISTENCY: High variance (CV%) suggests individual variance modeling
+4. TEMPORAL TRENDS: Significant improvement/decline trends for many competitors
+5. QUALITY DATA: Currently all 5s - no variance to learn from (need real data)
+6. CROSS-EVENT: SB/UH correlation reveals transferable vs event-specific skills
+7. DATA SPARSITY: Many competitors have <5 results - shrinkage critical
+8. MISSING DATES: 2% missing dates limits time-decay weighting effectiveness
+
+================================================================================
+END OF ANALYSIS
+================================================================================
